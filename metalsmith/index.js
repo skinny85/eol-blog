@@ -3,6 +3,7 @@ var markdown    = require('metalsmith-markdown');
 var layouts     = require('metalsmith-layouts');
 var permalinks  = require('metalsmith-permalinks');
 var elevate     = require('metalsmith-elevate');
+var assets     = require('metalsmith-assets');
 // var flatten     = require('./blog-plugins/flatten');
 
 Metalsmith(__dirname)
@@ -23,6 +24,14 @@ Metalsmith(__dirname)
   .use(elevate({
     pattern: 'articles/*/*.html',
     depth: -2,
+  }))
+  .use(assets({
+    source: "./public/img",
+    destination: "./assets",
+  }))
+  .use(assets({
+    source: "./public/css",
+    destination: "./assets",
   }))
   .build(function(err, files) {
     if (err) { throw err; }

@@ -1,0 +1,361 @@
+@import url(//fonts.googleapis.com/css?family=Finger+Paint);
+@import url(//fonts.googleapis.com/css?family=Droid+Sans);
+
+@font-face {
+  font-family: 'ManoNegraBta';
+  src: url('<%= asset_path("ManoNegraBta.ttf") %>');
+}
+
+@font-face {
+  font-family: 'Aller';
+  src: url('<%= asset_path("Aller_Rg.ttf") %>');
+}
+
+/***********************************
+ ******* Entire page styles ********
+ ***********************************/
+
+body {
+	background-color: #F6F5ED;
+}
+
+/**************************************
+ * main (header, nav, content) styles *
+ **************************************/
+
+#main {
+	width: 950px;
+	margin: 10px auto;
+}
+
+header#masthead {
+	background-image: url('/assets/stonehenge.jpg');
+	background-repeat: no-repeat;
+	background-position: -15px -330px;
+	height: 250px;
+}
+
+.blog-title {
+	font-family: 'Finger Paint', cursive;
+	color: white;
+    font-size: 6.5em;
+    line-height: 100%;
+    margin-left: 20px;
+    margin-top: 20px;
+    width: 450px;
+    position: absolute;
+}
+
+.blog-subtitle {
+	font-family: 'ManoNegraBta', cursive;
+	float: right;
+	color: white;
+	font-size: 3.5em;
+    line-height: 100%;
+	width: 400px;
+	margin-top: 15px;
+	margin-right: 15px;
+}
+
+nav#navbar {
+	background-color: #4682b4;
+	background: linear-gradient(to bottom, #2989d8 14%, #207cca 48%, #7db9e8 100%);
+	height: 40px;
+}
+
+ul#navmenu {
+	list-style-type: none;
+	margin: 0;
+	padding-top: 8px;
+}
+
+ul#navmenu li {
+	display: table-cell;
+    padding-right: 25px;
+}
+
+ul#navmenu li a {
+	text-decoration: none;
+	font-family: Arial, sans-serif;
+	color: #ADD8E6;
+	font-size: 22px;
+}
+
+ul#navmenu li a:hover, .entry-summary header h1 a:hover, .entry-summary-all-link a:hover, .archive-entry p a:hover {
+	color: #00008b;
+}
+
+#content {
+	background-color: white;
+	/*padding: 3%;*/
+}
+
+/***********************************
+ ***** Entry summaries styles ******
+ ***********************************/
+
+.entry-summaries > header > h1, .archive > header > h1, .about > header > h1 {
+    font-family: Droid Sans, sans-serif;
+    font-weight: 700;
+    font-size: 40px;
+    text-align: center;
+    margin: 0;
+    padding: 35px 0;
+    /*color: white;*/
+    /*background: url('/assets/brick-wall.jpg') repeat-x;*/
+    /*height: 100px;*/
+    /*line-height: 100px;*/
+}
+
+.entry-summary, .archive-year {
+    background-image: linear-gradient(to bottom, #F1F1F1 0%, #FFFFFF 80%);
+    /*background-image: url('/assets/torn-paper.jpg');*/
+    border-radius: 10px;
+    /*box-shadow: 5px 5px 5px #888888;*/
+    margin: 0px 3% 55px;
+    padding: 5px;
+    /*height: 400px;*/
+    position: relative; /* for child elements to have 'postion: absolute;' work */
+}
+
+.entry-summary header h1, .archive-year h2 {
+	margin-top: 5px;
+	margin-left: 10px;
+	margin-bottom: 0px;
+	font-family: 'Aller';
+	font-weight: 700;
+	font-size: 36px;
+	line-height: 110%;
+}
+
+.entry-summary header h1 a, .archive-entry p a {
+	text-decoration: none;
+	color: #2052f3;
+}
+
+.entry-summary-date {
+	background: #330177 url('<%= asset_path("purple.jpg") %>') repeat-x scroll top left;
+	width: 60px;
+	text-align: center;
+	color: #fff;
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 12px;
+	border: 1px solid #330175;
+	float: right;
+    margin-right: 10px;
+    margin-top: 30px;
+}
+.entry-summary-date .date-inside {
+	border: 1px solid #C3A4EF;
+	padding: 2px;
+}
+.entry-summary-date .date-day {
+	font-size: 30px;
+}
+
+.entry-summary > p {
+	font-family: 'Droid Sans';
+	font-size: 18px;
+	line-height: 130%;
+	width: 780px;
+	text-align: justify;
+	margin: 30px 0 200px 5px;
+	/*margin-left: 5px;
+	margin-top: 30px;*/
+	/*position: absolute;*/
+	/*top: 125px;*/
+}
+
+.entry-summary footer {
+    position: absolute;
+    bottom: 20px;
+}
+
+.entry-summary footer a {
+    font-family: 'Aller';
+    font-size: 18px;
+    color: black;
+    text-decoration: none;
+    margin-left: 20px;
+    padding: 10px 60px 10px 20px;
+    background: url('<%= asset_path("right-arrow-black.jpg") %>') no-repeat scroll 130px 3px / 20% auto #F6F5ED;
+}
+
+.entry-summary footer a:hover {
+    background: url('<%= asset_path("right-arrow-white.jpg") %>') no-repeat scroll 130px 3px / 20% auto black;
+    color: white;
+}
+
+.entry-summaries > footer, .archive > footer {
+	height: 50px;
+}
+
+.entry-summary-all-link {
+	/*border-top: 2px dotted black;*/
+}
+
+.entry-summary-all-link a {
+	color: #2052F3;
+    font-family: Droid Sans, sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+    text-decoration: none;
+    padding: 5px 15px;
+    margin-left: 30px;
+    border-radius: 5px;
+    background-color: #F6F5ED;
+    /*background: black url('/assets/linkArrow-solo.png') repeat-x scroll 80%;*/
+    /*background: url('/assets/linkArrow-solo.png') no-repeat scroll 80%,
+    	url('/assets/linkArrow-solo.png') no-repeat scroll 90% black;*/
+}
+
+/***********************************
+ ********* Archive styles **********
+ ***********************************/
+
+.archive {
+	font-family: Aller, sans-serif;
+}
+
+.archive-month {
+	margin-left: 125px;
+}
+
+.archive-month h3 {
+	font-size: 28px;
+	margin-top: 10px;
+	margin-bottom: 0;
+}
+
+.archive-entry {
+	margin-left: 175px;
+	display: flex;
+}
+
+.archive-entry header {
+	display: inline-block;
+	font-size: 28px;
+}
+
+.archive-entry header h4 {
+	margin: 0;
+}
+
+.archive-entry p {
+	display: inline-block;
+	margin: auto 0 auto 50px;
+	font-size: 18px;
+	font-family: Droid Sans, sans-serif;
+}
+
+/***********************************
+ ******* About page styles *********
+ ***********************************/
+
+.portrait {
+	width: 15%;
+	height: 15%;
+	margin: 5px 30px;
+	display: block;
+	float: right;
+}
+
+.entry-contents {
+	font-family: 'Droid Sans';
+	font-size: 18px;
+	line-height: 130%;
+	text-align: justify;
+	margin: 20px 35px;
+}
+
+.about > footer, .entry-article > footer {
+	height: 20px;
+}
+
+/***********************************
+ ******* Blog entry styles *********
+ ***********************************/
+
+.entry-article > header {
+    padding: 20px 0 0;
+}
+
+.entry-article > header > h1 {
+    font-family: Droid Sans, sans-serif;
+    font-weight: 700;
+    font-size: 36px;
+    margin: 0 40px;
+    color: #2052f3;
+    padding: 20px 0 0;
+}
+
+.article-date {
+    font-family: Droid Sans, sans-serif;
+    color: #AAAAAA;
+    font-size: 16px;
+    margin: 0 50px;
+}
+
+.entry-article img {
+	display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.parts-list {
+	list-style: none;
+}
+
+.parts-list li + li {
+	margin-top: 10px;
+}
+
+hr.parts-separator {
+	border-top: 1px solid #d3d3d3;
+}
+
+dt {
+	font-weight: bold;
+}
+
+dd {
+	margin-bottom: 18px;
+}
+
+.entry-article .lightbox-thumbnail {
+	width: 45%;
+	height: 45%;
+}
+
+a[data-lightbox] {
+    text-decoration: none;
+}
+
+/* lightbox thumbnail 'click to enlarge' caption */
+.lightbox-thumbnail + div {
+	display: table;
+    margin-left: auto;
+    margin-right: auto;
+    font-family: 'Droid Sans';
+    font-style: italic;
+}
+
+/* line change counter styles */
+.change-counter::before {
+	content: '(';
+}
+.change-counter::after {
+	content: ')';
+}
+.change-counter {
+	vertical-align: super;
+	font-size: 14px;
+}
+
+/***********************************
+ ********* Disqus styles ***********
+ ***********************************/
+
+#disqus_thread {
+	margin: 0 35px;
+}

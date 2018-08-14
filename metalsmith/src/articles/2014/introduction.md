@@ -1,5 +1,6 @@
 ---
 id: 1
+layout: application.html
 title: Introduction
 summary: An entry introducing the author of this blog.
 created_at: 2014-09-09
