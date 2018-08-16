@@ -3,12 +3,12 @@
 
 @font-face {
   font-family: 'ManoNegraBta';
-  src: url('<%= asset_path("ManoNegraBta.ttf") %>');
+  src: url('/assets/ManoNegraBta.ttf');
 }
 
 @font-face {
   font-family: 'Aller';
-  src: url('<%= asset_path("Aller_Rg.ttf") %>');
+  src: url('/assets/Aller_Rg.ttf');
 }
 
 /***********************************
@@ -134,7 +134,7 @@ ul#navmenu li a:hover, .entry-summary header h1 a:hover, .entry-summary-all-link
 }
 
 .entry-summary-date {
-	background: #330177 url('<%= asset_path("purple.jpg") %>') repeat-x scroll top left;
+	background: #330177 url('/assets/purple.jpg') repeat-x scroll top left;
 	width: 60px;
 	text-align: center;
 	color: #fff;
@@ -178,11 +178,11 @@ ul#navmenu li a:hover, .entry-summary header h1 a:hover, .entry-summary-all-link
     text-decoration: none;
     margin-left: 20px;
     padding: 10px 60px 10px 20px;
-    background: url('<%= asset_path("right-arrow-black.jpg") %>') no-repeat scroll 130px 3px / 20% auto #F6F5ED;
+    background: url('/assets/right-arrow-black.jpg') no-repeat scroll 130px 3px / 20% auto #F6F5ED;
 }
 
 .entry-summary footer a:hover {
-    background: url('<%= asset_path("right-arrow-white.jpg") %>') no-repeat scroll 130px 3px / 20% auto black;
+    background: url('/assets/right-arrow-white.jpg') no-repeat scroll 130px 3px / 20% auto black;
     color: white;
 }
 

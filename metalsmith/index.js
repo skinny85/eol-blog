@@ -3,7 +3,8 @@ var markdown    = require('metalsmith-markdown');
 var layouts     = require('metalsmith-layouts');
 var permalinks  = require('metalsmith-permalinks');
 var elevate     = require('metalsmith-elevate');
-var assets     = require('metalsmith-assets');
+var nested      = require('metalsmith-nested');
+var assets      = require('metalsmith-assets');
 // var flatten     = require('./blog-plugins/flatten');
 
 Metalsmith(__dirname)
@@ -18,6 +19,7 @@ Metalsmith(__dirname)
   .clean(true)
   .use(markdown())
   // .use(permalinks())
+  .use(nested())
   .use(layouts({
     engine: 'handlebars'
   }))
@@ -31,6 +33,10 @@ Metalsmith(__dirname)
   }))
   .use(assets({
     source: "./public/css",
+    destination: "./assets",
+  }))
+  .use(assets({
+    source: "./public/fonts",
     destination: "./assets",
   }))
   .build(function(err, files) {
