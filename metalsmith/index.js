@@ -1,11 +1,17 @@
 var Metalsmith  = require('metalsmith');
+var Handlebars  = require('handlebars');
 var markdown    = require('metalsmith-markdown');
 var layouts     = require('metalsmith-layouts');
 var permalinks  = require('metalsmith-permalinks');
 var elevate     = require('metalsmith-elevate');
 var nested      = require('metalsmith-nested');
 var assets      = require('metalsmith-assets');
+var dateFormat  = require('dateformat');
 // var flatten     = require('./blog-plugins/flatten');
+
+Handlebars.registerHelper('articleDate', function(date) {
+  return dateFormat(date, 'UTC:yyyy/mm/dd');
+});
 
 Metalsmith(__dirname)
   .metadata({
