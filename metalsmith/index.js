@@ -2,36 +2,50 @@ var Metalsmith  = require('metalsmith');
 var Handlebars  = require('handlebars');
 var markdown    = require('metalsmith-markdown');
 var layouts     = require('metalsmith-layouts');
-var permalinks  = require('metalsmith-permalinks');
+// var permalinks  = require('metalsmith-permalinks');
+var paths       = require('metalsmith-paths');
 var elevate     = require('metalsmith-elevate');
 var nested      = require('metalsmith-nested');
 var assets      = require('metalsmith-assets');
 var dateFormat  = require('dateformat');
-// var flatten     = require('./blog-plugins/flatten');
+var homePage    = require('./blog-plugins/home-page');
 
 Handlebars.registerHelper('articleDate', function(date) {
   return dateFormat(date, 'UTC:yyyy/mm/dd');
 });
 
+Handlebars.registerHelper('articleDateElement', function(date) {
+  var monthNr = dateFormat(date, 'UTC:mm');
+  var monthAbbr = dateFormat(date, 'UTC:mmm');
+  var dayNr = dateFormat(date, 'UTC:dd');
+  var year = dateFormat(date, 'UTC:yyyy');
+
+  return '<div class="entry-summary-date">' +
+    '<div class="date-inside">' +
+      '<div class="date-month">' +
+        monthNr + ' (' + monthAbbr + ')' +
+      '</div>' +
+      '<div class="date-day">' + dayNr + '</div>' +
+      '<div class="date-year">' + year + '</div>' +
+    '</div>' +
+  '</div>';
+});
+
 Metalsmith(__dirname)
-  .metadata({
-    title: "My Static Site & Blog",
-    description: "It's about saying »Hello« to the World.",
-    generator: "Metalsmith",
-    url: "http://www.metalsmith.io/"
-  })
   .source('./src')
   .destination('./build')
   .clean(true)
   .use(markdown())
   // .use(permalinks())
-  .use(nested())
-  .use(layouts({
-    engine: 'handlebars'
-  }))
   .use(elevate({
     pattern: 'articles/*/*.html',
     depth: -2,
+  }))
+  .use(paths())
+  .use(homePage())
+  .use(nested())
+  .use(layouts({
+    engine: 'handlebars'
   }))
   .use(assets({
     source: "./public/img",

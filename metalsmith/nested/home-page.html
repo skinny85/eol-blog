@@ -1,0 +1,34 @@
+---
+layout: application.html
+---
+
+<section class="entry-summaries">
+	<header>
+		<h1>
+			Recent blog entries
+		</h1>
+	</header>
+
+	{{#each homePagePosts}}
+		<article class="entry-summary">
+			<header>
+				<h1><a href="/{{ this.path.name }}">{{ this.title }}</a></h1>
+				{{{ articleDateElement this.created_at }}}
+			</header>
+
+			<p>
+				{{ this.summary }}
+			</p>
+
+			<footer>
+				<a href="/{{ this.path.name }}">Read article</a>
+			</footer>
+		</article>
+	{{/each}}
+
+	<footer>
+		<div class="entry-summary-all-link">
+			<a href="/archive">All articles >></a>
+		</div>
+	</footer>
+</section>
