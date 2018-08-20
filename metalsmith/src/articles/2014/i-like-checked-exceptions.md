@@ -31,7 +31,7 @@ Imagine you're building a social network site (cause, you know, we can never hav
 void becomeFriends(UserId user1, UserId user2);
 ```
 
-This method ties the users denoted by <code>user1</code> and <code>user2</code> in a friend relationship inside the data model you decided to use for the application. That model might be implemented by a relational database like Postgres, or a graph database like Neo4J - those are implementation details. It might also do other things - for example, send an email to the inviter that the invitation has been accepted. The method's purpose is to encapsulate all of that to its clients.
+This method ties the users denoted by `user1` and <code>user2</code> in a friend relationship inside the data model you decided to use for the application. That model might be implemented by a relational database like Postgres, or a graph database like Neo4J - those are implementation details. It might also do other things - for example, send an email to the inviter that the invitation has been accepted. The method's purpose is to encapsulate all of that to its clients.
 
 What is interesting about this method is that there are multiple reasons it may fail. And I don't mean "fail" as in there was an error connecting to the database, but some required domain conditions may not be satisfied at the time it was called. Some examples are:
 
@@ -105,16 +105,17 @@ void someMethod() throws
 
 Add to that the fact that the client is sometimes not interested in why something went wrong, but only if it was successful or not, and you might get a lot of duplicated and verbose code in the client. In my experience, there are two ways to solve this:
 
-* If you're using Java 7 or above, you can use multi-catch.
-* If not, then you can arrange the exceptions in a hierarchy with a common parent, and then the client can simply catch the parent exception and put all the general error handling code in there. You might say that we lose the benefit of type safety this way, but in practice it's not a problem: the compiler still makes sure everything is caught somewhere, and we can always refine our error handling by adding another <code>catch</code> with a more specific class above the parent <code>catch</code> later.
+1. If you're using Java 7 or above, you can use multi-catch.
+2. If not, then you can arrange the exceptions in a hierarchy with a common parent, and then the client can simply catch the parent exception and put all the general error handling code in there. You might say that we lose the benefit of type safety this way, but in practice it's not a problem: the compiler still makes sure everything is caught somewhere, and we can always refine our error handling by adding another <code>catch</code> with a more specific class above the parent <code>catch</code> later.
 
 As a side note, if the project was using a language other than Java - say, Scala - I would do it in a different way. I would make the method return some sealed abstract class instead of void, and would extend that class - once for success, and once for each of the possible errors (to say it in functional language terminology, I would make the return type an algebraic data type). This way is also type safe and much more concise (you might argue that the client may simply ignore the return value, which he can't do with an exception, but I think that's a minor point, and the exception handler block can always be an auto-generated one line: <code>e.printStackTrace()</code>, which is probably even worse than ignoring the return value). It also leaves exceptions to handle purely application errors, without mixing them with business logic errors, which I think is more elegant than combining these two different use cases. However, emulating something like that in Java would be very verbose, cumbersome for the client to use (because of no pattern matching) and not really type safe anymore, so I would say that using checked exceptions is more idiomatic in case of Java.
 
 ## What Java did wrong
 
-* Like I mentioned earlier, I believe Java made some fundamental mistakes in regards to the way checked exceptions were realized in the language. These mistakes fall, in my opinion, in one of two major groups:
-* Bad assignment of some concrete exceptions to the checked/unchecked groups.
-* Incorrectly designed exception hierarchy.
+Like I mentioned earlier, I believe Java made some fundamental mistakes in regards to the way checked exceptions were realized in the language. These mistakes fall, in my opinion, in one of two major groups:
+
+1. Bad assignment of some concrete exceptions to the checked/unchecked groups.
+2. Incorrectly designed exception hierarchy.
 
 ### Wrong exception kind
 
