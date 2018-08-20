@@ -1,0 +1,6 @@
+---
+layout: rss-feed.xml
+---
+
+This is just dummy content for Metalsmith to work correctly -
+it will never actually be shown in the RSS feed.
