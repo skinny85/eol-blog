@@ -59,6 +59,10 @@ Metalsmith(__dirname)
     source: "./public/fonts",
     destination: "./assets",
   }))
+  .use(assets({
+    source: "./public/js",
+    destination: "./assets",
+  }))
   .build(function(err, files) {
     if (err) { throw err; }
   });
