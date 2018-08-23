@@ -9,6 +9,7 @@ var nested      = require('metalsmith-nested');
 var assets      = require('metalsmith-assets');
 var dateFormat  = require('dateformat');
 var homePage    = require('./blog-plugins/home-page');
+var archivePage = require('./blog-plugins/archive-page');
 var rssFeed     = require('./blog-plugins/rss-feed');
 
 Handlebars.registerHelper('articleDate', function(date) {
@@ -44,6 +45,7 @@ Metalsmith(__dirname)
   }))
   .use(paths())
   .use(homePage())
+  .use(archivePage())
   .use(rssFeed())
   .use(nested())
   .use(layouts({
