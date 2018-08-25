@@ -8,7 +8,7 @@ function plugin() {
 		var lastYear = new Date().getFullYear();
 
 		var ret = [];
-		for (var year = startingYear; year <= lastYear; year++) {
+		for (var year = lastYear; year >= startingYear; year--) {
 			var thisYear = [];
 			Object.keys(files).forEach(function(fileKey) {
 				var file = files[fileKey];
@@ -22,7 +22,7 @@ function plugin() {
 					year: year,
 					months: [],
 				};
-				for (var month = 0; month < 12; month++) {
+				for (var month = 11; month >= 0; month--) {
 					var thisMonth = [];
 					for (var i = 0; i < thisYear.length; i++) {
 						var file = thisYear[i];
