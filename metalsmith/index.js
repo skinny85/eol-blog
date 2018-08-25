@@ -52,7 +52,7 @@ Metalsmith(__dirname)
     engine: 'handlebars'
   }))
   .use(assets({
-    source: "./public/img",
+    source: "./public/images",
     destination: "./assets",
   }))
   .use(assets({
