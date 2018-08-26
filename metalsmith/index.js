@@ -67,6 +67,10 @@ Metalsmith(__dirname)
     source: "./public/js",
     destination: "./assets",
   }))
+  .use(assets({
+    source: "./public/img",
+    destination: "./img",
+  }))
   .build(function(err, files) {
     if (err) { throw err; }
   });
