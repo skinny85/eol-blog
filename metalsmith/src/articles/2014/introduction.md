@@ -18,4 +18,4 @@ I don't want to bore you (more than I'm doing now, at least) with all the detail
 
 The rest? That is, as they say..., well, not history actually, but you will have to read the blog to find out :).
 
-**EDIT**: note that this article is fairly old, and my current situation is a little (OK, a lot ;p) different. For an update, click [here]().
+**EDIT**: note that this article is fairly old, and my current situation is a little (OK, a lot ;p) different. For an update, click [here](/life-update-job-and-location-change).
