@@ -1,5 +1,6 @@
 var Metalsmith  = require('metalsmith');
 var Handlebars  = require('handlebars');
+var Marked      = require('marked');
 var markdown    = require('metalsmith-markdown');
 var layouts     = require('metalsmith-layouts');
 // var permalinks  = require('metalsmith-permalinks');
@@ -33,11 +34,23 @@ Handlebars.registerHelper('articleDateElement', function(date) {
   '</div>';
 });
 
+var markedRenderer = new Marked.Renderer();
+markedRenderer.link = function(href, title, text) {
+  var titlePart = title ? ' title="' + title + '"' : '';
+  var targetPart = href.startsWith('http') ? ' target="_blank"' : '';
+
+  return '<a href="' + href + '"' + titlePart + targetPart + '>' +
+    text +
+  '</a>';
+};
+
 Metalsmith(__dirname)
   .source('./src')
   .destination('./build')
   .clean(true)
-  .use(markdown())
+  .use(markdown({
+    renderer: markedRenderer,
+  }))
   // .use(permalinks())
   .use(elevate({
     pattern: 'articles/*/*.html',
