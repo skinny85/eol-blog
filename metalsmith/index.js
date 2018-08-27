@@ -60,9 +60,13 @@ Metalsmith(__dirname)
   .use(homePage())
   .use(archivePage())
   .use(rssFeed())
-  .use(nested())
+  .use(nested({
+    directory: 'layouts',
+    generated: 'generated-layouts',
+  }))
   .use(layouts({
-    engine: 'handlebars'
+    engine: 'handlebars',
+    directory: 'generated-layouts',
   }))
   .use(assets({
     source: "./public/images",
