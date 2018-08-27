@@ -9,7 +9,7 @@ summary: "There was a post on Reddit which advertised using the new features
 created_at: 2015-01-14
 ---
 
-There was a <a href="http://www.deadcoderising.com/java-8-no-more-loops/" target="_blank">link</a> to an interesting blog post recently posted on <a href="http://www.reddit.com/r/programming/comments/2s5gj2/java_8_no_more_loops/" target="_blank">proggit</a>. The article, titled 'Java 8: No more loops', advises eschewing imperative constructs like loops and manipulating collections directly, in favor of functional programming solutions enabled by things like lambda expressions, streams and method references. It illustrates its point by implementing four methods dealing with a simple Article type in two ways: the "old" way by using loops and the "new" way by using the new Java 8 features. In the comments, a lot of people were wondering how does the stream solutions compare in terms of performance to the imperative code. I was kind of wondering that myself, and couldn't recall seeing any benchmark that would directly address the effectiveness of streams. So I wrote one myself.
+There was a [link](http://www.deadcoderising.com/java-8-no-more-loops/) to an interesting blog post recently posted on [proggit](http://www.reddit.com/r/programming/comments/2s5gj2/java_8_no_more_loops/). The article, titled 'Java 8: No more loops', advises eschewing imperative constructs like loops and manipulating collections directly, in favor of functional programming solutions enabled by things like lambda expressions, streams and method references. It illustrates its point by implementing four methods dealing with a simple Article type in two ways: the "old" way by using loops and the "new" way by using the new Java 8 features. In the comments, a lot of people were wondering how does the stream solutions compare in terms of performance to the imperative code. I was kind of wondering that myself, and couldn't recall seeing any benchmark that would directly address the effectiveness of streams. So I wrote one myself.
 
 For convenience, here's the original code (I copied it unchanged):
 
@@ -117,11 +117,11 @@ public class ArticleOps {
 }
 ```
 
-The code of the benchmark is available on <a href="https://github.com/skinny85/no-more-loops-benchmark" target="_blank">GitHub</a>. It uses the <a href="http://openjdk.java.net/projects/code-tools/jmh/" target="_blank">JMH</a> library. Here are the results on my machine, operating on 10,000 randomly generated Article objects (this is in microseconds per method invocation, so lower is better):
+The code of the benchmark is available on [GitHub](https://github.com/skinny85/no-more-loops-benchmark). It uses the [JMH](http://openjdk.java.net/projects/code-tools/jmh/) library. Here are the results on my machine, operating on 10,000 randomly generated Article objects (this is in microseconds per method invocation, so lower is better):
 
 ![benchmark graph](/assets/benchmark-graph.png)
 
-As you can see, the results are very close. <code>getAllJavaArticles</code> and <code>groupByAuthor</code> are practically undistinguishably close. Both <code>getFirstJavaArticle</code> and <code>getDistinctTags</code> are faster with for loops - the first one by about 16%, the second around 24%. I should add that I generated the test data purposefully in a way in which there was no Java article, so that both versions of <code>getAllJavaArticles</code> and <code>getFirstJavaArticle</code> had to do their "worst case" (traverse the entire collection).
+As you can see, the results are very close. `getAllJavaArticles` and `groupByAuthor` are practically undistinguishably close. Both `getFirstJavaArticle` and `getDistinctTags` are faster with for loops - the first one by about 16%, the second around 24%. I should add that I generated the test data purposefully in a way in which there was no Java article, so that both versions of `getAllJavaArticles` and `getFirstJavaArticle` had to do their "worst case" (traverse the entire collection).
 
 I think the results are clear - the performance of the Streams API is excellent, in some cases better than a hand-written loop, and not noticably worse in others. Therefore, performance should not be a consideration when choosing between the two styles - rather, readability and ease of maintenance should be the deciding factors.
 

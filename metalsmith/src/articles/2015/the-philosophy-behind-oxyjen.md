@@ -7,7 +7,7 @@ summary: "In this post I try to explain the rationale behind creating
 created_at: 2015-04-12
 ---
 
-I've been a little negligent in contributing to my blog lately. The reason is that I was busy working on another side project - <a href="http://oxyjen.org" target="_blank">Oxyjen</a>, a code generation and scaffolding tool. I recently made enough progress with it that I felt it was ready to be released publicly. I won't repeat myself and explain what Oxyjen is and how it can be used in this post - it's <a href="http://oxyjen.org" target="_blank">home page</a> already covers that in great detail, and I would encourage you to give it a read if you haven't already. What I want to do in this article is talk more broadly about the subject - why did I start the project in the first place and how I hope it can be useful to the programming community. But to get to that, I have to first explain some of my thoughts on our industry that I've acquired through the years working as a software developer.
+I've been a little negligent in contributing to my blog lately. The reason is that I was busy working on another side project - [Oxyjen](http://oxyjen.org), a code generation and scaffolding tool. I recently made enough progress with it that I felt it was ready to be released publicly. I won't repeat myself and explain what Oxyjen is and how it can be used in this post - it's [home page](http://oxyjen.org) already covers that in great detail, and I would encourage you to give it a read if you haven't already. What I want to do in this article is talk more broadly about the subject - why did I start the project in the first place and how I hope it can be useful to the programming community. But to get to that, I have to first explain some of my thoughts on our industry that I've acquired through the years working as a software developer.
 
 ## Background
 
@@ -22,6 +22,7 @@ I assume a good deal of you flinched when you read that. Code generation is not 
 ```
 “Programs must be written for people to read,
 and only incidentally for machines to execute.”
+
 ```
 
 It is these traditions that Oxyjen builds upon, and expands.
@@ -48,7 +49,7 @@ In a similar vein, using templates allow you to experiment more easily with diff
 
 ### It reduces the amount of choices you have to make
 
-There are interesting studies about how our decision power is limited (see, for example <a href="http://www.nytimes.com/2011/08/21/magazine/do-you-suffer-from-decision-fatigue.html?pagewanted=all&_r=0" target="_blank">this link</a>). Templates free you from some of those decisions to "save" them for the more important stuff later.
+There are interesting studies about how our decision power is limited (see, for example [this link](http://www.nytimes.com/2011/08/21/magazine/do-you-suffer-from-decision-fatigue.html?pagewanted=all&_r=0)). Templates free you from some of those decisions to "save" them for the more important stuff later.
 
 ### It allows you to tap into the knowledge of others
 
@@ -76,4 +77,4 @@ I don't think we appreciate enough how collaborative, on the global scale, progr
 
 ## Summary
 
-So, those are the reasons why I strongly believe a tool like Oxyjen is needed. I encourage you to go the <a href="http://oxyjen.org" target="_blank">website</a> and give it a try. I would also love to hear your feedback, both on this post and Oxyjen the tool itself.
+So, those are the reasons why I strongly believe a tool like Oxyjen is needed. I encourage you to go the [website](http://oxyjen.org) and give it a try. I would also love to hear your feedback, both on this post and Oxyjen the tool itself.

@@ -23,7 +23,7 @@ to prove my program is correct on the type system level.
 
 I will try to illustrate what I mean by that with an example. But first I just wanted to say that even though I like the general concept, I believe Java made some mistakes in the actual implementation of checked exceptions, and it is those mistakes that are the cause of so much grievance with the feature. I will address those mistakes later on.
 
-## A use-case for checked exceptions</h2>
+## A use-case for checked exceptions
 
 Imagine you're building a social network site (cause, you know, we can never have enough of those). No social site would be complete without "friending" people. Let's say you decided to model this with a business logic method like this:
 
@@ -31,7 +31,7 @@ Imagine you're building a social network site (cause, you know, we can never hav
 void becomeFriends(UserId user1, UserId user2);
 ```
 
-This method ties the users denoted by `user1` and <code>user2</code> in a friend relationship inside the data model you decided to use for the application. That model might be implemented by a relational database like Postgres, or a graph database like Neo4J - those are implementation details. It might also do other things - for example, send an email to the inviter that the invitation has been accepted. The method's purpose is to encapsulate all of that to its clients.
+This method ties the users denoted by `user1` and `user2` in a friend relationship inside the data model you decided to use for the application. That model might be implemented by a relational database like Postgres, or a graph database like Neo4J - those are implementation details. It might also do other things - for example, send an email to the inviter that the invitation has been accepted. The method's purpose is to encapsulate all of that to its clients.
 
 What is interesting about this method is that there are multiple reasons it may fail. And I don't mean "fail" as in there was an error connecting to the database, but some required domain conditions may not be satisfied at the time it was called. Some examples are:
 
@@ -39,7 +39,7 @@ What is interesting about this method is that there are multiple reasons it may 
 * the users might already be in a friend relationship. This could easily happen if the invited user clicked on a link that said "Accept friend request" in an email that was sent to him by our site more than once
 * the invite from one user to another that started the whole "become friends" workflow could not be found for this pair of users. This situation is less likely to happen - probably the only way it could happen is for someone (a hacker?) to directly call our REST endpoint that exposes this method. Even so, we must still handle it gracefully - otherwise we risk letting hackers befriend anyone on the entire site without their consent
 
-I believe that checked exceptions are a really nice fit for modelling these kind of situations. You would usually create a separate <code>Exception</code> subclass for each of the possible error conditions, and throw it inside the implementation. Then the method signature would look something like this:
+I believe that checked exceptions are a really nice fit for modelling these kind of situations. You would usually create a separate `Exception` subclass for each of the possible error conditions, and throw it inside the implementation. Then the method signature would look something like this:
 
 ```
 void becomeFriends(UserId user1, UserId user2) throws UserNotFound,
@@ -86,9 +86,9 @@ try {
 }
 ```
 
-I would say this code looks pretty well - the exceptions forced a nice separation of the different paths the code must take depending on the result of the <code>becomeFriends</code> operation. They can also contain data describing the error in more detail. All of that is true, however, regardless if we used the checked or unchecked variant of exceptions. What we gain by using the checked one is compile-time verification that we did in fact handle all possible domain failures.
+I would say this code looks pretty well - the exceptions forced a nice separation of the different paths the code must take depending on the result of the `becomeFriends` operation. They can also contain data describing the error in more detail. All of that is true, however, regardless if we used the checked or unchecked variant of exceptions. What we gain by using the checked one is compile-time verification that we did in fact handle all possible domain failures.
 
-To better illustrate how this might prove useful, imagine now that the above code was successfully deployed to production, and everything works as expected. After a while, you get a feature request: you need to add the capability to cancel invites after they were sent (apparently a lot of people send out invites by mistake, and then want to retract them). So, you start the implementation at the invite layer. You add another action (cancelling an invite) and another exception to be thrown from methods that search for existing invites (let's say you called it <code>InviteCancelled</code>). Once you do that, you should get a compile-time error in your <code>becomeFriends</code> method saying that you need to deal with that exception. You may simply decide to throw it out of this method as well. After that change, you will get another compile-time error about <code>InviteCancelled</code>, this time from the client of <code>becomeFriends</code> that we saw above. Here, you may want to add another catch clause, displaying a message to the user that the invite was cancelled (maybe cancelling required the user to enter a cause for the cancellation - you might want to show it here also).
+To better illustrate how this might prove useful, imagine now that the above code was successfully deployed to production, and everything works as expected. After a while, you get a feature request: you need to add the capability to cancel invites after they were sent (apparently a lot of people send out invites by mistake, and then want to retract them). So, you start the implementation at the invite layer. You add another action (cancelling an invite) and another exception to be thrown from methods that search for existing invites (let's say you called it `InviteCancelled`). Once you do that, you should get a compile-time error in your `becomeFriends` method saying that you need to deal with that exception. You may simply decide to throw it out of this method as well. After that change, you will get another compile-time error about `InviteCancelled`, this time from the client of `becomeFriends` that we saw above. Here, you may want to add another catch clause, displaying a message to the user that the invite was cancelled (maybe cancelling required the user to enter a cause for the cancellation - you might want to show it here also).
 
 I believe that when checked exceptions are used in a manner like this, they offer a powerful aid in making sure our code is correct. Those of us using statically-typed languages are aware of how much the type system can be of help in eliminating bugs. Checked exceptions are another way we can communicate our intent to it.
 
@@ -106,9 +106,9 @@ void someMethod() throws
 Add to that the fact that the client is sometimes not interested in why something went wrong, but only if it was successful or not, and you might get a lot of duplicated and verbose code in the client. In my experience, there are two ways to solve this:
 
 1. If you're using Java 7 or above, you can use multi-catch.
-2. If not, then you can arrange the exceptions in a hierarchy with a common parent, and then the client can simply catch the parent exception and put all the general error handling code in there. You might say that we lose the benefit of type safety this way, but in practice it's not a problem: the compiler still makes sure everything is caught somewhere, and we can always refine our error handling by adding another <code>catch</code> with a more specific class above the parent <code>catch</code> later.
+2. If not, then you can arrange the exceptions in a hierarchy with a common parent, and then the client can simply catch the parent exception and put all the general error handling code in there. You might say that we lose the benefit of type safety this way, but in practice it's not a problem: the compiler still makes sure everything is caught somewhere, and we can always refine our error handling by adding another `catch` with a more specific class above the parent `catch` later.
 
-As a side note, if the project was using a language other than Java - say, Scala - I would do it in a different way. I would make the method return some sealed abstract class instead of void, and would extend that class - once for success, and once for each of the possible errors (to say it in functional language terminology, I would make the return type an algebraic data type). This way is also type safe and much more concise (you might argue that the client may simply ignore the return value, which he can't do with an exception, but I think that's a minor point, and the exception handler block can always be an auto-generated one line: <code>e.printStackTrace()</code>, which is probably even worse than ignoring the return value). It also leaves exceptions to handle purely application errors, without mixing them with business logic errors, which I think is more elegant than combining these two different use cases. However, emulating something like that in Java would be very verbose, cumbersome for the client to use (because of no pattern matching) and not really type safe anymore, so I would say that using checked exceptions is more idiomatic in case of Java.
+As a side note, if the project was using a language other than Java - say, Scala - I would do it in a different way. I would make the method return some sealed abstract class instead of void, and would extend that class - once for success, and once for each of the possible errors (to say it in functional language terminology, I would make the return type an algebraic data type). This way is also type safe and much more concise (you might argue that the client may simply ignore the return value, which he can't do with an exception, but I think that's a minor point, and the exception handler block can always be an auto-generated one line: `e.printStackTrace()`, which is probably even worse than ignoring the return value). It also leaves exceptions to handle purely application errors, without mixing them with business logic errors, which I think is more elegant than combining these two different use cases. However, emulating something like that in Java would be very verbose, cumbersome for the client to use (because of no pattern matching) and not really type safe anymore, so I would say that using checked exceptions is more idiomatic in case of Java.
 
 ## What Java did wrong
 
@@ -133,7 +133,7 @@ Never use a checked exception in a situation
 where it's possible to statically prove that the code will never throw it.
 ```
 
-Let me show you an example of what I mean by that. Imagine for a second that <code>IndexOutOfBoundsException</code> was checked. That would be a nightmare! You would have to deal with it in code like this:
+Let me show you an example of what I mean by that. Imagine for a second that `IndexOutOfBoundsException` was checked. That would be a nightmare! You would have to deal with it in code like this:
 
 ```
 int[] array = new int[]{1, 2, 3};
@@ -142,7 +142,7 @@ array[0]; // don't forget IndexOutOfBoundsException!
 
 , even though you can practically mathematically prove that that particular snippet cannot result in that exception being thrown.
 
-Seems obvious when you put it that way, right? And yet, if you look in the Java standard library, you will find tons of places where this guideline is broken. <code>CloneNotSupportedException</code> is a prime example. You can be certain that, given this code:
+Seems obvious when you put it that way, right? And yet, if you look in the Java standard library, you will find tons of places where this guideline is broken. `CloneNotSupportedException` is a prime example. You can be certain that, given this code:
 
 ```
 public final class CheckedExceptionsClass implements Cloneable {
@@ -152,7 +152,7 @@ public final class CheckedExceptionsClass implements Cloneable {
 }
 ```
 
-, the <code>copy()</code> method will never actually throw <code>CloneNotSupportedException</code>. And yet either the implementation or all of the clients are forced to write dead code dealing with it.
+, the `copy()` method will never actually throw `CloneNotSupportedException`. And yet either the implementation or all of the clients are forced to write dead code dealing with it.
 
 Another unwanted side-effect of this particular fault is that it conditions inexperienced Java programmers to treat checked exceptions as nuances which have to be dealt with in order to get to the "real" code. I mean, how many times have you seen code like this
 
@@ -167,7 +167,7 @@ scattered all around a project?
 
 I think the combination of the two rules mentioned above gives a nice framework to make a decision which kind of exceptions you may want to throw in your API. If you're doing filesystem I/O, for example - there is no way to guarantee that won't fail, so these errors are good candidates for checked exceptions. On the other hand, if your application absolutely depends on reading some file, which is guaranteed to be present, and cannot function without it (think configuration) - there really is no point in using checked exceptions, and you should catch that I/O error and rethrow it as an unchecked one.
 
-### Wrong exceptions hierarchy</h3>
+### Wrong exceptions hierarchy
 
 I think the exception hierarchy in Java is flawed. As a quick reminder, is looks like this:
 
@@ -192,9 +192,9 @@ Object
 
 would make for a much better solution.
 
-The reason is that, in large part due to what I discussed above, <code>} catch (Exception e) {</code> is a common error-handling method. Well, that code has the unfortunate side effect of also catching all runtime exceptions, which - if you adhere to the previously quoted guideline - you don't want to do, as those constitute programming errors with which you want to fail as fast as possible. Of course, you can write <code>} catch (RuntimeException e) { throw e; }</code> above, but that is three more lines of boilerplate in an already verbose language, and a source of potential errors. FindBugs does has have a rule that makes sure you do this, but you can't depend on a project using static analysis tools (and you can't depend on the warnings being fixed even if it does use them). With this other hierarchy, you would simply write <code>} catch (CheckedException e) {</code>, and everything would work fine (you could potentially even forbid a statement like <code>} catch (Exception e) {</code> on the compiler level if you wanted maximum safety).
+The reason is that, in large part due to what I discussed above, `} catch (Exception e) {` is a common error-handling method. Well, that code has the unfortunate side effect of also catching all runtime exceptions, which - if you adhere to the previously quoted guideline - you don't want to do, as those constitute programming errors with which you want to fail as fast as possible. Of course, you can write `} catch (RuntimeException e) { throw e; }` above, but that is three more lines of boilerplate in an already verbose language, and a source of potential errors. FindBugs does has have a rule that makes sure you do this, but you can't depend on a project using static analysis tools (and you can't depend on the warnings being fixed even if it does use them). With this other hierarchy, you would simply write `} catch (CheckedException e) {`, and everything would work fine (you could potentially even forbid a statement like `} catch (Exception e) {` on the compiler level if you wanted maximum safety).
 
-It is also my personal belief that making classes like <code>Exception</code> concrete is a mistake. I honestly see no gain in it at all, and it encourages bad error handling practices like
+It is also my personal belief that making classes like `Exception` concrete is a mistake. I honestly see no gain in it at all, and it encourages bad error handling practices like
 
 ```
 throw new Exception("Too lazy to figure out a better class for this, yawn")

@@ -14,8 +14,8 @@ Astute readers might notice a glaring omission in that list: Java. And in truth,
 
 Well, the university years flew by, and before I knew it, I had graduated. It was time to start looking for a job. Since I've done my master's thesis project in PHP, I was fed up with dynamically typed languages, and so I decided to see if this whole "Java" thing was popular in the industry. Well, to my delight, it turned out it was, and very much so :).
 
-I don't want to bore you (more than I'm doing now, at least) with all the details of my career history. The most important part of it is that I wound up at <a href="http://pragmatists.pl" target="_blank">Pragmatists</a>, a fantastic company where Agile, Extreme Programming and playing darts are held in the highest esteem (by the way, if this sounds interesting - contact us! We're always looking to hire good people).
+I don't want to bore you (more than I'm doing now, at least) with all the details of my career history. The most important part of it is that I wound up at [Pragmatists](http://pragmatists.pl), a fantastic company where Agile, Extreme Programming and playing darts are held in the highest esteem (by the way, if this sounds interesting - contact us! We're always looking to hire good people).
 
 The rest? That is, as they say..., well, not history actually, but you will have to read the blog to find out :).
 
-**EDIT**: note that this article is fairly old, and my current situation is a little (OK, a lot ;p) different. For an update, click [here](/life-update-job-and-location-change).
+**EDIT:** note that this article is fairly old, and my current situation is a little (OK, a lot ;p) different. For an update, click [here](/life-update-job-and-location-change).

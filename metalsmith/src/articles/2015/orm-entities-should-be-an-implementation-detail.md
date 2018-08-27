@@ -13,7 +13,7 @@ At a [job interview](/life-update-job-and-location-change) lately, I was asked a
 
 My answer will probably disappoint you. I'm definitely not of the (somewhat popular lately) opinion that Hibernate (and all ORMs, in general) are terrible. This won't be an 'ORMs considered harmful' style article (and really, who still uses the old cliché 'considered harmful' title structure? Please, have some class).
 
-My stance on the topic is pretty close to what <a href="http://martinfowler.com/bliki/OrmHate.html" target="_blank">Martin Fowler</a> had to say about the subject. The simple fact is that object-relational impedance mismatch is real, and thus ORMs will always be big and complex - because the problem that they are trying to solve is big and complex. I also think that, when used wisely, they can provide you nice returns for a relatively small effort investment.
+My stance on the topic is pretty close to what [Martin Fowler](http://martinfowler.com/bliki/OrmHate.html) had to say about the subject. The simple fact is that object-relational impedance mismatch is real, and thus ORMs will always be big and complex - because the problem that they are trying to solve is big and complex. I also think that, when used wisely, they can provide you nice returns for a relatively small effort investment.
 
 Having said all that, in the course of my career I have seen many projects where an ORM caused significant damage. When I reflected about what was it that made the usage of ORMs in those projects so harmful, I always came to the conclusion that there was one root cause, always the same, of all those problems - the cardinal sin of ORM usage, if you will. It can be summarized as not adhering to this one simple rule:
 
@@ -27,7 +27,7 @@ In the rest of the article I try to explain exactly what I mean by that.
 
 To prevent the discussion from being too abstract, I'll illustrate my points with concrete examples of common ways that ORMs are used. They'll be using Java and standard JPA ORM techniques. The details aren't that important, and the points I'll make should be pretty general, but I think it'll be easier to illustrate some issues showing a pseudo real-life example than just describing them in broad terms. I'll try to use examples that should be fairly standard modeling issues that you are faced with when working on real-life problems.
 
-Let's say you're writing a system for a discussion board, like a classic Internet forum (or <a href="http://reddit.com" target="_blank">Reddit</a>, if you're too young to know what a forum is ;p). So, you naturally have a `User` class. Users have some data associated with them (username, email, age, yada yada yada), and they can create Posts, and write Comments on Posts. So, you whip out the old IDE, and 3 minutes later you have your model:
+Let's say you're writing a system for a discussion board, like a classic Internet forum (or [Reddit](http://reddit.com), if you're too young to know what a forum is ;p). So, you naturally have a `User` class. Users have some data associated with them (username, email, age, yada yada yada), and they can create Posts, and write Comments on Posts. So, you whip out the old IDE, and 3 minutes later you have your model:
 
 ```
 public class User {
@@ -49,6 +49,7 @@ public class User {
 
 	// getters & setters omitted
 }
+
 ```
 
 I think this should be fairly standard JPA code for this sort of problem.
@@ -65,6 +66,7 @@ public class UserDao {
 		return entityManager.find(User.class, id);
 	}
 }
+
 ```
 
 Then, in the presentation layer, you call the DAO with the parameter read from the URL, and then use the returned entity to fill out the view template.
@@ -77,7 +79,7 @@ Secondly, because our two relationships were defined lazily (which is fine, as w
 
 You may think these issues are relatively minor. "So you have some methods that don't do anything and some that shouldn't be called. Big deal! Just don't call them". But I don't agree. This is a textbook example of incidental complexity. I've shown a deliberately simple and tiny example, but now I want you to imagine a large system, with hundreds of entities, written in such a style. It's pretty much a disaster. A programmer who starts working on such a project feels like he got dropped in the middle of a minefield - any tiny step he makes results in an exception blowing up in his face. I bet a lot of you know exactly what I'm talking about. For those of you lucky souls that don't, I can personally say I had this sort of experience multiple times in my career, and let me tell you - it's not very pleasant.
 
-How can we make this better? Well, the first idea is to always populate all the fields of the `User` class. That seems wasteful, and is basically treating the symptoms instead of the cause. We could use <a href="https://developer.jboss.org/wiki/OpenSessionInView?_sscc=t" target="_blank">Open Session In View</a>, but that usually creates more trouble than it solves, and is today widely regarded as an <a href="http://stackoverflow.com/questions/1103363/why-is-hibernate-open-session-in-view-considered-a-bad-practice" target="_blank">anti-pattern</a>.
+How can we make this better? Well, the first idea is to always populate all the fields of the `User` class. That seems wasteful, and is basically treating the symptoms instead of the cause. We could use [Open Session In View](https://developer.jboss.org/wiki/OpenSessionInView?_sscc=t), but that usually creates more trouble than it solves, and is today widely regarded as an [anti-pattern](http://stackoverflow.com/questions/1103363/why-is-hibernate-open-session-in-view-considered-a-bad-practice).
 
 Here is my proposed solution. Let's create a separate class...
 
@@ -103,9 +105,9 @@ public class UserBaseInfoWithPosts extends UserBaseInfo {
 
 ... and make `UserDao.findWithPosts(long)` return an instance of this class. This way, the type system encodes and enforces how can the various parts of `User` be accessed. The contract between `UserDao` and its clients is also pretty clear: "You can call this first method, which is fast but doesn't have all the data, or this other one, which does have the data but is more expensive".
 
-Notice also that this suddenly frees us from being tied to an ORM at all. If one day you decide you want to get rid of Hibernate and use <a href="http://www.jooq.org/" target="_blank">jOOQ</a> instead, you absolutely can, and the client code doesn't even have to be recompiled. If you wanted to do the same with the previous version, the `User` class would have to be kept, even though it wouldn't serve any purpose in the implementation anymore.
+Notice also that this suddenly frees us from being tied to an ORM at all. If one day you decide you want to get rid of Hibernate and use [jOOQ](http://www.jooq.org/) instead, you absolutely can, and the client code doesn't even have to be recompiled. If you wanted to do the same with the previous version, the `User` class would have to be kept, even though it wouldn't serve any purpose in the implementation anymore.
 
-This idea is nothing revolutionary. You can think of it as <a href="http://martinfowler.com/bliki/CQRS.html" target="_blank">Command-Query Responsibility Segregation</a> on the "micro" scale, where we explicitly use a different class for querying and a different one for commands.
+This idea is nothing revolutionary. You can think of it as [Command-Query Responsibility Segregation](http://martinfowler.com/bliki/CQRS.html) on the "micro" scale, where we explicitly use a different class for querying and a different one for commands.
 
 I guess some of you may frown that I created a separate class, and worry that in a big application, there might be lots of those additional classes, and you might not like the extra work involved in creating them. That is somewhat accurate. Java is particularly bad at this; if you use Scala, for example (or Kotlin), creating a class like that is super lightweight:
 
@@ -113,7 +115,7 @@ I guess some of you may frown that I created a separate class, and worry that in
 case class UserBaseInfo(id: Long, username: String, email: String, age: Int)
 ```
 
-And you get immutability, the constructor, all the getters, `equals` and `hashCode`, for free (plus a bunch of other stuff not available in Java, like pattern matching). Groovy has something similar with the `@Immutable` annotation. In Java, you can use the <a href="https://projectlombok.org" target="_blank">Lombok</a> library to ease the burden. Or, just buckle down and write the damn thing. I promise you the short-term pain of writing some fairly boilerplate code will more than pay for itself in the long-term with how much clearer, more maintainable and easier to on-board the project will be.
+And you get immutability, the constructor, all the getters, `equals` and `hashCode`, for free (plus a bunch of other stuff not available in Java, like pattern matching). Groovy has something similar with the `@Immutable` annotation. In Java, you can use the [Lombok](https://projectlombok.org) library to ease the burden. Or, just buckle down and write the damn thing. I promise you the short-term pain of writing some fairly boilerplate code will more than pay for itself in the long-term with how much clearer, more maintainable and easier to on-board the project will be.
 
 Now, if you are REALLY opposed to the thought of writing those additional classes in Java, I would advise using a small cheat. Basically, you create an interface...
 
@@ -140,7 +142,7 @@ Java programmers like to make fun of PHP, ridiculing the fact that bad PHP progr
 
 You still might not be convinced that any of the problems I've described are actually serious enough to be something to worry about. The thing is, we've only considered reading from the database so far. Let me tell you that the issues you get when you allow your entities to spill all over your application during reading are NOTHING compared to the clusterfuck that ensues when actually writing to the database enters the picture.
 
-Let's continue with our discussion platform example. You now have to implement a pretty basic functionality of the site - allowing a User to publish a Post. Since we're good <a href="http://dddcommunity.org/" target="_blank">Domain-Driven Design</a> practitioners, we have a nice method in the `User` class for that:
+Let's continue with our discussion platform example. You now have to implement a pretty basic functionality of the site - allowing a User to publish a Post. Since we're good [Domain-Driven Design](http://dddcommunity.org/) practitioners, we have a nice method in the `User` class for that:
 
 ```
 public void post(Post newPost) {
