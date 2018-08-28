@@ -33,6 +33,11 @@ function plugin() {
 					}
 
 					if (thisMonth.length > 0) {
+						// sort articles by day, descending
+						thisMonth.sort(function(file1, file2) {
+							return -(file1.created_at.getDate() - file2.created_at.getDate());
+						});
+
 						yearObject.months.push({
 							month: {
 								name: dateFormat(thisMonth[0].created_at, 'UTC:mmmm'),
