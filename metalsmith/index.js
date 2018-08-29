@@ -8,6 +8,8 @@ var paths       = require('metalsmith-paths');
 var elevate     = require('metalsmith-elevate');
 var nested      = require('metalsmith-nested');
 var assets      = require('metalsmith-assets');
+var watch       = require('metalsmith-watch');
+var express     = require('metalsmith-express');
 var dateFormat  = require('dateformat');
 var homePage    = require('./blog-plugins/home-page');
 var archivePage = require('./blog-plugins/archive-page');
@@ -87,6 +89,15 @@ Metalsmith(__dirname)
   .use(assets({
     source: "./public/img",
     destination: "./img",
+  }))
+  .use(express({
+    port: 8080,
+  }))
+  .use(watch({
+    paths: {
+      "${source}/**/*.md": true,
+    },
+    livereload: true,
   }))
   .build(function(err, files) {
     if (err) { throw err; }

@@ -4,6 +4,9 @@ function plugin() {
 	return function(files, metalsmith, done) {
 		setImmediate(done);
 
+		if (!files['archive.html'])
+			return;
+
 		var startingYear = 2014;
 		var lastYear = new Date().getFullYear();
 
