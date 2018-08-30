@@ -6,9 +6,11 @@
 		<link href="/assets/application.css" media="all" rel="stylesheet">
 		<link href="/assets/prism.css" media="all" rel="stylesheet">
 		<script src="/assets/prism.js"></script>
+		{{#if lightbox}}
 		<script src="/assets/jquery.js"></script>
 		<link href="/assets/lightbox.css" media="all" rel="stylesheet">
 		<script src="/assets/lightbox.js"></script>
+		{{/if}}
 
 		{{#unless production}}
 		<script src="http://localhost:35729/livereload.js"></script>

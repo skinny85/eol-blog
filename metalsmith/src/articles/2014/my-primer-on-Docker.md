@@ -7,6 +7,7 @@ summary: "Docker is a very popular topic nowadays. However, there doesn't seem t
 	readers completely unfamiliar with the subject. This article is an attempt to breach
 	that gap."
 created_at: 2014-12-13
+lightbox: true
 ---
 
 [Docker](http://www.docker.com) seems to be the cool new thing right now. It feels like you can't visit [HackerNews](https://news.ycombinator.com/) or [/r/Programming](http://www.reddit.com/r/programming/) without stumbling upon some news item or blog post about it. The one thing that I haven't seen, however, is a good introduction to the topic for people completely new to the subject. It seems like most introductory articles focus almost exclusively on the 'how' - that is, Linux containers - forgetting the more important questions for beginners: the 'what' and the 'why'.

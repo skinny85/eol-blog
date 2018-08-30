@@ -16,6 +16,7 @@ eolMetalsmith()
 	.use(watch({
 		paths: {
 			"${source}/**/*.md": true,
+			"layouts/*": "**/*.md",
 		},
 		livereload: true,
 	}))
