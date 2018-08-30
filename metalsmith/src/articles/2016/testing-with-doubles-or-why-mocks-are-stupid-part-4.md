@@ -22,9 +22,9 @@ Throughout this article series, I've touched upon various problems that Test Dou
 
 In my view, Test Doubles have three big flaws:
 
-1.  They lower the fidelity of your tests by changing objects between test and production environments.
-2.  They don't respect invariants of the classes that they are substituting, resulting in fragile, encapsulation-breaking tests.
-3.  They violate the [DRY](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself) principle and don't account for changes in your dependencies.
+1. They lower the fidelity of your tests by changing objects between test and production environments.
+2. They don't respect invariants of the classes that they are substituting, resulting in fragile, encapsulation-breaking tests.
+3. They violate the [DRY](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself) principle and don't account for changes in your dependencies.
 
 ### 1. Doubles are liars
 

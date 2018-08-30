@@ -3,13 +3,10 @@ var Handlebars  = require('handlebars');
 var Marked      = require('marked');
 var markdown    = require('metalsmith-markdown');
 var layouts     = require('metalsmith-layouts');
-// var permalinks  = require('metalsmith-permalinks');
 var paths       = require('metalsmith-paths');
 var elevate     = require('metalsmith-elevate');
 var nested      = require('metalsmith-nested');
 var assets      = require('metalsmith-assets');
-var watch       = require('metalsmith-watch');
-var express     = require('metalsmith-express');
 var dateFormat  = require('dateformat');
 var homePage    = require('./blog-plugins/home-page');
 var archivePage = require('./blog-plugins/archive-page');
@@ -46,59 +43,56 @@ markedRenderer.link = function(href, title, text) {
   '</a>';
 };
 
-Metalsmith(__dirname)
-  .source('./src')
-  .destination('./build')
-  .clean(true)
-  .use(markdown({
-    renderer: markedRenderer,
-  }))
-  // .use(permalinks())
-  .use(elevate({
-    pattern: 'articles/*/*.html',
-    depth: -2,
-  }))
-  .use(paths())
-  .use(homePage())
-  .use(archivePage())
-  .use(rssFeed())
-  .use(nested({
-    directory: 'layouts',
-    generated: 'generated-layouts',
-  }))
-  .use(layouts({
-    engine: 'handlebars',
-    directory: 'generated-layouts',
-  }))
-  .use(assets({
-    source: "./public/images",
-    destination: "./assets",
-  }))
-  .use(assets({
-    source: "./public/css",
-    destination: "./assets",
-  }))
-  .use(assets({
-    source: "./public/fonts",
-    destination: "./assets",
-  }))
-  .use(assets({
-    source: "./public/js",
-    destination: "./assets",
-  }))
-  .use(assets({
-    source: "./public/img",
-    destination: "./img",
-  }))
-  .use(express({
-    port: 8080,
-  }))
-  .use(watch({
-    paths: {
-      "${source}/**/*.md": true,
-    },
-    livereload: true,
-  }))
-  .build(function(err, files) {
-    if (err) { throw err; }
-  });
+var production = process.env.NODE_ENV === 'production';
+
+function eolMetalsmith() {
+  return Metalsmith(__dirname)
+    .metadata({
+      production: production,
+    })
+    .source('./src')
+    .destination('./build')
+    .clean(true)
+    .use(markdown({
+      renderer: markedRenderer,
+    }))
+    // .use(permalinks())
+    .use(elevate({
+      pattern: 'articles/*/*.html',
+      depth: -2,
+    }))
+    .use(paths())
+    .use(homePage())
+    .use(archivePage())
+    .use(rssFeed())
+    .use(nested({
+      directory: 'layouts',
+      generated: 'generated-layouts',
+    }))
+    .use(layouts({
+      engine: 'handlebars',
+      directory: 'generated-layouts',
+    }))
+    .use(assets({
+      source: "./public/images",
+      destination: "./assets",
+    }))
+    .use(assets({
+      source: "./public/css",
+      destination: "./assets",
+    }))
+    .use(assets({
+      source: "./public/fonts",
+      destination: "./assets",
+    }))
+    .use(assets({
+      source: "./public/js",
+      destination: "./assets",
+    }))
+    .use(assets({
+      source: "./public/img",
+      destination: "./img",
+    }));
+}
+
+module.exports = eolMetalsmith;
