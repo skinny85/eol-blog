@@ -5,7 +5,7 @@ while in the root directory of the project,
 execute in a terminal (after `npm install`, of course):
 
 ```bash
-$ node serve
+$ npm run serve
 ```
 
-The site will be available at localhost:8080.
+The site will be available at `localhost:8080`.
