@@ -11,6 +11,10 @@ eolMetalsmith()
 			serveStatic(path.join(__dirname, 'build'), {
 				extensions: ['html'],
 			}),
+			// 404 catch-all handler
+			function(req, res) {
+				res.status(404).sendFile(path.join(__dirname, 'build', '404.html'));
+			},
 		],
 	}))
 	.use(watch({
