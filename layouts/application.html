@@ -2,7 +2,7 @@
 <html>
 	<head>
 		<title>{{#if title}}{{ title }} | End of Line Blog{{else}}End of Line Blog{{/if}}</title>
-		<meta name="description" content="{{ summary }}">
+		{{#if summary}}<meta name="description" content="{{ summary }}">{{/if}}
 		<link href="/assets/application.css" media="all" rel="stylesheet">
 		<link href="/assets/favicon.ico" rel="shortcut icon" type="image/vnd.microsoft.icon">
 
