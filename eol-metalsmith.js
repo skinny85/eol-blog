@@ -56,7 +56,6 @@ function eolMetalsmith() {
     .use(markdown({
       renderer: markedRenderer,
     }))
-    // .use(permalinks())
     .use(elevate({
       pattern: 'articles/*/*.html',
       depth: -2,
