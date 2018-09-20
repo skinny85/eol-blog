@@ -88,7 +88,7 @@ Feature branches (also sometimes called topic branches) are where the day-to-day
 
 Feature branches often exist only in the developer's repository, and are never pushed - however, if there are multiple people working on one feature, or if the feature will take a long time to develop, it's typical to push them to the central repository (if only to make sure the code isn't lost with a single disk failure).
 
-#### Creating a feature branch
+#### Starting a feature branch
 
 To start a feature branch, simply create a new branch from `master`:
 
