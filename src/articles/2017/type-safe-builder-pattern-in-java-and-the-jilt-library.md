@@ -5,7 +5,7 @@ title: The Type-Safe Builder pattern in Java, and the Jilt library
 summary: "The Builder pattern is one of the most commonly
 	used design patterns when programming in Java. In this article,
 	I want to talk about a variation of that pattern called the
-	Type-Safe (also known as Staged, or Telescopic) Builder, and
+	Type-Safe (also known as Staged, or Telescopic, or Step) Builder, and
 	present an annotation processing library I created that aids
 	with implementing it, called Jilt."
 created_at: 2017-06-30
