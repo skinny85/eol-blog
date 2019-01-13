@@ -34,7 +34,8 @@ I had a few requirements:
 
 1. I wanted to write the articles in [Markdown](https://daringfireball.net/projects/markdown/syntax).
   While there are other text formats that make sense for a blog
-  (like [reStructuredText](http://docutils.sourceforge.net/rst.html)),
+  (like [reStructuredText](http://docutils.sourceforge.net/rst.html),
+  or [AsciiDoc](http://asciidoc.org/)),
   the tie-breaker for me was Markdown's ability to embed inline HTML.
   That meant I was certain I wouldn't be limited with representing any non-standard constructs that I had in my articles,
   or would want to have in the future
