@@ -143,7 +143,7 @@ body {
     color: #494e52;
     margin: 0;
 
-    font-size: 22px;
+    font-size: 20px;
     line-height: 1.5;
 }
 
@@ -186,7 +186,6 @@ h6 {
 
 main article {
     margin: 0 0.5em 0 0.5em;
-    font-size: 0.9em;
 }
 
 main article time {
@@ -203,6 +202,14 @@ main article code[class*="language-"] {
     border-radius: 0;
 }
 
+main article pre[class*="language-"] {
+    padding: 0.5em;
+}
+
+main article pre[class*="language-"] code[class*="language-"] {
+    font-size: 0.75em;
+}
+
 main a {
     color: #52adc8;
     text-decoration: none;
@@ -216,14 +223,12 @@ main a:hover {
 blockquote {
     border-left: 0.25em solid #7a8288;
     font-style: italic;
-    /*margin: 2em 1em 2em 0;*/
-    padding-left: 1em;
-    padding-right: 1em;
+    padding: 0.05em 1em;
     background-color: #f5f2f0;
 }
 
 @media(max-width: 64em) {
     body {
-        font-size: 18px;
+        font-size: 16px;
     }
 }
