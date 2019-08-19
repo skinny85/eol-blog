@@ -101,7 +101,7 @@ An often tricky part of working with some frameworks and libraries is that a lot
 
 Finally, I want to show how does the approach vary between unit and integration tests on a concrete example. We will be using the following Spring controller:
 
-```
+```java
 @RestController
 @RequestMapping("/api/")
 public class UserController {
@@ -121,7 +121,7 @@ public class UserController {
 
 `User` is a simple value class with email and age fields:
 
-```
+```java
 public final class User {
     private final String email;
     private final int age;
@@ -143,7 +143,7 @@ public final class User {
 
 Now, we could write a simple unit test for this Controller - like this:
 
-```
+```java
 public class UserControllerUnitTest {
     private UserRepository userRepository;
     private UserController userController;
@@ -178,9 +178,9 @@ And while this test is fine, I don't think it adds too much value.
 * The paths for the endpoint are untested. For example, we used `/api/` on the class, and `/users` on the method - will Spring handle it correctly, and it will be available at `/api/users`? (spoiler alert - yes, it works like that)
 * Our Controller is supposed to return JSON data, however that aspect of the code is completely unverified.
 
-Fortunately, Spring is a technology that has always put testability as one of it's primary goals. Because of that, it's fairly easy to write an integration test verifying all of those things that the unit test was unable to check:
+Fortunately, Spring is a technology that has always put testability as one of its primary goals. Because of that, it's fairly easy to write an integration test verifying all of those things that the unit test was unable to check:
 
-```
+```java
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = TestSpringConfiguration.class)
 @WebAppConfiguration
@@ -224,7 +224,7 @@ public class UserControllerIntegrationTest {
 
 Here is the `TestSpringConfiguration` class (the `Application` is the production configuration):
 
-```
+```java
 @Configuration
 @Import(Application.class)
 public class TestSpringConfiguration {

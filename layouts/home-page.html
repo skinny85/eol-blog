@@ -2,33 +2,21 @@
 layout: application.html
 ---
 
-<section class="entry-summaries">
-	<header>
-		<h1>
-			Recent blog entries
-		</h1>
-	</header>
+<section id="homepage">
+	<h1 id="homepage-heading">Latest articles</h1>
 
 	{{#each homePagePosts}}
-		<article class="entry-summary">
-			<header>
-				<h1><a href="/{{ this.path.name }}">{{ this.title }}</a></h1>
-				{{{ articleDateElement this.created_at }}}
-			</header>
+	<div class="entry-summary">
+		<h2><a href="/{{ this.path.name }}">{{ this.title }}</a></h2>
+		<time>Posted on {{ articleDate this.created_at }}</time>
 
-			<p>
-				{{ this.summary }}
-			</p>
-
-			<footer>
-				<a href="/{{ this.path.name }}">Read article</a>
-			</footer>
-		</article>
+		<p>
+            {{ this.summary }}
+		</p>
+	</div>
 	{{/each}}
 
-	<footer>
-		<div class="entry-summary-all-link">
-			<a href="/archive">All articles >></a>
-		</div>
-	</footer>
+    <p>
+        <a href="/archive">All articles »</a>
+    </p>
 </section>

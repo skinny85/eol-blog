@@ -106,7 +106,7 @@ Very often, the best way to achieve that is using the same business logic module
 
 As an example, here's a test from a [workshop I gave about Geb](/lessons-from-leading-a-conference-workshop-warsjawa-2014):
 
-```
+```groovy
 @ContextConfiguration(locations = ["classpath:spring/business-config.xml"])
 @RunWith(SpringJUnit4ClassRunner.class)
 @ActiveProfiles("jdbc")

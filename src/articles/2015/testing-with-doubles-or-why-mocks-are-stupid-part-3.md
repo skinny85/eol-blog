@@ -17,7 +17,7 @@ If the Command has an outgoing Query dependency, then we can use the same techni
 
 To illustrate the problem, we'll use another example. Let's say you're developing an online blind auctioning system. Users place their bids, and the highest one wins. We have the following external service API for placing an order for the winning bid:
 
-```
+```java
 public interface OrderService {
 	BigDecimal WATCH_THRESHOLD = ... // some constant
 
@@ -41,7 +41,7 @@ The logic of this API is very simple: the Order returned has some price, which m
 
 Our task is to implement an `Auction` class, which has two methods: `bid(String userId, BigDecimal amount)` which registers a bid with the given amount with the given user, and `close()`, which closes the auction, determines the winner, and does the appropriate `OrderService` calls. Once an auction is closed, calling `close()` again should have no effect. A possible implementation:
 
-```
+```java
 public class Auction {
 	private final long itemId;
 	private final OrderService orderService;
@@ -87,7 +87,7 @@ We now want to unit test this piece of code. A Stub worked best the last time, w
 
 ##### Attempt #1 - Stub
 
-```
+```java
 @Test
 public void test_with_stub() throws Exception {
 	BigDecimal bigPrice = WATCH_THRESHOLD.add(BigDecimal.ONE);
@@ -122,7 +122,7 @@ All of this leads us to an important lesson: Stubs are not a good fit when testi
 
 The problem with the previous test is obvious - we wanted to verify what calls were being made, and we tried simulating doing that with Stubs. But there is actually a Test Double specifically for that purpose - Mocks!
 
-```
+```java
 @Test
 public void test_with_mock() throws Exception {
 	BigDecimal bigPrice = WATCH_THRESHOLD.add(BigDecimal.ONE);
@@ -152,7 +152,7 @@ So, how would I correct these faults?
 
 ##### Attempt #3 - Fake
 
-```
+```java
 @Test
 public void test_with_fake() throws Exception {
     BigDecimal bigPrice = WATCH_THRESHOLD.add(BigDecimal.ONE);
@@ -171,7 +171,7 @@ public void test_with_fake() throws Exception {
 
 This test is short, sweet and obviously cheating. Let me show you the Fake:
 
-```
+```java
 public class FakeOrderService implements OrderService {
     private final long orderId;
     private final BigDecimal finalPrice;
@@ -222,7 +222,7 @@ The downside of this approach is obvious: this Fake is quite a lot of code. Is i
 
 Having a class instead of a dumb Mock can also make the tests easier to adapt to future changes. To illustrate what I mean by that, let me propose the following thought experiment. Let's say `OrderService` changes slightly, and it now looks like this:
 
-```
+```java
 public interface OrderService {
 	BigDecimal WATCH_THRESHOLD = ... // same constant as before
 	BigDecimal VIP_THRESHOLD = ... // new constant, bigger than the previous one
@@ -241,7 +241,7 @@ The idea is simple: we have two watch lists now, a normal one and a VIP one. If 
 
 Now, if our new code in `Auction` looks like this:
 
-```
+```java
 if (VIP_THRESHOLD.compareTo(order.finalPrice) < 0)
 	orderService.addToWatchList(order.orderId, VIP);
 else if (WATCH_THRESHOLD.compareTo(order.finalPrice) < 0)
@@ -250,7 +250,7 @@ else if (WATCH_THRESHOLD.compareTo(order.finalPrice) < 0)
 
 then we're golden - all of the old tests still pass. But what if somebody decides to do the following refactoring:
 
-```
+```java
 if (WATCH_THRESHOLD.compareTo(order.finalPrice) < 0)
 	orderService.addToWatchList(order.orderId,
 		VIP_THRESHOLD.compareTo(order.finalPrice) < 0 ? VIP : NORMAL);
@@ -262,7 +262,7 @@ One of the biggest advantages of writing tests is the ability to refactor and im
 
 Just for comparison, how would our Fake handle this situation?
 
-```
+```java
 @Override
 public void addToWatchList(long orderId) {
 	addToWatchList(orderId, Status.NORMAL);
@@ -292,7 +292,7 @@ There's also one more thing I wanted to mention here. Notice that in the tests, 
 
 What might seem a good idea is doing a similar assertion on the changed state of your outgoing Command dependency. For example, imagine that `OrderService` had a method for querying the watch lists - something like:
 
-```
+```java
 public interface OrderService {
 	// ...
 
@@ -308,14 +308,12 @@ In general, this is a bad idea. Firstly, it complicates your Test Doubles consid
 
 And so, to sum up my recommendation:
 
-```
-For testing incoming Command methods,
-assert on the changed state of the
-class under test, if possible; do NOT
-assert on the state of dependencies,
-instead preferring behavior verification
-with Mocks (or Fakes) instead.
-```
+> For testing incoming Command methods,
+> assert on the changed state of the
+> class under test, if possible; do NOT
+> assert on the state of dependencies,
+> instead preferring behavior verification
+> with Mocks (or Fakes) instead.
 
 In the [last, fourth, part](/testing-with-doubles-or-why-mocks-are-stupid-part-4) of the series, I will talk a little bit about the downsides of Test Doubles and the risks associated with over-mocking your tests.
 

@@ -17,7 +17,7 @@ This release contains one new feature: the `shouldThrow` test method. It's simil
 
 Simple example:
 
-```
+```java
 public class StackSpec extends SpecnazJUnit {{
     describes("A Stack", it -> {
         Stack<Integer> stack = new Stack<>();
@@ -29,11 +29,11 @@ public class StackSpec extends SpecnazJUnit {{
 }}
 ```
 
-The description of the test will be prefixed with "should throw &lt;ExpectedExceptionClass&gt;", so take that into account when writing the test - for instance, the above example will have the description: "should throw EmptyStackException when popping an empty Stack".
+The description of the test will be prefixed with `should throw <ExpectedExceptionClass>`, so take that into account when writing the test - for instance, the above example will have the description: `should throw EmptyStackException when popping an empty Stack`.
 
 Another thing is that, just like with JUnit's <code>@Test.expected</code>, the actual Exception can be of the class of the expected Exception, or it can be a subclass of it; so, the above example could have been also written as:
 
-```
+```java
 it.shouldThrow(RuntimeException.class, "when popping an empty Stack", () -> {
     stack.pop();
 });
@@ -43,7 +43,7 @@ it.shouldThrow(RuntimeException.class, "when popping an empty Stack", () -> {
 
 This feature is also available from Kotlin, but works a tiny bit differently in that language. Because Kotlin has reified generics, we can pass the expected Exception class as a type parameter instead of a `Class` instance, which makes it a little more concise:
 
-```
+```kotlin
 class StackSpec : SpecnazKotlinJUnit("A Stack", {
     var stack = Stack<Int>()
 
@@ -53,4 +53,4 @@ class StackSpec : SpecnazKotlinJUnit("A Stack", {
 })
 ```
 
-So, enjoy throwing Exceptions in tests! Let me know what you think of this new feature (and Specnaz in general) in the comments.
+So, enjoy throwing Exceptions in tests! Let me know what you think of this new feature (and [Specnaz](https://github.com/skinny85/specnaz) in general) in the comments.

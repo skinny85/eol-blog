@@ -6,7 +6,7 @@ summary: Version 1.4 brings with it support for TestNG as the execution engine.
 created_at: 2018-07-30
 ---
 
-1.4 is the newest release of [Specnaz](https://github.com/skinny85/specnaz), my testing library for Java, Kotlin and Groovy. This version ships with the number one requested feature for Specnaz - supporting [TestNG](https://testng.org/) in addition to JUnit as the test execution and reporting engine.
+`1.4` is the newest release of [Specnaz](https://github.com/skinny85/specnaz), my testing library for Java, Kotlin and Groovy. This version ships with the number one requested feature for Specnaz - supporting [TestNG](https://testng.org/) in addition to JUnit as the test execution and reporting engine.
 
 ## TestNG in Java
 
@@ -14,7 +14,7 @@ To use the TestNG support, you need to, first of all, depend on the new `specnaz
 
 Other than that, TestNG specs look exactly like other Specnaz tests: you call the `describes` method in your class's public, no-argument constructor, passing your specification in the form of a lambda expression as the second parameter to `describes`. Example:
 
-```
+```java
 import org.specnaz.testng.SpecnazFactoryTestNG;
 import org.testng.Assert;
 import org.testng.annotations.Test;
@@ -59,7 +59,7 @@ Kotlin support for TestNG is very similar. There's an equivalent of the `Specnaz
 
 There's also an abstract class that's equivalent to `SpecnazKotlinJUnit`: `org.specnaz.kotlin.testng.SpecnazKotlinTestNG`, which implements `SpecnazKotlinFactoryTestNG`, and calls the `describes` method in its primary constructor. Which means you can save some boilerplate, and one level of indentation, if your test class doesn't need to extend a particular class (note that you still need to annotate your spec class with TestNG's `@Test` annotation):
 
-```
+```kotlin
 import org.specnaz.kotlin.testng.SpecnazKotlinTestNG
 import org.testng.Assert
 import org.testng.annotations.Test
@@ -105,7 +105,7 @@ Sadly, TestNG is not as flexible as JUnit, and has some inherent limitations whe
 
 So, let's say you have the following test suite, consisting of 2 classes:
 
-```
+```java
 @Test
 public class FirstSpec implements SpecnazFactoryTestNG {{
     describes("First TestNG spec", it -> {
@@ -122,7 +122,7 @@ public class FirstSpec implements SpecnazFactoryTestNG {{
 }}
 ```
 
-```
+```java
 @Test
 public class SecondSpec implements SpecnazFactoryTestNG {{
     describes("Second TestNG spec", it -> {

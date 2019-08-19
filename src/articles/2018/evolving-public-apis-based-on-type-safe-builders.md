@@ -50,7 +50,7 @@ there are 2 categories of these backwards-compatible changes we commonly encount
 1. Adding a new, optional, property to a class.
 2. Changing a required property of a class to an optional one.
 
-(*Note*: we don't concern ourselves with adding a new required property,
+(**Note**: we don't concern ourselves with adding a new required property,
 or changing an optional property to required,
 or removing a property (optional or required) here -
 all of these are examples of non-backwards compatible changes,
@@ -67,7 +67,7 @@ as that would make all of the existing code setting it earlier not compile anymo
 For example, if we look at how is the Type-Safe Builder for the `User` class from the
 [previous article](/type-safe-builder-pattern-in-java-and-the-jilt-library#optional-properties) used:
 
-```
+```java
 User user = UserBuilder.user()
     .email("joey@example.com")  // required
     .firstName("John") // required
@@ -206,7 +206,7 @@ To recap, it has 5 properties, all Strings;
 3 of them - `email`, `firstName` and `lastName` - are required,
 while 2 - `username` and `displayName` - are optional.
 
-```
+```java
 interface StarterBuilderInterf {
     B_1_Interf email(String email);
     B_2_Interf firstName(String firstName);
@@ -290,7 +290,7 @@ this change cannot break existing code.
 Now, there is an interesting problem that comes up when you actually try to implement these interfaces in your Builder class.
 If you just try to go:
 
-```
+```java
 public class UserBuilder implements
 		StarterBuilderInterf,
 		B_1_Interf,
@@ -323,7 +323,7 @@ method overrides [are covariant in their return types](https://www.geeksforgeeks
 Now, if we make the last interface, `FinalBuilderInterf`,
 extend all of the remaining interfaces:
 
-```
+```java
 interface FinalBuilderInterf extends
 		StarterBuilderInterf,
 		B_1_Interf,
@@ -338,7 +338,7 @@ interface FinalBuilderInterf extends
 
 we can simply make `UserBuilder` implement only `FinalBuilderInterf`:
 
-```
+```java
 public class UserBuilder implements FinalBuilderInterf {
 	// ...
 
@@ -357,7 +357,7 @@ Of course, we use the same tricks to force our customers to go through the inter
 we make the Builder constructor private,
 and introduce a static factory method that returns `StarterBuilderInterf`:
 
-```
+```java
 public class UserBuilder implements FinalBuilderInterf {
 	public static StarterBuilderInterf user() {
 		return new UserBuilder();
@@ -388,13 +388,13 @@ If we look at the diagram of the state machine for 3 required properties again:
 <img src="/assets/builders-state-machine.jpg" style="width: 50%">
 
 We can deduce it.
-Let's say the target class has *n* required properties.
-On each level, we need to maintain state that *k* required properties have been provided so far.
+Let's say the target class has `n` required properties.
+On each level, we need to maintain state that `k` required properties have been provided so far.
 How many interfaces do we need for that?
-I hope it's clear that the answer is [*n* choose *k*](https://en.wikipedia.org/wiki/Binomial_coefficient).
+I hope it's clear that the answer is [`n` choose `k`](https://en.wikipedia.org/wiki/Binomial_coefficient).
 That's for a single level.
-In total, we need a sum from *k*=0 to *k*=n of *n* choose *k*.
-The result of that sum is [2 to the power of *n*](https://en.wikipedia.org/wiki/Binomial_coefficient#Sums_of_the_binomial_coefficients).
+In total, we need a sum from `k=0` to `k=n` of `n choose k`.
+The result of that sum is [2 to the power of `n`](https://en.wikipedia.org/wiki/Binomial_coefficient#Sums_of_the_binomial_coefficients).
 
 That's not good news.
 That means that using this method for a class with 6 required properties would require us to generate 64 interfaces!
@@ -404,7 +404,7 @@ Perhaps that's fine for your use case -
 maybe your classes have very few required properties,
 or the extra interfaces overhead doesn't seem like a problem.
 If this sounds like a dealbreaker, however, don't worry -
-there is a way to reduce this 2 to the power of *n* number to... simply 2.
+there is a way to reduce this 2 to the power of `n` number to... simply 2.
 That's right, regardless of how many required properties your target class has,
 there is a way to ensure type-safety with just 2 extra interfaces.
 
@@ -420,7 +420,7 @@ They return a specific type for each of the required property setters,
 and always return the interface itself for each of the optional properties.
 Example from above:
 
-```
+```java
 interface B_1_Interf {
     B_1_Interf email(String email);
     B_1_2_Interf firstName(String firstName);
@@ -446,7 +446,7 @@ It will indicate what type the given intermediate interface returns for that pro
 Continuing the example of the `User` Builder,
 it looks like this:
 
-```
+```java
 interface BuilderInterf<R1, R2, R3> {
     R1 email(String email);
     R2 firstName(String firstName);
@@ -459,7 +459,7 @@ interface BuilderInterf<R1, R2, R3> {
 Now, all of the intermediate interfaces can be expressed using this one interface,
 like so:
 
-```
+```java
 interface B_1_Interf extends BuilderInterf<
 	B_1_Interf, B_1_2_Interf, B_1_3_Interf> {
 }
@@ -489,7 +489,7 @@ Of course, we keep `FinalBuilderInterf` as an interface
 (we need to put the `build` method somewhere!).
 So, we'll have:
 
-```
+```java
 T extends BuilderInterf<T_1, T_2, T_3>
 T_1 extends BuilderInterf<T_1, T_1_2, T_1_3>
 T_2 extends BuilderInterf<T_1_2, T_2, T_2_3>
@@ -501,7 +501,7 @@ T_2_3 extends BuilderInterf<FinalBuilderInterf, T_2_3, T_2_3>
 
 So, the entire static factory method looks like the following:
 
-```
+```java
 public class UserBuilder implements FinalBuilderInterf {
 	@SuppressWarnings("unchecked")
 	public static <
@@ -531,7 +531,7 @@ so we can safely suppress the warning.
 Also, to make it typecheck,
 we need to make `FinalBuilderInterf` extend `BuilderInterf`:
 
-```
+```java
 interface FinalBuilderInterf extends BuilderInterf<
         FinalBuilderInterf, FinalBuilderInterf, FinalBuilderInterf> {
     FinalBuilderInterf username(String username);
@@ -558,7 +558,7 @@ if you want to play with the resulting Builder yourself.
 So, did we solve it?
 We have a way to represent a Type-Safe Builder that allows for backwards-compatible evolution of the built class' API,
 and we only need 2 additional interfaces to enforce that type-safety.
-Nothing left to do but pop the champaign,
+Nothing left to do but pop the champagne,
 and implement this new Builder style in the [Jilt library](https://github.com/skinny85/jilt), right?
 
 Not so fast.
@@ -590,7 +590,7 @@ And the reason is that I have 2 issues with these Builders.
     not for the intermediate expressions that are part of constructing that instance.
     For example, take this expression from the `UserBuilder`:
 
-    ```
+    ```java
     B_1_Interf b = UserBuilder().user().email("email@example.com");
     ```
 

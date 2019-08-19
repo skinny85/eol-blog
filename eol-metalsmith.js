@@ -2,6 +2,7 @@ var Metalsmith  = require('metalsmith');
 var Handlebars  = require('handlebars');
 var Marked      = require('marked');
 var markdown    = require('metalsmith-markdown');
+var prism       = require('metalsmith-prism');
 var layouts     = require('metalsmith-layouts');
 var paths       = require('metalsmith-paths');
 var elevate     = require('metalsmith-elevate');
@@ -42,6 +43,12 @@ markedRenderer.link = function(href, title, text) {
     text +
   '</a>';
 };
+// add the language- class to every inline code span,
+// so that Prism's CSS can highlight it
+markedRenderer.codespan = function (contents) {
+  // shell-session seems like the most neutral default
+  return '<code class="language-shell-session">' + contents + '</code>';
+};
 
 var production = process.env.NODE_ENV === 'production';
 
@@ -55,6 +62,11 @@ function eolMetalsmith() {
     .clean(true)
     .use(markdown({
       renderer: markedRenderer,
+      langPrefix: 'language-',
+    }))
+    .use(prism({
+        decode: true,
+        preLoad: ['java', 'scala', 'kotlin', 'docker'],
     }))
     .use(elevate({
       pattern: 'articles/*/*.html',
@@ -78,10 +90,6 @@ function eolMetalsmith() {
     }))
     .use(assets({
       source: "./public/css",
-      destination: "./assets",
-    }))
-    .use(assets({
-      source: "./public/fonts",
       destination: "./assets",
     }))
     .use(assets({

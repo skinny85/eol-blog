@@ -44,14 +44,14 @@ We saw this flaw manifesting itself multiple times already. For example, in [Par
 
 Stubs are no better. For example, let's see the example `HttpServletRequest` Stub from [Part 1](/testing-with-doubles-or-why-mocks-are-stupid-part-1#stub) again:
 
-```
+```java
 HttpServletRequest reqStub = mock(HttpServletRequest.class);
 when(reqStub.getParameterMap()).thenReturn(ImmutableMap.of(key, new String[]{val}));
 ```
 
 Can you spot was is wrong with this class? The `HttpServletRequest` has a whole bunch of methods dealing with parameters. One of them is `getParameterMap()`, seen above; another is `getParameterValues(String)`, which returns all of the values for a particular parameter. Now, there's a pretty obvious invariant between `getParameterMap` and `getParameterValues`:
 
-```
+```java
 // for every HttpServletRequest 'request' and String 'x':
 request.getParameterMap().get(x)
 // returns an array with the same contents as
@@ -90,7 +90,7 @@ Naturally, all of these downsides of Test Doubles are magnified as their numbers
 
 There is one particular case of over-mocking that I think is especially dangerous, and that is when you need to return a mocked object from another mocked object. I'm talking about code like this:
 
-```
+```java
 SomeClass firstMock = mock(SomeClass.class);
 OtherClass secondMock = mock(OtherClass.class);
 when(secondMock.someMethod()).thenReturn(firstMock);

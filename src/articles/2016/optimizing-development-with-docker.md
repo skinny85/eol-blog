@@ -40,7 +40,7 @@ So, my first tip is: be aware of what base images you are using. Sometimes, the 
 
 Dockerizing your Java application is not that difficult (especially if it's a Spring Boot app). There are a lot of guides and tutorials on the web explaining how to do that. Many build tools have plugins that make that task fairly easy. They all function in pretty much the same way: you invoke a special target (just as an example, if you're using Gradle, it would be something like `gradle distDocker`), and your code is compiled, packaged, and a Docker image is created from it. The `Dockerfile` used to build the image, in case of a Java Spring Boot app, looks something like this:
 
-```
+```docker
 FROM anapsix/alpine-java
 
 ADD dtw-web.jar app.jar
@@ -52,7 +52,7 @@ Pretty elementary - we add the JAR that is the result of packaging our project t
 
 Now, if you want to run your application locally, you would issue a command similar to the following:
 
-```
+```bash
 docker run -i -t --name=container-name -p 8080:8080 your-image-name:tag
 ```
 
@@ -69,7 +69,7 @@ How can we improve the situation? The solution seems obvious - we need to move o
 
 After some tinkering, my first attempt looked like this:
 
-```
+```docker
 FROM anapsix/alpine-java
 
 RUN mkdir /app
@@ -91,7 +91,7 @@ This works - if you mount the project directory in the `/app` volume of the cont
 
 You can use a trick for avoiding this download when running locally. You have to share your host's dependency resolution cache with the container. In the case of Gradle, it looks something like this:
 
-```
+```docker
 RUN mkdir -p /root/.gradle
 ENV HOME /root
 VOLUME /root/.gradle
@@ -99,7 +99,7 @@ VOLUME /root/.gradle
 
 Now, if you invoke the image built from the `Dockerfile` with the above 3 lines added in this way:
 
-```
+```bash
 docker run -it -p 8080:8080 -v .:/app -v ~/.gradle:/root/.gradle image-name:tag
 ```
 
@@ -137,7 +137,7 @@ This is an irritating, manual process that involves a lot of "I changed this, le
 
 Fortunately, Docker is well suited to solving this particular problem. You just need to run a container with MySQL!
 
-```
+```bash
 docker run -it --name=db \
 	 -e MYSQL_ROOT_PASSWORD=pw -e MYSQL_DATABASE=my_schema \
 	 mysql:5.6
@@ -147,7 +147,7 @@ That's pretty much everything you need to do to have MySQL 5.6 running on your l
 
 Now, to get your container with the application to know the IP address and the port needed to connect to the database through the magic of Docker networking, you must run it with the `--link` option, giving the name of the database container as the argument:
 
-```
+```bash
 docker run -it --name=app --link=db app-image
 ```
 
@@ -159,13 +159,13 @@ Enter [docker-compose](https://docs.docker.com/compose/) - a tool which allows y
 
 In my opinion, `docker-compose` is useful even if you have only one container in your setup. For instance, remember the command shown above needed to run the container with the source code and Gradle cache mounted as volumes?
 
-```
+```bash
 docker run -it -p 8080:8080 -v .:/app -v ~/.gradle:/root/.gradle image-name:tag
 ```
 
 This is quite involved. You would probably add this command to the documentation, stored in a README file of the project, or perhaps in some external Wiki. Best case, you would add it to a shell script included with the source code. With `docker-compose`, however, you can do this:
 
-```
+```yaml
 app:
 	image: image-name:tag
 	ports:
@@ -180,7 +180,7 @@ app:
 
 Where `docker-compose` shines, however, is when you have multiple containers that form your applicaton's environment. For example, here's how we might set up the MySQL dependency we executed by hand earlier:
 
-```
+```yaml
 app:
 	build: .
 	links:

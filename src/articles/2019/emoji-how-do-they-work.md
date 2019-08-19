@@ -438,7 +438,7 @@ that there's a very good chance you're reading this article on a computer that c
 It's also the basis of all encodings we use up to this day.
 For example, if you execute the following Java code:
 
-```
+```java
 public class Main {
     public static void main(String[] args) {
         char[] chars = { 65, 100, 97, 109 };
@@ -504,12 +504,12 @@ And so, in 1988, [Unicode](https://en.wikipedia.org/wiki/Unicode) was born.
 
 ## Unicode
 
-Version 1.0 of the Unicode standard was published in 1991.
+Version `1.0` of the Unicode standard was published in 1991.
 Unicode is not a static standard -
 in fact, it regularly publishes new versions.
 Of course, subsequent versions only add characters to the standard,
 never change the assignments of existing ones.
-As of writing this article, the latest version is 12.0,
+As of writing this article, the latest version is `12.0`,
 released in May of 2019.
 
 Unicode expands on the central good idea of ASCII,
@@ -525,7 +525,7 @@ for example, the letter `A` would be written as `U+0041`.
 Java allows you to use the same notation inside character literals;
 so, the example code above could have been written as:
 
-```
+```java
 public class Main {
     public static void main(String[] args) {
         char[] chars = { '\u0041', 100, 97, 109 };
@@ -655,8 +655,8 @@ incompatible with every other provider.
 The need for standardization became obvious pretty quickly.
 And then somebody realized that there already was a standard aiming to support all characters used by mankind - Unicode!
 
-Emoji first became part of Unicode with the release of version 6.0 of the standard in 2010.
-That version included 722 of them; the newest one at the time of writing this article, 12.0,
+Emoji first became part of Unicode with the release of version `6.0` of the standard in 2010.
+That version included 722 of them; the newest one at the time of writing this article, `12.0`,
 increases that number to 1,273.
 It's a safe bet that in the future, more emoji will be added to the standard.
 

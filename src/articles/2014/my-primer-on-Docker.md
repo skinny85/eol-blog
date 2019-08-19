@@ -18,9 +18,8 @@ I've recently been to a [Warsjaw JUG meetup on the topic](http://www.meetup.com/
 
 So, the first question is 'what'. What the hell _is_ Docker? This seems like a pretty obvious thing to ask, but surprisingly the answers are anything but obvious. For example, Docker's official page defines it as 'an open platform for developers and sysadmins to build, ship, and run distributed applications'. I don't know about you, but to me that means absolutely nothing. To aid understanding and lay the foundation for the rest of the article, I would like to propose the following definition:
 
-<pre class="language-none"><code>Docker is a tool to create, run and manage
-lightweight virtual machines - called <strong>containers</strong>.</code>
-</pre>
+> Docker is a tool to create, run and manage
+> lightweight virtual machines - called **containers**.
 
 While experts in the matter may frown at this, I think it's close enough to the truth, and should give you some instant intuition about what all the fuss is about. The 'distributed applications' mentioned above - they live in those lightweight VMs, and because they do, they can be distributed (because the VMs can).
 

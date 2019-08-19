@@ -11,7 +11,7 @@ created_at: 2018-03-28
 
 At what point I'll get sick of writing about [Specnaz](https://github.com/skinny85/specnaz)? Hard to say, but this third post in a row will be the last one in the series - the next one won't be about Specnaz, I promise.
 
-Version 1.3 is a major release, bringing with it two long-awaited features to the library: JUnit Rules support, and the capability to define parametrized (sometimes also called data-driven) tests. Let's dive right in.
+Version `1.3` is a major release, bringing with it two long-awaited features to the library: JUnit Rules support, and the capability to define parametrized (sometimes also called data-driven) tests. Let's dive right in.
 
 ## JUnit Rules support
 
@@ -21,7 +21,7 @@ Over the years, a large ecosystem of third-party Rules has emerged that allows y
 
 Well, I'm happy to say that, with the release of version 1.3, it now does. Here's an example of integrating with Mockito:
 
-```
+```java
 public class MockitoExampleSpec extends SpecnazJUnit {
     public Rule<MockitoRule> mockitoRule = Rule.of(
     	() -> MockitoJUnit.rule());
@@ -55,7 +55,7 @@ Each of the `ParamsX` classes has a static factory method called `pX` (so, `p2` 
 
 Putting all of the above together, we get something that looks like this:
 
-```
+```java
 import org.specnaz.params.junit.SpecnazParamsJUnit;
 import static org.specnaz.params.Params2.p2;
 
@@ -84,4 +84,4 @@ Detailed documentation about this feature can be found [here](https://github.com
 
 ## Third time's the charm
 
-So, these are all of the new features in the 1.3 release of Specnaz. I think they really take the library to the next level in terms of making it more expressive and powerful. I encourage you to give [Specnaz](https://github.com/skinny85/specnaz) a shot, and, if you do, I would love to hear back from you about your experiences using it!
+So, these are all of the new features in the `1.3` release of Specnaz. I think they really take the library to the next level in terms of making it more expressive and powerful. I encourage you to give [Specnaz](https://github.com/skinny85/specnaz) a shot, and, if you do, I would love to hear back from you about your experiences using it!

@@ -2,36 +2,19 @@
 layout: application.html
 ---
 
-<section class="archive">
-	<header>
-		<h1>
-			Archive of all the blog entries
-		</h1>
-	</header>
+<section id="archive-page">
+    <h1>All articles</h1>
 
-	{{#each years }}
-		<div class="archive-year">
-			<h2>{{ this.year }}</h2>
+    {{#each years }}
+    <div class="archive-year">
+        <h2>{{ this.year }}</h2>
 
-			{{#each this.months}}
-				<div class="archive-month">
-					<h3>{{ this.month.name }} ({{ this.month.number }})</h3>
-
-					{{#each this.articles}}
-						<article class="archive-entry">
-							<header>
-								<h4>{{ this.createdAtDay }}</h4>
-							</header>
-
-							<p>
-								<a href="/{{ this.path.name }}">{{ this.title }}</a>
-							</p>
-						</article>
-					{{/each}}
-				</div>
-			{{/each}}
-		</div>
-	{{/each}}
-
-	<footer></footer>
+        {{#each this.articles}}
+        <h6>
+            <a href="/{{ this.article.path.name }}">{{ this.article.title }}</a>
+            {{ this.articleDate.monthName }} {{ this.articleDate.day }}
+        </h6>
+        {{/each}}
+    </div>
+    {{/each}}
 </section>

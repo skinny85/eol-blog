@@ -23,19 +23,19 @@ So what is it that irritates me about GitFlow so much?
 
 The absolutely worst part of GitFlow is this advice:
 
-```
-Finished features may be merged into the develop branch
-[to] definitely add them to the upcoming release:
-
-(...)
-
-git merge --no-ff myfeature
-
-(...)
-
-The --no-ff flag causes the merge to always create a new commit object,
-even if the merge could be performed with a fast-forward.
-```
+> Finished features may be merged into the develop branch
+> [to] definitely add them to the upcoming release:
+>
+> (...)
+>
+> ```
+> $ git merge --no-ff myfeature
+> ```
+>
+> (...)
+>
+> The `--no-ff` flag causes the merge to always create a new commit object,
+> even if the merge could be performed with a fast-forward.
 
 This paragraph alone caused more damage than the other parts of the article combined. Because of this "advice" (which is presented as some absolute and obvious truth, when in fact it's nothing more than an opinion-based convention, and an unpopular one at that), the history of a project managed using GitFlow for some time invariably starts to resemble a giant ball of spaghetti. Try to find out how the project progressed from something like this:
 
@@ -49,12 +49,10 @@ Fortunately, people have caught on pretty quickly that these merge commits every
 
 The rationalization that the original article uses for always creating this merge commit is also somewhat dubious to me. To quote:
 
-```
-In the latter case [without --no-ff], it is impossible to
-see from the Git history which of the commit objects together
-have implemented a feature — you would have to manually read
-all the log messages.
-```
+> In the latter case [without `--no-ff`], it is impossible to
+> see from the Git history which of the commit objects together
+> have implemented a feature — you would have to manually read
+> all the log messages.
 
 Right. Except the only way to find that merge commit created by the `--no-ff` flag is by, you know, manually reading all the log messages. So what is the gain from this approach is beyond me.
 
@@ -66,19 +64,17 @@ If you're still unconvinced, let me illustrate my point with a concrete example.
 
 GitFlow advocates having two eternal branches - master and develop. Why two, when one is the conventional standard? After using it for one year, I still have no idea. What is more, I am now certain that there is nothing gained by having two branches instead of one. Let me quote the original article again:
 
-```
-When the source code in the develop branch
-reaches a stable point and is ready to be released,
-all of the changes should be merged back into master
-somehow and then tagged with a release number.
-How this is done in detail will be discussed further on.
-
-Therefore, each time when changes are merged back into master,
-this is a new production release by definition.
-We tend to be very strict at this, so that theoretically,
-we could use a Git hook script to automatically build and roll-out our
-software to our production servers everytime there was a commit on master.
-```
+> When the source code in the develop branch
+> reaches a stable point and is ready to be released,
+> all of the changes should be merged back into master
+> somehow and then tagged with a release number.
+> How this is done in detail will be discussed further on.
+>
+> Therefore, each time when changes are merged back into master,
+> this is a new production release by definition.
+> We tend to be very strict at this, so that theoretically,
+> we could use a Git hook script to automatically build and roll-out our
+> software to our production servers everytime there was a commit on master.
 
 If you analyze these two paragraphs closely, I think you will agree with me: the master branch contributes nothing to the history. Think about it: if **every** commit to master is a new release from the develop branch, and **every** commit on master is tagged, then you have all of the information you would ever need in that develop branch and those tags. At this point keeping master around accomplishes nothing of value.
 

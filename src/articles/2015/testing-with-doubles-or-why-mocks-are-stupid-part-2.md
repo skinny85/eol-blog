@@ -24,7 +24,7 @@ Obviously, as this is an article about Test Doubles, our class under test has so
 
 Imagine you're creating an object which is supposed to translate some text from one language to another. To make the translation, you have an external service:
 
-```
+```java
 public interface DictionaryService {
 	Map<String, String> lookupWords(Set<String> words);
 }
@@ -32,7 +32,7 @@ public interface DictionaryService {
 
 This service returns a mapping from each word in the `Set` given as the argument to it's translation - if a translation couldn't be found, the word itself is used as the value. Your object is supposed to return a `String` with each word from the original text substituted by it's translation (OK, so this probably won't put Google Translate out of business, but bear with me - it's just an example). The implementation might look something like this:
 
-```
+```java
 public class Translator {
 	private final DictionaryService dictionaryService;
 
@@ -56,7 +56,7 @@ We want to unit-test this piece of code. Let's see how each Test Double fares in
 
 A test using a Mock would looke something like this:
 
-```
+```java
 @Test
 public void test_with_mock() throws Exception {
 	DictionaryService dictionaryService = mock(DictionaryService.class);
@@ -77,7 +77,7 @@ So a Mock doesn't really work here. How would a test using a Stub look like?
 
 ##### Attempt #2 - Stub
 
-```
+```java
 @Test
 public void test_with_stub() throws Exception {
 	DictionaryService dictionaryService = mock(DictionaryService.class);
@@ -104,7 +104,7 @@ Is there a way to have your mocking cake and eat it too?
 
 While yes, there is:
 
-```
+```java
 @Test
 public void test_with_fake() throws Exception {
 	DictionaryService dictionaryService = new DictionaryService() {
@@ -125,12 +125,10 @@ This Fake `DictionaryService` does the translation by simply reversing it's inpu
 
 And so, my recommendation is:
 
-```
-For testing incoming Query methods,
-assert on the results of the Query,
-and avoid Mocks for outgoing dependencies,
-preferring Stubs (or Fakes) instead.
-```
+> For testing incoming Query methods,
+> assert on the results of the Query,
+> and avoid Mocks for outgoing dependencies,
+> preferring Stubs (or Fakes) instead.
 
 ## End of Part 2
 

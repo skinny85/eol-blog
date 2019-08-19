@@ -17,13 +17,10 @@ That is kind of depressing, when you think about it. For example, I have tons of
 
 I've seen (and still do) this phenomenon of software taking too long (just ask any client of an IT company) so much that I believe it's not a factor of the people involved, the technologies or the domain - it must be some complexity intrinsic to the work of programming. Is there anything that can be done about it? I'm not sure, but after thinking about the problem I came up with only one solution: code generation.
 
-I assume a good deal of you flinched when you read that. Code generation is not generally held in high esteem in our industry. It probably stems from the past abuses that different technologies made using that term (for instance, generating bindings to consume SOAP-based web services). However, in more recent times code generation has been successfully used in a bunch of different projects like Maven, Yeoman, Ruby on Rails and many others. I think the key difference that separates the old approach from the new one is that these new tools understand that generated code is still **code** - and that means it must adhere to the fundamental rule formulated by Harold Abelson in the classic "Structure and Interpretation of Computer Programs":
+I assume a good deal of you flinched when you read that. Code generation is not generally held in high esteem in our industry. It probably stems from the past abuses that different technologies made using that term (for instance, generating bindings to consume SOAP-based web services). However, in more recent times code generation has been successfully used in a bunch of different projects like Maven, Yeoman, Ruby on Rails and many others. I think the key difference that separates the old approach from the new one is that these new tools understand that generated code is still **code** - and that means it must adhere to the fundamental rule formulated by Harold Abelson in the classic ["Structure and Interpretation of Computer Programs"](https://mitpress.mit.edu/sites/default/files/sicp/index.html):
 
-```
-“Programs must be written for people to read,
-and only incidentally for machines to execute.”
-
-```
+> “Programs must be written for people to read,
+> and only incidentally for machines to execute.”
 
 It is these traditions that Oxyjen builds upon, and expands.
 

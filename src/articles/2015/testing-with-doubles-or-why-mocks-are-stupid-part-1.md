@@ -31,7 +31,7 @@ After you're done with that, we'll discuss what are the commonly encountered typ
 
 A **Dummy** is the simplest Test Double that there is. It's only purpose is to satisfy the compiler of a statically-typed language - it's not meant to be actually used, only passed around. A straightforward example of a Dummy in Java could be:
 
-```
+```java
 public class DummyEmailService implements EmailService {
 	@Override
 	public void sendEmail(Message message) {
@@ -49,7 +49,7 @@ A **Mock** is an object which records the methods called on it, and allows later
 
 If you wanted to write a Mock in Java yourself, it would look something like this:
 
-```
+```java
 public class MockEmailService implements EmailService {
 	private int calledCount = 0;
 	private Message lastMessage;
@@ -70,7 +70,7 @@ public class MockEmailService implements EmailService {
 
 Just looking at this simple example makes it clear that writing Mocks from scratch would require a considerable effort and a lot of repetitive, boiler-platey code. For this reason, nobody really does it this way, instead relying on mocking libraries. These libraries often generate synthetic objects (that is, ones not belonging to any compile-time class), which save you the hassle of needing to write any code whatsoever to use them. Like I already mentioned, in the Java world, the most popular solution seems to be [Mockito](http://mockito.org/) - probably thanks to it's concise, fluent and easy to use API. The equivalent functionality to our Java class above would look something like this inside a test:
 
-```
+```java
 public class SomeTestClass {
 	@Test
 	public void someTest() {
@@ -92,7 +92,7 @@ I think Mockito is one of the better examples of what a modern, carefully crafte
 
 A **Stub** is also an artificial object - one which is pre-programmed to respond to a method call in a particular way (for example, to always return the same value, or to throw an exception when called with a particular argument). Here's an example of a Stub in Java:
 
-```
+```java
 public class StubHttpRequest implements HttpServletRequest {
 	private final String key, val;
 
@@ -114,7 +114,7 @@ This Stub allows you to set a particular key-value pair as the (sole) contents o
 
 And here we come to the confusing part - because Mockito, which is clearly a mocking library (I mean, it's even in the name), can be used to create Stubs as well:
 
-```
+```java
 HttpServletRequest reqStub = mock(HttpServletRequest.class);
 when(reqStub.getParameterMap()).thenReturn(ImmutableMap.of(key, new String[]{val}));
 ```
@@ -125,7 +125,7 @@ Obviously, since it's Mockito, the syntax is readable and lightweight. Still, in
 
 A **Fake** is an actual implementation of a dependency, but one specifically designed to be used only for tests, not in production code. Martin in his article gives as an example a [Repository](http://dddcommunity.org/resources/ddd_terms/) that works with an in-memory database. I personally don't love that example, as the actual database used by a Repository sounds more like a configuration option than a public characteristic of a class to me. However, I would give a very similar example, one I actually used myself several times before: a Repository that uses a `Map` to store and retrieve Entities, without a database. It looks something like this:
 
-```
+```java
 class MapUserRepository implements UserRepository {
 	private final Map<Long, User> store = new HashMap<>();
 	private long sequenceId = 0;
@@ -159,7 +159,7 @@ As you can see, this class has some actual logic embedded inside it. This is a v
 
 A **Spy** is a wrapper around the real object, which either adds some behaviors useful in tests, or allows you to override only part of the object's original definition (in contrast to the other Doubles, which always replace the original object completely). They are used when you need to have the actual dependency present (a common use case is writing tests for legacy code, which you can't or don't want to change), but augmented in some way. A simple example in Java:
 
-```
+```java
 public class SpyEmailService implements EmailService {
 	private final EmailService delegate;
 	private int count;
@@ -182,7 +182,7 @@ public class SpyEmailService implements EmailService {
 
 You can also create Spies with Mockito:
 
-```
+```java
 EmailService spyEmailService = spy(realEmailService);
 ```
 

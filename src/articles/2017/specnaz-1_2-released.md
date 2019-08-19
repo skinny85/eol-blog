@@ -7,7 +7,7 @@ summary: "In the last post of 2017, I wanted to talk about the newest
 created_at: 2017-12-31
 ---
 
-My testing library [Specnaz](https://github.com/skinny85/specnaz) has recently had its third release, version 1.2 (I've blogged about the library previously [here](/specnaz-my-java-testing-library) and [here](/specnaz-1_1-released)).
+My testing library [Specnaz](https://github.com/skinny85/specnaz) has recently had its third release, version `1.2` (I've blogged about the library previously [here](/specnaz-my-java-testing-library) and [here](/specnaz-1_1-released)).
 
 This release contains several new features:
 
@@ -19,7 +19,7 @@ When a unit contains at least one focused test, then only focused tests will be 
 
 The way you mark your tests as 'focused' in those other libraries is to add the letter 'f' to the name of the test-defining function or method. Specnaz stays true to this tradition, and so you can now use `fshould` and `fdescribes` calls in your code:
 
-```
+```java
 describes("A focused test", it -> {
     it.fshould("execute this test", () -> {
         // this will be executed
@@ -46,7 +46,7 @@ In a similar vein, it's often helpful to completely skip certain tests. In 'vani
 
 Again taking example after RSpec and Jasmine, you can now add the letter 'x' in front of a call to `should` or `describes` to mark either a test or a group of them, respectively, as ignored.
 
-```
+```java
 describes("An ignored test", it -> {
     it.should("execute this test", () -> {
         // this will be executed
@@ -70,9 +70,9 @@ There is also an `xdescribes` variant of the top-level `describes` (the one you 
 
 ### 3. More `shouldThrow` capabilities
 
-The `shouldThrow` method, introduced in version 1.1, has been enhanced with extra capabilities. You can now formulate assertions on the received Exception by calling methods on the `ThrowableExpectations` object that `shouldThrow` returns, further refining under what conditions does the test pass:
+The `shouldThrow` method, introduced in version `1.1`, has been enhanced with extra capabilities. You can now formulate assertions on the received Exception by calling methods on the `ThrowableExpectations` object that `shouldThrow` returns, further refining under what conditions does the test pass:
 
-```
+```java
 it.shouldThrow(NumberFormatException.class,
         "when creating a Long from the string 'long'", () -> {
     new Long("long");
@@ -81,6 +81,6 @@ it.shouldThrow(NumberFormatException.class,
 
 ### That's it!
 
-Those are all of the new features introduced in Specnaz 1.2. Of course, all of them are available in [Kotlin](https://kotlinlang.org/) in addition to Java.
+Those are all of the new features introduced in [Specnaz](https://github.com/skinny85/specnaz) `1.2`. Of course, all of them are available in [Kotlin](https://kotlinlang.org/) in addition to Java.
 
 Happy 2018!

@@ -17,9 +17,7 @@ My stance on the topic is pretty close to what [Martin Fowler](http://martinfowl
 
 Having said all that, in the course of my career I have seen many projects where an ORM caused significant damage. When I reflected about what was it that made the usage of ORMs in those projects so harmful, I always came to the conclusion that there was one root cause, always the same, of all those problems - the cardinal sin of ORM usage, if you will. It can be summarized as not adhering to this one simple rule:
 
-```
-Your use of an ORM should be an implementation detail of your model.
-```
+> Your use of an ORM should be an implementation detail of your model.
 
 In the rest of the article I try to explain exactly what I mean by that.
 
@@ -29,7 +27,7 @@ To prevent the discussion from being too abstract, I'll illustrate my points wit
 
 Let's say you're writing a system for a discussion board, like a classic Internet forum (or [Reddit](http://reddit.com), if you're too young to know what a forum is ;p). So, you naturally have a `User` class. Users have some data associated with them (username, email, age, yada yada yada), and they can create Posts, and write Comments on Posts. So, you whip out the old IDE, and 3 minutes later you have your model:
 
-```
+```java
 public class User {
 	@Id
 	@GeneratedValue
@@ -47,16 +45,15 @@ public class User {
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "owner")
 	private List<Comment> comments;
 
-	// getters & setters omitted
+	// getters & setters omitted for brevity...
 }
-
 ```
 
 I think this should be fairly standard JPA code for this sort of problem.
 
 The first user story you need to implement is pretty basic - a User should be able to see his profile information when he enters the 'My Profile' page (there shouldn't be anything about his comments or posts in there). Because we're good programmers, we abstract the database layer in a DAO, and so our code looks something like this:
 
-```
+```java
 public class UserDao {
 	@PersistenceContext
 	private EntityManager entityManager;
@@ -83,7 +80,7 @@ How can we make this better? Well, the first idea is to always populate all the 
 
 Here is my proposed solution. Let's create a separate class...
 
-```
+```java
 public class UserBaseInfo {
 	private final long id;
 	private final String username, email;
@@ -95,7 +92,7 @@ public class UserBaseInfo {
 
 ... and make `UserDao.find(long)` return an instance of that class instead of `User` (obviously the values for the construction of `UserBaseInfo` will be taken from the `User` entity retrieved by JPA). Notice that this way, the client of `UserDao` has no idea of the existence of the `User` entity. You could make it package-private, if you wanted to. This hiding solves all the troubles we had before: there are no useless setters that the client can call, and no weird, proxied fields that may cause `LazyInitializationException`. When the time comes that we need the posts of a user, we're ready: we create a class...
 
-```
+```java
 public class UserBaseInfoWithPosts extends UserBaseInfo {
 	private final List<Post> posts;
 
@@ -111,7 +108,7 @@ This idea is nothing revolutionary. You can think of it as [Command-Query Respon
 
 I guess some of you may frown that I created a separate class, and worry that in a big application, there might be lots of those additional classes, and you might not like the extra work involved in creating them. That is somewhat accurate. Java is particularly bad at this; if you use Scala, for example (or Kotlin), creating a class like that is super lightweight:
 
-```
+```scala
 case class UserBaseInfo(id: Long, username: String, email: String, age: Int)
 ```
 
@@ -119,7 +116,7 @@ And you get immutability, the constructor, all the getters, `equals` and `hashCo
 
 Now, if you are REALLY opposed to the thought of writing those additional classes in Java, I would advise using a small cheat. Basically, you create an interface...
 
-```
+```java
 public interface UserBaseInfo {
 	long getId();
 	String getUsername();
@@ -144,7 +141,7 @@ You still might not be convinced that any of the problems I've described are act
 
 Let's continue with our discussion platform example. You now have to implement a pretty basic functionality of the site - allowing a User to publish a Post. Since we're good [Domain-Driven Design](http://dddcommunity.org/) practitioners, we have a nice method in the `User` class for that:
 
-```
+```java
 public void post(Post newPost) {
 	if (this.posts == null) {
 		this.posts = new ArrayList<>();
@@ -157,7 +154,7 @@ public void post(Post newPost) {
 
 Then, in our view layer, we show the user a form with some fields to fill out, and register a handler on the 'Submit' button similar to the following:
 
-```
+```java
 Post newPost = new Post();
 newPost.setTitle(form.getTitle());
 newPost.setContent(form.getContent());
@@ -169,7 +166,7 @@ userDao.save(poster);
 
 And in `UserDao`:
 
-```
+```java
 public User save(User user) {
 	if (user.getId() == 0) {
 		entityManager.persist(user);
@@ -188,7 +185,7 @@ The second issue is that this code doesn't actually work - the Post will not be 
 
 This particular problem could be solved by setting the `cascade` attribute of the `@OneToMany` annotation to `CascadeType.MERGE`. However, that might be problematic for a couple of reasons: 1) the entity code might be in an external module that cannot be modified directly; 2) it might be managed by some other programmer/team, and we don't want to interfere with their code; 3) finally, adding that annotation might break other use cases of the entity (for example, it can potentially lead to creating duplicate posts in the database). Luckily (well, the use of this word might be debatable in this context, as we'll shortly see...), there is another way to fix this situation, without modifying the `User` entity code. It looks like this:
 
-```
+```java
 Post newPost = new Post();
 newPost.setTitle(form.getTitle());
 newPost.setContent(form.getContent());
@@ -205,7 +202,7 @@ I imagine a lot of you have seen this kind of code "in the wild". I know I have.
 
 So how would I approach solving this problem? Well, I would completely re-structure this solution. The client code present in the view would look something like this:
 
-```
+```java
 userService.post(userId, form.getTitle(), form.getContent());
 ```
 
@@ -213,7 +210,7 @@ That's it - this is everything that the view needs to perform this operation. `U
 
 As you can guess, all of the ugliness of the persistence is tucked away in that `post` method:
 
-```
+```java
 @Transactional
 public class UserService {
 	// ...

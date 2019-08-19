@@ -92,7 +92,7 @@ and aids with refactoring.
 
 Here's how configuration in Java looks like:
 
-```
+```java
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -141,7 +141,7 @@ like we saw above.
 
 So, instead of `AnotherClass` looking like this:
 
-```
+```java
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -156,7 +156,7 @@ public class AnotherClass {
 
 ...make it just a regular Java class that doesn't know anything about Spring:
 
-```
+```java
 public class AnotherClass {
 	private final SomeClass someClass;
 

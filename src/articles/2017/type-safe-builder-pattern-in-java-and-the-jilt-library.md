@@ -19,7 +19,7 @@ This article is quite long and contains a fair amount of code, so I've created a
 
 Say you have a class `User` in your Java system. It has 5 properties: `email`, `username`, `firstName`, `lastName` and `displayName`, all of type `String`. It's a Value class: it doesn't have much behavior, its main function is to aggregate the 5 properties. Something like this:
 
-```
+```java
 public class User {
 	private String email, username, firstName, lastName, displayName;
 
@@ -31,7 +31,7 @@ While this class is quite simple, there is already an interesting question conce
 
 In the early days of Java, we would probably use the JavaBeans convention: the class would have a public no-argument constructor, and the values of the properties would be assigned with setters:
 
-```
+```java
 User user = new User();
 user.setEmail("joey@example.com");
 user.setUsername("john_smith");
@@ -44,7 +44,7 @@ But that's not the way we write Java code today. It's verbose, introduces state 
 
 Modern Java style prefers immutable objects, so our `User` class would most likely look something like this:
 
-```
+```java
 public final class User {
 	// I'm using public fields for brevity
 	public final String email, username, firstName, lastName, displayName;
@@ -62,7 +62,7 @@ public final class User {
 
 And you would create instances of it using the constructor:
 
-```
+```java
 User user = new User("joey@example.com",
 	"john_smith", "John", "Smith", "joey");
 ```
@@ -71,7 +71,7 @@ This approach is fine, but not perfect. For one thing, we don't see the property
 
 The Builder pattern is the typical solution to these problems. You can think of it as separating out the concern of constructing a class from the class itself. We define a new class, called `UserBuilder`, whose sole responsibility is to help us create instances of `User`. It will have an instance field for each field of `User`, and a public setter for each of those fields. After setting the values of the properties, we obtain an instance of `User` by invoking the `build` method on the Builder. It looks like this:
 
-```
+```java
 public class UserBuilder {
 	private String email, username, firstName, lastName, displayName;
 
@@ -92,7 +92,7 @@ public class UserBuilder {
 
 Notice that, unlike with JavaBeans, each setter returns `this` - the method receiver. This is an example of a [Fluent Interface](https://martinfowler.com/bliki/FluentInterface.html), and allows you to chain the setter methods without the verbosity of constantly repeating the receiver:
 
-```
+```java
 User user = new UserBuilder()
 	.email("joey@example.com")
 	.username("john_smith")
@@ -106,7 +106,7 @@ You can also make `UserBuilder` a (static) nested class inside `User`. When doin
 
 Another common thing is to add a static factory method to the Builder, with a name usually equal to the uncapitalized name of the built class:
 
-```
+```java
 public class UserBuilder {
 	public static UserBuilder user() {
 		return new UserBuilder();
@@ -118,7 +118,7 @@ public class UserBuilder {
 
 This, combined with Java's static imports feature, allows you to write nice reading code like this:
 
-```
+```java
 import static com.example.UserBuilder.user;
 
 User user = user()
@@ -136,7 +136,7 @@ So, that's the Builder pattern in a nutshell. While it fixes some of the problem
 
 The main problem is that we lose the compile-time guarantee that we had with the constructor that all of the fields will have a value provided. Sure, when the built class has 5 properties, like `User` above, it's not hard to spot if we miss one. But imagine you want to build an instance of this class:
 
-```
+```java
 public final class AgreementVersion {
 	private final String marketplaceId;
 	private final Customer customer;
@@ -172,7 +172,7 @@ The way to do that is to create an interface for each property of the built clas
 
 For example, for the `AgreementVersion` class above, it would look like this:
 
-```
+```java
 public interface AgreementVersionBuilders {
 	public interface MarketplaceId {
 		public Customer marketplaceId(String marketplaceId);
@@ -196,7 +196,7 @@ public interface AgreementVersionBuilders {
 
 Now, the Builder class itself is very similar to the "classic" Builder. The main difference is that it implements all of those interfaces above, and so the setters have a different declared type - although the implementation is the same. For our `AgreementVersion` case, it looks like this:
 
-```
+```java
 public class AgreementVersionBuilder implements
 		AgreementVersionBuilders.MarketplaceId,
 		AgreementVersionBuilders.Customer,
@@ -238,7 +238,7 @@ public class AgreementVersionBuilder implements
 
 There is one more detail. We want the customers of the Builder to use our interfaces, not the concrete Builder class - without that, we will not get any help from the type system. To achieve that, we make the constructor of the Builder private, and have a static factory method that returns an instance of it - its declared type, however, is the interface for the first property of the built class. So, for `AgreementVersionBuilder`:
 
-```
+```java
 public class AgreementVersionBuilder implements
 		/* interfaces as above... */ {
 	public static AgreementVersionBuilders.MarketplaceId agreementVersion() {
@@ -256,7 +256,7 @@ public class AgreementVersionBuilder implements
 
 Now, using this Builder is pretty much identical to the classic one (with the only difference being you have to use the static factory method, not the constructor):
 
-```
+```java
 AgreementVersion av = AgreementVersionBuilder.agreementVersion()
 	.marketplaceId("...")
 	.customer(someCustomer)
@@ -290,7 +290,7 @@ The Type-Safe Builder pattern allows you to express optional properties in a ver
 
 As an example, let's get back to the `User` class from the beginning of the article. Let's say that the `username` and `displayName` properties are now optional - if the client doesn't provide an explicit `username`, we will use the email address in its place, and if `displayName` is skipped, we'll set it to `firstName` concatenated with `lastName` (with a space in between). So, the class now looks like this:
 
-```
+```java
 public final class User {
 	// Once again, we use public fields instead of getters for brevity
 	public final String email, username, firstName, lastName, displayName;
@@ -312,7 +312,7 @@ A Type-Safe Builder for a class with optional properties is only slightly modifi
 
 For our `User` above, it looks as follows:
 
-```
+```java
 public interface UserBuilders {
     interface Email {
         FirstName email(String email);
@@ -336,7 +336,7 @@ public interface UserBuilders {
 
 The `UserBuilder` itself is unchanged (minus the slightly modified signatures of the optional setter methods). You can use it as follows:
 
-```
+```java
 User user = UserBuilder.user()
     .email("joey@example.com")  // these 3 lines are mandatory (required properties)
     .firstName("John")
@@ -366,7 +366,7 @@ I won't repeat the documentation found under the link above on how to use Jilt. 
 
 The classic Builder for the `User` with all 5 properties being required:
 
-```
+```java
 import org.jilt.Builder;
 
 @Builder
@@ -377,7 +377,7 @@ public final class User {
 
 The Type-Safe Builder for the `AgreementVersion` class:
 
-```
+```java
 import org.jilt.Builder;
 import org.jilt.BuilderStyle;
 
@@ -389,7 +389,7 @@ public final class AgreementVersion {
 
 The Type-Safe Builder for the `User` class with 2 optional properties:
 
-```
+```java
 import org.jilt.Builder;
 import org.jilt.BuilderStyle;
 import org.jilt.Opt;

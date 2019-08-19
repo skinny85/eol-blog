@@ -50,7 +50,7 @@ We will use the following Java example. Let's say you are creating a new impleme
 
 The code (very roughly) looks something like this:
 
-```
+```java
 public class SinglyLinkedList<T> implements java.util.List<T> {
 	private static class ListNode<T> {
 		// some code here...
@@ -76,7 +76,7 @@ public class SinglyLinkedList<T> implements java.util.List<T> {
 
 How would the unit tests look like for this code? Well, if the one responsible for them is the programmer who answered that the unit of tests is the method, they would probably look something like this:
 
-```
+```java
 public class SinglyLinkedListTest {
 	@Test
 	public void testIsEmpty() {
@@ -98,7 +98,7 @@ Why is this bad? Because this division of tests makes no sense. The only way to 
 
 In this case, the behaviors you want to test are: `SinglyLinkedList` behaves like a correct `List` implementation. Knowing this, the corrected tests would look something like this:
 
-```
+```java
 public class SinglyLinkedListTest {
 	@Test
 	public void newly_created_list_is_empty() {
@@ -132,9 +132,7 @@ Note that the same warning applies to classes that are not inner, or package-pri
 
 So, remember:
 
-<p style="text-align: center;">
-The 'unit' in 'unit tests' means a **unit of behavior**
-</p>
+> The 'unit' in 'unit tests' means a **unit of behavior**.
 
 #### The testing pyramid, and unit tests traits
 

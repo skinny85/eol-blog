@@ -23,7 +23,7 @@ function plugin() {
 			if (thisYear.length > 0) {
 				var yearObject = {
 					year: year,
-					months: [],
+					articles: [],
 				};
 				for (var month = 11; month >= 0; month--) {
 					var thisMonth = [];
@@ -31,22 +31,22 @@ function plugin() {
 						var file = thisYear[i];
 						if (file.created_at.getMonth() === month) {
 							thisMonth.push(file);
-							file.createdAtDay = dateFormat(file.created_at, 'UTC:dd');
 						}
 					}
 
-					if (thisMonth.length > 0) {
-						// sort articles by day, descending
-						thisMonth.sort(function(file1, file2) {
-							return -(file1.created_at.getDate() - file2.created_at.getDate());
-						});
+					// sort articles by day, descending
+					thisMonth.sort(function(file1, file2) {
+						return -(file1.created_at.getDate() - file2.created_at.getDate());
+					});
 
-						yearObject.months.push({
-							month: {
-								name: dateFormat(thisMonth[0].created_at, 'UTC:mmmm'),
-								number: dateFormat(thisMonth[0].created_at, 'UTC:mm'),
+					// add all articles from the given month to the year's collection
+					for (var i = 0; i < thisMonth.length; i++) {
+						yearObject.articles.push({
+							articleDate: {
+								monthName: dateFormat(thisMonth[i].created_at, 'UTC:mmmm'),
+								day: dateFormat(thisMonth[i].created_at, 'UTC:dd'),
 							},
-							articles: thisMonth,
+							article: thisMonth[i],
 						});
 					}
 				}

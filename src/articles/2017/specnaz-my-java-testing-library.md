@@ -28,7 +28,7 @@ JUnit is probably the most popular Java library in existence. While it was origi
 
 Let's take a look at a simple example of tests written using JUnit:
 
-```
+```java
 public class ExampleTest {
     @Test
     public void testAddition() {
@@ -68,7 +68,7 @@ While there is nothing inherently wrong with this way of forming tests (obviousl
 
 Here's a small excerpt from one of our test classes:
 
-```
+```java
 @Test
 public void customer_approving_enables_version_and_updates_agreement() {
     String versionId = newVersionForVendor();
@@ -108,7 +108,7 @@ We could try to shoehorn these into the JUnit structure by splitting them into s
 
 Here is the remaining part of that first test shown above:
 
-```
+```java
 @Test
 public void customer_approving_enables_version_and_updates_agreement() {
     // 'Given' and 'When' part of the test shown above
@@ -144,7 +144,7 @@ It seems we have hit a brick wall - there doesn't seem to be a clean way of expr
 
 If we survey the testing landscape of technologies outside the JVM, we see something interesting. While JUnit (or, more generally, [xUnit](https://en.wikipedia.org/wiki/XUnit)) definitely has an influence (for example, [NUnit](https://www.nunit.org/) in the .NET world), it's not the only game in town. For a popular alternative that spawned its own lineage of imitators in other languages, we can look at [Ruby's RSpec](http://rspec.info/):
 
-```
+```ruby
 RSpec.describe "Using an array as a stack" do
   def build_stack
     []
@@ -190,7 +190,7 @@ I'm not going to describe exactly how does writing tests in Specnaz look like, a
 
 Here's the same test snippet that we've seen above, repeated here for convenience:
 
-```
+```java
 @Test
 public void customer_approving_enables_version_and_updates_agreement() {
     String versionId = newVersionForVendor();
@@ -222,7 +222,7 @@ public void customer_rejecting_doesnt_enable_version_and_updates_agreement() {
 
 And here's a potential refactoring using Specnaz:
 
-```
+```java
 it.describes("with a Vendor Agreement", () -> {
     it.beginsEach(() -> {
         versionId = newVersionForVendor();
@@ -264,7 +264,7 @@ We've taken advantage of the tree-like structure to nest the previously flat sta
 
 Here's the second problematic snippet again:
 
-```
+```java
 @Test
 public void customer_approving_enables_version_and_updates_agreement() {
     // 'Given' and 'When' part of the test...
@@ -292,7 +292,7 @@ public void customer_approving_enables_version_and_updates_agreement() {
 
 And a potential re-write in Specnaz:
 
-```
+```java
 it.describes("when a new Agreement Version is approved by the Customer", () -> {
     it.beginsAll(() -> {
         // 'Given' and 'When' part of the test...
@@ -338,4 +338,4 @@ While I think these other libraries make the mistake of trying to imitate RSpec 
 
 ## Summary
 
-I hope I managed to demonstrate that stepping beyond the standard JUnit structure can often result in more readable and [DRY](https://en.wikipedia.org/wiki/Don't_repeat_yourself) tests. I would encourage you to give Specnaz a try the next time you're struggling with formulating some tests in "vanilla" JUnit. If you do, I would love to hear about your experiences and any feedback you might have about the library, so let me know in the comments!
+I hope I managed to demonstrate that stepping beyond the standard JUnit structure can often result in more readable and [DRY](https://en.wikipedia.org/wiki/Don't_repeat_yourself) tests. I would encourage you to give [Specnaz](https://github.com/skinny85/specnaz) a try the next time you're struggling with formulating some tests in "vanilla" JUnit. If you do, I would love to hear about your experiences and any feedback you might have about the library, so let me know in the comments!

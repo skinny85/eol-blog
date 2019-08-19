@@ -48,7 +48,7 @@ Again - none of this impacts work that is still going on on master for version `
 
 At this point, every commit reachable from `hotfix/2.0.1` can be reached also from master, so this branch contributes nothing to history. After `hotfix/2.0.1` is deleted, the bugfixing is considered closed.
 
-**EDIT:** as RobM helpfully points out in the comments, note that deleting the `hotfix/2.0.1` branch does not affect the tag `2.0.1` in any way - in particular, it's not deleted.
+**EDIT**: as RobM helpfully points out in the comments, note that deleting the `hotfix/2.0.1` branch does not affect the tag `2.0.1` in any way - in particular, it's not deleted.
 
 Some additional notes on this subject:
 

@@ -13,7 +13,7 @@ There was a [link](http://www.deadcoderising.com/java-8-no-more-loops/) to an in
 
 For convenience, here's the original code (I copied it unchanged):
 
-```
+```java
 public class Article {
     private final String title;
     private final String author;

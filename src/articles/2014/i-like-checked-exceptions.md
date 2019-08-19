@@ -16,10 +16,8 @@ This is kind of how I felt when I decided to write an article explaining my fond
 
 So, what good can I possibly see in this God-forsaken language feature? Well, it can be summed up with one sentence:
 
-```
-Checked exceptions provide another axis for the compiler
-to prove my program is correct on the type system level.
-```
+> Checked exceptions provide another axis for the compiler
+> to prove my program is correct on the type system level.
 
 I will try to illustrate what I mean by that with an example. But first I just wanted to say that even though I like the general concept, I believe Java made some mistakes in the actual implementation of checked exceptions, and it is those mistakes that are the cause of so much grievance with the feature. I will address those mistakes later on.
 
@@ -27,7 +25,7 @@ I will try to illustrate what I mean by that with an example. But first I just w
 
 Imagine you're building a social network site (cause, you know, we can never have enough of those). No social site would be complete without "friending" people. Let's say you decided to model this with a business logic method like this:
 
-```
+```java
 void becomeFriends(UserId user1, UserId user2);
 ```
 
@@ -41,14 +39,14 @@ What is interesting about this method is that there are multiple reasons it may 
 
 I believe that checked exceptions are a really nice fit for modelling these kind of situations. You would usually create a separate `Exception` subclass for each of the possible error conditions, and throw it inside the implementation. Then the method signature would look something like this:
 
-```
+```java
 void becomeFriends(UserId user1, UserId user2) throws UserNotFound,
 	UsersAlreadyFriends, NoSuchInvite;
 ```
 
 Now, imagine we are writing code responsible for handling the user clicking the aforementioned email link to accept the request. I can see it having a structure like this:
 
-```
+```java
 try {
 	becomeFriends(user1, user2);
 
@@ -62,7 +60,7 @@ try {
 		// with perhaps an option to send them an email to reconsider...?
 		...
 	} else { // the invitee was not found
-		if (e.reason == 'REMOVED') {
+		if (e.reason == "REMOVED") {
 			// show a message that says something like
 			// 'You have closed your account.'
 			// maybe even a separate' Click _here_ to reopen it' button...?
@@ -94,7 +92,7 @@ I believe that when checked exceptions are used in a manner like this, they offe
 
 One of the possible problems of using this approach is that it may lead to method signatures looking like this:
 
-```
+```java
 void someMethod() throws
 	FirstLongNameException,
 	SecondLongNameException,
@@ -119,23 +117,20 @@ Like I mentioned earlier, I believe Java made some fundamental mistakes in regar
 
 ### Wrong exception kind
 
-Joshua Bloch in his excellent book "Effective Java" formulates the following rule:
+Joshua Bloch in his excellent book ["Effective Java"](https://www.amazon.com/Effective-Java-Joshua-Bloch/dp/0134685997)
+formulates the following rule:
 
-```
-Use checked exceptions for recoverable conditions
-and runtime exceptions for programming errors.
-```
+> Use checked exceptions for recoverable conditions
+> and runtime exceptions for programming errors.
 
 While I think that's sensible, I would add another one:
 
-```
-Never use a checked exception in a situation
-where it's possible to statically prove that the code will never throw it.
-```
+> Never use a checked exception in a situation
+> where it's possible to statically prove that the code will never throw it.
 
 Let me show you an example of what I mean by that. Imagine for a second that `IndexOutOfBoundsException` was checked. That would be a nightmare! You would have to deal with it in code like this:
 
-```
+```java
 int[] array = new int[]{1, 2, 3};
 array[0]; // don't forget IndexOutOfBoundsException!
 ```
@@ -144,7 +139,7 @@ array[0]; // don't forget IndexOutOfBoundsException!
 
 Seems obvious when you put it that way, right? And yet, if you look in the Java standard library, you will find tons of places where this guideline is broken. `CloneNotSupportedException` is a prime example. You can be certain that, given this code:
 
-```
+```java
 public final class CheckedExceptionsClass implements Cloneable {
 	public CheckedExceptionsClass copy() throws CloneNotSupportedException {
 	    return (CheckedExceptionsClass)clone();
@@ -156,7 +151,7 @@ public final class CheckedExceptionsClass implements Cloneable {
 
 Another unwanted side-effect of this particular fault is that it conditions inexperienced Java programmers to treat checked exceptions as nuances which have to be dealt with in order to get to the "real" code. I mean, how many times have you seen code like this
 
-```
+```java
 } catch (Exception e) {
 	e.printStackTrace();
 	return null;
@@ -171,7 +166,7 @@ I think the combination of the two rules mentioned above gives a nice framework 
 
 I think the exception hierarchy in Java is flawed. As a quick reminder, is looks like this:
 
-```
+```shell-session
 Object
 	Throwable
 		Error
@@ -181,7 +176,7 @@ Object
 
 , while I would argue that something along the lines of
 
-```
+```shell-session
 Object
 	Throwable
 		Error
@@ -196,7 +191,7 @@ The reason is that, in large part due to what I discussed above, `} catch (Excep
 
 It is also my personal belief that making classes like `Exception` concrete is a mistake. I honestly see no gain in it at all, and it encourages bad error handling practices like
 
-```
+```java
 throw new Exception("Too lazy to figure out a better class for this, yawn")
 ```
 

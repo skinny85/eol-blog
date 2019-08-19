@@ -61,7 +61,7 @@ The rules are as follows:
 
 So, given those rules, the best way to customize your shell (change the prompt, set up aliases etc.) is to do it in `.bashrc`, and add the following snippet:
 
-```
+```bash
 if [ -f ~/.bashrc ]; then
 	. ~/.bashrc
 fi
