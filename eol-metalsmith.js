@@ -14,24 +14,7 @@ var archivePage = require('./blog-plugins/archive-page');
 var rssFeed     = require('./blog-plugins/rss-feed');
 
 Handlebars.registerHelper('articleDate', function(date) {
-  return dateFormat(date, 'UTC:yyyy/mm/dd');
-});
-
-Handlebars.registerHelper('articleDateElement', function(date) {
-  var monthNr = dateFormat(date, 'UTC:mm');
-  var monthAbbr = dateFormat(date, 'UTC:mmm');
-  var dayNr = dateFormat(date, 'UTC:dd');
-  var year = dateFormat(date, 'UTC:yyyy');
-
-  return '<div class="entry-summary-date">' +
-    '<div class="date-inside">' +
-      '<div class="date-month">' +
-        monthNr + ' (' + monthAbbr + ')' +
-      '</div>' +
-      '<div class="date-day">' + dayNr + '</div>' +
-      '<div class="date-year">' + year + '</div>' +
-    '</div>' +
-  '</div>';
+  return dateFormat(date, 'UTC:yyyy-mm-dd');
 });
 
 var markedRenderer = new Marked.Renderer();
