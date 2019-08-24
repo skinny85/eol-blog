@@ -69,7 +69,7 @@ Turns out, [there was a bug](http://stackoverflow.com/questions/1333596/postgres
 In this sort of situation, it doesn't matter how beautiful the code you've written is, or if you have even 100% unit test coverage. Unless you perform an integration test against the same database that your system is using, you cannot ever be certain that your code will actually work.
 </p>
 <p>
-(On a different note, this is also a great example of working around the bugs of the software are you integrating with that I mentioned earlier)
+(On a different note, this is also a great example of working around the bugs of the software you are integrating with that I mentioned earlier)
 </p>
 </dd>
 
