@@ -16,7 +16,7 @@ you've undoubtedly noticed that the site looks completely different today.
 
 Yes, after years of the blog resembling a [GeoCities](https://en.wikipedia.org/wiki/Yahoo!_GeoCities) website from the late 90s,
 I finally took the time to completely overhaul and modernize all of the page styles.
-The familiar Stone Henge masthead picture with the blue navigation bar are gone,
+The familiar Stonehenge masthead picture with the blue navigation bar are gone,
 replaced with a responsive, two-column layout complete with my portrait photo.
 
 The old style has been on the site since it launched in 2014.
