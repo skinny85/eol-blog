@@ -157,7 +157,7 @@ public class AnotherClass {
 ...make it just a regular Java class that doesn't know anything about Spring:
 
 ```java
-public class AnotherClass {
+public final class AnotherClass {
 	private final SomeClass someClass;
 
 	public AnotherClass(SomeClass someClass) {
