@@ -117,7 +117,7 @@ Like I mentioned earlier, I believe Java made some fundamental mistakes in regar
 
 ### Wrong exception kind
 
-Joshua Bloch in his excellent book ["Effective Java"](https://www.amazon.com/Effective-Java-Joshua-Bloch/dp/0134685997)
+Joshua Bloch in his excellent book ["Effective Java"](https://www.amazon.com/gp/product/0134685997/ref=as_li_tl?ie=UTF8&tag=endoflineblog-20&camp=1789&creative=9325&linkCode=as2&creativeASIN=0134685997&linkId=5a0e367f1de6981f1b95eb46bd9dd82a)
 formulates the following rule:
 
 > Use checked exceptions for recoverable conditions
