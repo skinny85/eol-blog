@@ -123,8 +123,9 @@ which had `RunOrder` set to 2. This is clearly a correct CodePipeline,
 however the CDK was reporting a validation error during execution.
 
 Now, when I'm dealing with bugs,
-usually the first thing I try to do is to reproduce it.
-So, I fired up Intellij, and wrote the following test:
+usually the first thing I try to do is reproduce it.
+So, I fired up Intellij, and wrote the following test,
+that attempts to create a CodePipeline with an identical structure to the one described above:
 
 ```typescript
   "an Action's output can be used as input for an Action in the same Stage with a higher runOrder"(test: Test) {
@@ -186,7 +187,7 @@ Couple of notes about the above code:
 * I used two CodePipeline Action classes that are only available for tests,
   `FakeSourceAction` and `FakeBuildAction`.
   Of course, Bogdan couldn't have used them in his Pipeline,
-  but the bug report seemed to me to strongly indicate the problem lay somewhere in the Artifacts logic rather than any of the Action classes,
+  but the bug description made me strongly suspect the problem lay somewhere in the Artifacts logic rather than in any of the Action classes,
   so I thought using "fake" Actions wouldn't make a difference for reproducing this issue
   (spoiler alert: I was right, it didn't).
 
@@ -348,3 +349,5 @@ I can recommend the following books:
 * Kent Beck's ["Test-Driven Development: By Example"](https://www.amazon.com/gp/product/0321146530/ref=as_li_tl?ie=UTF8&tag=endoflineblog-20&camp=1789&creative=9325&linkCode=as2&creativeASIN=0321146530&linkId=2a5be095ac3298a61cf2a59842b64665)
 * ["Extreme Programming Explained"](https://www.amazon.com/gp/product/0321278658/ref=as_li_tl?ie=UTF8&tag=endoflineblog-20&camp=1789&creative=9325&linkCode=as2&creativeASIN=0321278658&linkId=e9e65a372df2aa1ff5dd3ea3e2067ccf), also by Kent Beck, with Cynthia Andres
 * ["Growing Object-Oriented Software, Guided by Tests"](https://www.amazon.com/gp/product/0321503627/ref=as_li_tl?ie=UTF8&tag=endoflineblog-20&camp=1789&creative=9325&linkCode=as2&creativeASIN=0321503627&linkId=ddfb1e4d66ed48d7afdb4063de0e7b32), by Steve Freeman and Nat Pryce (I [wrote about this book on this blog before](/recreating-the-code-from-the-goos-book-example-project)) - especially if you want to see how TDD extends to non-unit tests
+
+Thanks for reading!
