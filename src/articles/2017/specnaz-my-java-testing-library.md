@@ -10,7 +10,7 @@ summary: "In this article I want to introduce Specnaz,
 created_at: 2017-01-30
 ---
 
-I recently released version `1.0` of a Java testing library that I've created. It's called Specnaz, it's licensed under Apache v2, and available on my GitHub:
+I recently released version `1.0` of a Java testing library that I've created. It's called Specnaz, it's licensed under Apache v2, and available on GitHub:
 
 <p style="text-align: center;">
 [github.com/skinny85/specnaz](https://github.com/skinny85/specnaz)
