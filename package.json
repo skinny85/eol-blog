@@ -2,7 +2,7 @@
   "name": "endofline-blog",
   "private": true,
   "devDependencies": {
-    "handlebars": "^4.0.5",
+    "handlebars": "^4.3.0",
     "dateformat": "^3.0.3",
     "metalsmith": "^2.1.0",
     "metalsmith-assets": "^0.1.0",
