@@ -152,7 +152,7 @@ Because of the isolation from anything outside, unit tests execute purely in mem
 
 <dt>Ease of writing</dt>
 <dd>
-As they are only concerned with their code, unit tests are the simplest ones to write. In Java, for example, all you need to know is the <code>@Test</code> annotation and a way of asserting things, and you're good to go. In contrast, integration and end-to-end tests are much more complex, both in terms of the pre-conditions set up of the system under test, and the tools used.
+As they are only concerned with their code, unit tests are the simplest ones to write. In Java, for example, all you need to know is the `@Test` annotation and a way of asserting things, and you're good to go. In contrast, integration and end-to-end tests are much more complex, both in terms of the pre-conditions set up of the system under test, and the tools used.
 </dd>
 
 <dt>Error locality</dt>

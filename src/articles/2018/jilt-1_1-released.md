@@ -24,7 +24,7 @@ Version `1.1` brings with it only one feature - the `@BuilderInterfaces` annotat
     
 *   `packageName`, which allows changing the Java package that the outer interface mentioned above (and, by extension, all of its inner interfaces) reside in.
     
-    By default, the outer interface resides in the same package as the generated Builder (so, the same package as the <code>@Builder.packageName</code> attribute points to - if it's empty, that will be the same package the built class is in).
+    By default, the outer interface resides in the same package as the generated Builder (so, the same package as the `@Builder#packageName` attribute points to - if it's empty, that will be the same package the built class is in).
     
 *   `innerNames`, which allows you to customize the names of the per-property interfaces by providing a pattern for naming them. In the pattern, the character `*` will be substituted with the (capitalized) name of the property the given interface corresponds to.
     
@@ -32,7 +32,7 @@ Version `1.1` brings with it only one feature - the `@BuilderInterfaces` annotat
     
     By default, the interface names will simply be the capitalized name of their corresponding properties - so, the same as the pattern `"*"`.
     
-*   `lastInnerName`, which is used to change the name of the final interface - the one that contains the `build` method (it can also be called something other than `build`, by setting the <code>@Builder.buildMethod</code> attribute).
+*   `lastInnerName`, which is used to change the name of the final interface - the one that contains the `build` method (it can also be called something other than `build`, by setting the `@Builder#buildMethod` attribute).
     
     By default, that interface is called `Optionals` for Builders with the `BuilderStyle.TYPE_SAFE` style, and `Build` for `BuilderStyle.TYPE_SAFE_UNGROUPED_OPTIONALS` ones.
     
