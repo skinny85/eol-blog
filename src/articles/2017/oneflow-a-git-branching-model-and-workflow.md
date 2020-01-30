@@ -1,7 +1,7 @@
 ---
 id: 27
 layout: article.html
-title: OneFlow - a Git branching model and workflow
+title: OneFlow – a Git branching model and workflow
 summary: "In the 'GitFlow considered harmful' article,
 	I outlined an alternative Git versioning workflow that I
 	successfully used throughout my career.
@@ -13,7 +13,7 @@ created_at: 2017-04-30
 
 In this post I describe a Git branching model that I've been using successfully for years for both my side projects and professionally. I'm dubbing it OneFlow.
 
-This workflow was first described in the ['GitFlow considered harmful'](/gitflow-considered-harmful) article on this blog in May of 2015. A more detailed description of the branching model was a very common request in the comments for that post - in fact, the name 'OneFlow' was suggested by the readers (I chose it from many candidates). This article is meant to be a comprehensive and detailed reference, but the core branching model is exactly the same as described in that original post.
+This workflow was first described in the ['GitFlow considered harmful'](/gitflow-considered-harmful) article on this blog in May of 2015. A more detailed description of the branching model was a very common request in the comments for that post -- in fact, the name 'OneFlow' was suggested by the readers (I chose it from many candidates). This article is meant to be a comprehensive and detailed reference, but the core branching model is exactly the same as described in that original post.
 
 ## Table of Contents
 
@@ -32,7 +32,7 @@ This workflow was first described in the ['GitFlow considered harmful'](/gitflow
     * [Hotfix branches](#hotfix-branches)
         * [Starting a hotfix branch](#starting-a-hotfix-branch)
         * [Finishing a hotfix branch](#finishing-a-hotfix-branch)
-* [Variation - develop + master](#variation-develop-master)
+* [Variation -- develop + master](#variation-develop-master)
     * [The main branches](#the-main-branches)
     * [Feature branches](#develop-feature-branches)
         * [Starting a feature branch](#develop-starting-a-feature-branch)
@@ -48,7 +48,7 @@ This workflow was first described in the ['GitFlow considered harmful'](/gitflow
 
 OneFlow has been conceived as a simpler alternative to [GitFlow](http://nvie.com/posts/a-successful-git-branching-model/). However, please don't read "simpler" as "less able". OneFlow's branching model is exactly as powerful as GitFlow's. There is not a single thing that can be done using GitFlow that can't be achieved (in a simpler way) with OneFlow. The description below goes into more detail.
 
-As the name suggests, OneFlow's basic premise is to have one eternal branch in your repository. This brings a number of advantages (see below) without losing any expressivity of the branching model - the more advanced use cases are made possible through the usage of Git tags.
+As the name suggests, OneFlow's basic premise is to have one eternal branch in your repository. This brings a number of advantages (see below) without losing any expressivity of the branching model -- the more advanced use cases are made possible through the usage of Git tags.
 
 While the workflow advocates having one long-lived branch, that doesn't mean there aren't other branches involved when using it. On the contrary, the branching model encourages using a variety of support branches (see below for the details). What is important, though, is that they are meant to be short-lived, and their main purpose is to facilitate code sharing and act as a backup. The history is always based on the one infinite lifetime branch.
 
@@ -68,11 +68,11 @@ The main condition that needs to be satisfied in order to use OneFlow for a proj
 
 While OneFlow is pretty flexible, it's not suitable for every project. OneFlow will be a bad fit in basically the same circumstances that GitFlow would be. There are 2 main reasons why that might be the case.
 
-First, when the above condition ("every new production release is based on the previous one") is not satisfied. As an example, take the [Python programming language](https://www.python.org/). It has two incompatible versions, 2 and 3. Both of them receive bugfixes and security patches - however, that doesn't mean a new release of Python 3 is based on the commit of the latest release of Python 2. The two versions have diverged, and while they surely share a lot of code, you can't say that one is based on the other (talking from a purely version control perspective).
+First, when the above condition ("every new production release is based on the previous one") is not satisfied. As an example, take the [Python programming language](https://www.python.org/). It has two incompatible versions, 2 and 3. Both of them receive bugfixes and security patches -- however, that doesn't mean a new release of Python 3 is based on the commit of the latest release of Python 2. The two versions have diverged, and while they surely share a lot of code, you can't say that one is based on the other (talking from a purely version control perspective).
 
-If your project needs to maintain multiple simultaneous yet incompatible release versions that way, then OneFlow won't work for you out of the box. You can surely use elements of it - probably each individual version can be managed using OneFlow, for example. However, in these types of projects, the main challenge is usually in the interactions between the versions and how to effectively share code between them, and OneFlow was not designed to be a solution to that problem.
+If your project needs to maintain multiple simultaneous yet incompatible release versions that way, then OneFlow won't work for you out of the box. You can surely use elements of it -- probably each individual version can be managed using OneFlow, for example. However, in these types of projects, the main challenge is usually in the interactions between the versions and how to effectively share code between them, and OneFlow was not designed to be a solution to that problem.
 
-Second, if your project has a high degree of automation - uses Continuous Delivery, or even Continuous Deployment, for example - then this workflow will most likely be too heavy for you. Perhaps parts of it might still be useful, but other elements (like the release process, for instance) would have to be heavily modified to make sense when releasing on such a very frequent cadence.
+Second, if your project has a high degree of automation -- uses Continuous Delivery, or even Continuous Deployment, for example -- then this workflow will most likely be too heavy for you. Perhaps parts of it might still be useful, but other elements (like the release process, for instance) would have to be heavily modified to make sense when releasing on such a very frequent cadence.
 
 ## Detailed description
 
@@ -84,9 +84,9 @@ Like was explained before, the workflow uses only one eternal branch. The name d
 
 <img src="img/oneflow/feature-branch-with-labels.png" style="width: 18%; margin-left: 20px; float: right; margin-top: -15px;">
 
-Feature branches (also sometimes called topic branches) are where the day-to-day development work happens - hence, they are by far the most common of all the support branches. They are used to develop new features and bugfixes for the upcoming release. They are usually named similarly to `feature/my-feature`.
+Feature branches (also sometimes called topic branches) are where the day-to-day development work happens -- hence, they are by far the most common of all the support branches. They are used to develop new features and bugfixes for the upcoming release. They are usually named similarly to `feature/my-feature`.
 
-Feature branches often exist only in the developer's repository, and are never pushed - however, if there are multiple people working on one feature, or if the feature will take a long time to develop, it's typical to push them to the central repository (if only to make sure the code isn't lost with a single disk failure).
+Feature branches often exist only in the developer's repository, and are never pushed -- however, if there are multiple people working on one feature, or if the feature will take a long time to develop, it's typical to push them to the central repository (if only to make sure the code isn't lost with a single disk failure).
 
 #### Starting a feature branch
 
@@ -102,7 +102,7 @@ Once work on the given feature is done, it needs to be integrated back into `mas
 
 **Note:** the choice of the feature branch integration method is immaterial as far as the workflow is concerned. It should be based on personal or team preference, however the branching model will work exactly the same, regardless of which option is chosen. My personal recommendation is to use option #1.
 
-##### Option #1 - rebase
+##### Option #1 – rebase
 
 This method uses Git's `rebase` command (with the `-i`, meaning interactive, switch) to integrate the feature branch with `master`:
 
@@ -130,7 +130,7 @@ Disadvantages:
 
 * Reverting the entire feature requires reverting multiple commits.
 
-##### Option #2 - merge --no-ff
+##### Option #2 – merge --no-ff
 
 This is the method that GitFlow advocates.
 
@@ -154,7 +154,7 @@ Disadvantages:
 * The feature branch history, which is often messy, gets put directly on `master`.
 * The proliferation of merge commits (especially as the number of developers on a project grows) makes the history unmanageable.
 
-##### Option #3 - rebase + merge --no--ff
+##### Option #3 – rebase + merge --no--ff
 
 This method is a combination of the previous two, trying to keep their advantages while simultaneously getting rid of the disadvantages:
 
@@ -194,7 +194,7 @@ The naming convention for these is `release/<version-number>`.
 
 #### Starting a release branch
 
-Release branches also start from `master`, however they often don't start from the tip - instead, they have their origin in whatever commit on `master` you think contains all of the features that you want to include in the given release.
+Release branches also start from `master`, however they often don't start from the tip -- instead, they have their origin in whatever commit on `master` you think contains all of the features that you want to include in the given release.
 
 For example, here we start the branch for the version `2.3.0` release on a commit with the hash `9efc5d`:
 
@@ -227,7 +227,7 @@ $ git push origin :release/2.3.0
 
 ### Hotfix branches
 
-Hotfix branches are very similar to release branches - they result in a new version of the project being released. Where they differ is their intentions - while release branches signify a planned production milestone, hotfix branches are most often an unwanted but necessary exception to the usual release cadence, typically because of some critical defect found in the latest release that needs to be fixed as soon as possible.
+Hotfix branches are very similar to release branches -- they result in a new version of the project being released. Where they differ is their intentions -- while release branches signify a planned production milestone, hotfix branches are most often an unwanted but necessary exception to the usual release cadence, typically because of some critical defect found in the latest release that needs to be fixed as soon as possible.
 
 They are named `hotfix/<version-number>`. Note that if you use [Semantic Versioning](http://semver.org/), regular releases bump either the Major or Minor number, while hotfixes bump the Patch number.
 
@@ -256,7 +256,7 @@ Here's a visual illustration:
 
 <img src="img/oneflow/hotfix-branch-merge-final.png" style="width: 45%;">
 
-There is one special case when finishing a hotfix branch. If a release branch has already been cut in preparation for the next release before the hotfix was finished, you need to merge the hotfix branch not to `master`, but to the release branch. Otherwise, the new release will bring back the original bug that the hotfix corrected. The fix will eventually get to `master` - when the release branch is merged back to it.
+There is one special case when finishing a hotfix branch. If a release branch has already been cut in preparation for the next release before the hotfix was finished, you need to merge the hotfix branch not to `master`, but to the release branch. Otherwise, the new release will bring back the original bug that the hotfix corrected. The fix will eventually get to `master` -- when the release branch is merged back to it.
 
 As always, if the hotfix branch was pushed to the central repository, you need to remove it now:
 
@@ -264,7 +264,7 @@ As always, if the hotfix branch was pushed to the central repository, you need t
 $ git push origin :hotfix/2.3.1
 ```
 
-## Variation - develop + master
+## Variation – develop + master
 
 There is one small wrinkle with the branching model described above. In order to find the latest production version of the code, you need to look at all of the tags in the repository, and checkout the latest one.
 
@@ -298,7 +298,7 @@ $ git checkout -b feature/my-feature develop
 
 #### Finishing a feature branch
 
-##### Option #1 -rebase
+##### Option #1 – rebase
 
 ```bash
 $ git checkout feature/my-feature
@@ -309,7 +309,7 @@ $ git push origin develop
 $ git branch -d feature/my-feature
 ```
 
-##### Option #2 - merge --no-ff
+##### Option #2 – merge --no-ff
 
 ```bash
 $ git checkout develop
@@ -318,7 +318,7 @@ $ git push origin develop
 $ git branch -d feature/my-feature
 ```
 
-##### Option #3 - rebase + merge --no--ff
+##### Option #3 – rebase + merge --no--ff
 
 ```bash
 $ git checkout feature/my-feature
@@ -356,7 +356,7 @@ $ git push --tags origin develop
 $ git branch -d release/2.3.0
 ```
 
-And here is the extra step - fast-forwarding `master` to the latest release tag:
+And here is the extra step -- fast-forwarding `master` to the latest release tag:
 
 ```bash
 $ git checkout master
@@ -411,7 +411,7 @@ If we continue our release example, the visual illustration looks something like
 
 So, this is OneFlow in a nutshell. If you have any questions about the workflow, or if something is unclear in the description, please let me know in the comments below. I'll try to answer as best as I can.
 
-I also wanted to ask you, dear reader, one thing. GitFlow has a [set of command-line tools that help with managing the workflow](https://github.com/nvie/gitflow). Personally, I'm not a huge fan of that, as I think relying on the tools makes people never learn the actual concepts behind the workflow they're using, and when things go wrong (which they seem to invariably do with these tools - for example, if you happen to execute the commands in the wrong order), they have no idea how to fix it, and wind up with their repository in a really weird state. However, I also recognize that these tools help with the adoption of the workflow, and are useful when, for example, trying to enforce team-wide standards.
+I also wanted to ask you, dear reader, one thing. GitFlow has a [set of command-line tools that help with managing the workflow](https://github.com/nvie/gitflow). Personally, I'm not a huge fan of that, as I think relying on the tools makes people never learn the actual concepts behind the workflow they're using, and when things go wrong (which they seem to invariably do with these tools -- for example, if you happen to execute the commands in the wrong order), they have no idea how to fix it, and wind up with their repository in a really weird state. However, I also recognize that these tools help with the adoption of the workflow, and are useful when, for example, trying to enforce team-wide standards.
 
 So, here's my question to you: do you want to see a similar command-line tool for working with OneFlow? If the answer is 'yes', please let me know in the comments. If enough people express interest in using a project like that, then I'll devote some time to creating that tool.
 

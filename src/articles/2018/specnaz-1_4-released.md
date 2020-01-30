@@ -6,7 +6,7 @@ summary: Version 1.4 brings with it support for TestNG as the execution engine.
 created_at: 2018-07-30
 ---
 
-`1.4` is the newest release of [Specnaz](https://github.com/skinny85/specnaz), my testing library for Java, Kotlin and Groovy. This version ships with the number one requested feature for Specnaz - supporting [TestNG](https://testng.org) in addition to JUnit as the test execution and reporting engine.
+`1.4` is the newest release of [Specnaz](https://github.com/skinny85/specnaz), my testing library for Java, Kotlin and Groovy. This version ships with the number one requested feature for Specnaz -- supporting [TestNG](https://testng.org) in addition to JUnit as the test execution and reporting engine.
 
 ## TestNG in Java
 
@@ -118,7 +118,7 @@ and the `SpecnazKotlinParamsTestNG` abstract helper class in the same package.
 
 Sadly, TestNG is not as flexible as JUnit, and has some inherent limitations when being used as the test execution engine for Specnaz:
 
-*   TestNG doesn't support the same arbitrary test results trees as JUnit - which means the reports will be flattened, regardless of the level of nesting in your specs. The reported name of each test will be all of descriptions, up to the root of the spec tree, concatenated with the test's own description.
+*   TestNG doesn't support the same arbitrary test results trees as JUnit -- which means the reports will be flattened, regardless of the level of nesting in your specs. The reported name of each test will be all of descriptions, up to the root of the spec tree, concatenated with the test's own description.
 *   All of the results will be reported under one root class, `SpecnazTests`, in the `org.specnaz.testng` package, completely discarding the original name of your spec class.
 
 So, let's say you have the following test suite, consisting of 2 classes:
@@ -161,4 +161,4 @@ As you can see, the spec tree structure is not preserved in the results, unlike 
 
 Like I said, TestNG support was the single most requested feature for [Specnaz](https://github.com/skinny85/specnaz). I hope even with the given limitations, it will prove useful, and open up opportunities to use Specnaz where it wasn't possible before.
 
-If you've used Specnaz with TestNG (or even with JUnit, for that matter), I would love to hear about your experiences - let me know in the comments!
+If you've used Specnaz with TestNG (or even with JUnit, for that matter), I would love to hear about your experiences -- let me know in the comments!

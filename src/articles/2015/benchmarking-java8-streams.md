@@ -1,7 +1,7 @@
 ---
 id: 5
 layout: article.html
-title: "'No more loops' - benchmarking the new Java 8 Stream API"
+title: "'No more loops' – benchmarking the new Java 8 Stream API"
 summary: "There was a post on Reddit which advertised using the new features
 	introduced in Java 8, like lambda expressions and streams, over traditional
 	constructs such as for-loops and collections. I created a benchmark comparing
@@ -121,8 +121,8 @@ The code of the benchmark is available on [GitHub](https://github.com/skinny85/n
 
 ![benchmark graph](/assets/benchmark-graph.png)
 
-As you can see, the results are very close. `getAllJavaArticles` and `groupByAuthor` are practically undistinguishably close. Both `getFirstJavaArticle` and `getDistinctTags` are faster with for loops - the first one by about 16%, the second around 24%. I should add that I generated the test data purposefully in a way in which there was no Java article, so that both versions of `getAllJavaArticles` and `getFirstJavaArticle` had to do their "worst case" (traverse the entire collection).
+As you can see, the results are very close. `getAllJavaArticles` and `groupByAuthor` are practically undistinguishably close. Both `getFirstJavaArticle` and `getDistinctTags` are faster with for loops -- the first one by about 16%, the second around 24%. I should add that I generated the test data purposefully in a way in which there was no Java article, so that both versions of `getAllJavaArticles` and `getFirstJavaArticle` had to do their "worst case" (traverse the entire collection).
 
-I think the results are clear - the performance of the Streams API is excellent, in some cases better than a hand-written loop, and not noticably worse in others. Therefore, performance should not be a consideration when choosing between the two styles - rather, readability and ease of maintenance should be the deciding factors.
+I think the results are clear -- the performance of the Streams API is excellent, in some cases better than a hand-written loop, and not noticably worse in others. Therefore, performance should not be a consideration when choosing between the two styles -- rather, readability and ease of maintenance should be the deciding factors.
 
-I encourage you to play with the benchmark yourself. Did your results match mine? Let me know in the comments! Also, this was my first experience writing Java benchmarks - if you have anything to say about that part, I encourage you to give me some feedback, either here or on GitHub.
+I encourage you to play with the benchmark yourself. Did your results match mine? Let me know in the comments! Also, this was my first experience writing Java benchmarks -- if you have anything to say about that part, I encourage you to give me some feedback, either here or on GitHub.

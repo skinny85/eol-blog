@@ -46,6 +46,7 @@ function eolMetalsmith() {
     .use(markdown({
       renderer: markedRenderer,
       langPrefix: 'language-',
+      smartypants: true,
     }))
     .use(prism({
         decode: true,

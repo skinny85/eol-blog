@@ -57,7 +57,7 @@ all of these are examples of non-backwards compatible changes,
 and using the Builder pattern cannot change that.)
 
 How does the Type-Safe Builder handle these 2 categories of evolution?
-Well, the first one is easy - the new optional property will be added to the last interface,
+Well, the first one is easy -- the new optional property will be added to the last interface,
 the one that contains setters for all of the existing optional properties
 (and the `build` method), so we're good there.
 The second one, however, is more problematic.
@@ -157,11 +157,11 @@ Because we don't care about the order the required properties were given in
 or the second after the first),
 only that they were given,
 we'll always write the sequence as sorted, ascending
-(so, we'll never have `B_2_1_Interf` - only ever `B_1_2_Interf`).
+(so, we'll never have `B_2_1_Interf` -- only ever `B_1_2_Interf`).
 
 How do we move between the interfaces?
 In the previous Builders,
-it was obvious - each property interface was followed by the next property's interface,
+it was obvious -- each property interface was followed by the next property's interface,
 forming a linear chain.
 Here, though, things get a little more complicated.
 
@@ -184,7 +184,7 @@ and for every optional property,
 will be simply `B_1_Interf` again,
 as providing these do not advance us closer to our goal of having all required properties provided.
 
-We also need 2 more states - the initial state,
+We also need 2 more states -- the initial state,
 let's call it `StarterBuilderInterf`,
 where 0 required properties were so far provided,
 and the final interface,
@@ -203,8 +203,8 @@ Finally, here's how it looks like in code.
 We are using the class mentioned above,
 `User`, from the [first article](/type-safe-builder-pattern-in-java-and-the-jilt-library).
 To recap, it has 5 properties, all Strings;
-3 of them - `email`, `firstName` and `lastName` - are required,
-while 2 - `username` and `displayName` - are optional.
+3 of them -- `email`, `firstName` and `lastName` -- are required,
+while 2 -- `username` and `displayName` -- are optional.
 
 ```java
 interface StarterBuilderInterf {
@@ -376,7 +376,7 @@ Full code of the `UserBuilder` [can be found here](https://github.com/skinny85/f
 
 ## Interfaces overload
 
-So, this is great - we've achieved our objective of Type-Safety
+So, this is great -- we've achieved our objective of Type-Safety
 (we cannot call `build` until all of the required properties have been set)
 while making it possible to evolve the built class in a backwards-compatible way.
 There is only one small wrinkle...

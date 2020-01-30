@@ -34,9 +34,9 @@ I said to myself: "Hey, wouldn't it be fun to also do all of the CSS for the sit
 While I've been doing web development for quite some time in 2014 already,
 it's very rare that you have the opportunity to work on a project with a completely blank slate for its styling.
 For maximum effect, I decided not to use any pre-created theme,
-or CSS framework - not even something relatively lightweight like [Bootstrap](https://getbootstrap.com).
+or CSS framework -- not even something relatively lightweight like [Bootstrap](https://getbootstrap.com).
 
-The experiment ended in success - the blog launched in September of 2014,
+The experiment ended in success -- the blog launched in September of 2014,
 almost exactly five years ago.
 In the process, I learned a ton about laying out a website from scratch.
 However, I'm a developer, not a designer -
@@ -104,7 +104,7 @@ markedRenderer.codespan = function (contents) {
 I'm sure the styling is still far from perfect -
 the margins for headers seem to be a bit too large,
 the vertical padding inside blockquotes is too wide, etc.
-But that's OK - I'll make small tweaks to it as time goes by,
+But that's OK -- I'll make small tweaks to it as time goes by,
 and even in this form the current CSS is light years ahead of the previous look.
 
 I'm thinking of doing a few additional small changes to the site after this -

@@ -1,9 +1,9 @@
 ---
 id: 22
 layout: article.html
-title: Unit, acceptance or functional? Demystifying the test types - Part 3
+title: Unit, acceptance or functional? Demystifying the test types – Part 3
 summary: "In another four-part article series, I want to tackle the topic of
-    various test types - clearly define their different kinds, and show some
+    various test types – clearly define their different kinds, and show some
     concrete examples of tests on various levels of abstraction. If you've
     ever wondered what does it mean to write a non-functional integration
     test, or what exactly is the 'unit' in 'unit tests', these are the
@@ -14,20 +14,20 @@ created_at: 2016-08-31
 This is Part 3 of a 4-part article series about the different types of tests.
 
 <ul class="parts-list">
-    <li>[Part 1 - acceptance and functional tests](/unit-acceptance-or-functional-demystifying-the-test-types-part1)</li>
-    <li>[Part 2 - unit tests](/unit-acceptance-or-functional-demystifying-the-test-types-part2)</li>
-    <li>[Part 4 - end-to-end tests](/unit-acceptance-or-functional-demystifying-the-test-types-part4)</li>
+    <li>[Part 1 -- acceptance and functional tests](/unit-acceptance-or-functional-demystifying-the-test-types-part1)</li>
+    <li>[Part 2 -- unit tests](/unit-acceptance-or-functional-demystifying-the-test-types-part2)</li>
+    <li>[Part 4 -- end-to-end tests](/unit-acceptance-or-functional-demystifying-the-test-types-part4)</li>
 </ul>
 
 <hr class="parts-separator">
 
 ### Integration tests
 
-**Integration tests** are interesting, because I believe they are as misunderstood as unit tests - however, the reason for that misunderstanding is the exact opposite of the reason for unit tests. While unit tests suffer from being under defined, integration tests are defined too well.
+**Integration tests** are interesting, because I believe they are as misunderstood as unit tests -- however, the reason for that misunderstanding is the exact opposite of the reason for unit tests. While unit tests suffer from being under defined, integration tests are defined too well.
 
 If you ask almost any programmer what are integration tests, he will almost invariably answer with some variant of the following: "Integration tests work by combining the units of code and testing that the resulting combination functions correctly".
 
-That definition never made any sense to me. It's somehow implying that it's not enough to test calling `myClass.someMethod()` in unit tests - that I have to do it again, just this time together with other components, because for some reason, it might stop working then. Very weird, in my opinion.
+That definition never made any sense to me. It's somehow implying that it's not enough to test calling `myClass.someMethod()` in unit tests -- that I have to do it again, just this time together with other components, because for some reason, it might stop working then. Very weird, in my opinion.
 
 However, I really think that the concept of integration tests is not hard, and the easiest way to explain what they are is to contrast them with unit tests.
 
@@ -41,7 +41,7 @@ It's concerned only with your code, each exercising a part of it, obviously. Now
 
 <img src="img/tests-post-diag-ver3.png" style="width: 85%">
 
-An integration test selects some aspect from the "things outside of your control" area, and then exercises your code that is meant to interact with it - using an authentic instance of that "thing", not some fake one like a unit test would - to verify that the code is in fact correct.
+An integration test selects some aspect from the "things outside of your control" area, and then exercises your code that is meant to interact with it -- using an authentic instance of that "thing", not some fake one like a unit test would -- to verify that the code is in fact correct.
 
 Note that "correct" in this case is always judged from the outside thing's perspective. As that is something you don't control, you cannot simply conclude that that thing is wrong, and your code is right. If the integration fails, then the application will not work, and it's your responsibility to fix that. Even if you are 100% certain that the outside thing's behavior is a bug, you have to work around it (this tends to happen fairly frequently, for example, when your application needs to integrate with some large, expensive, closed-source shrink-wrapped software product).
 
@@ -76,10 +76,10 @@ In this sort of situation, it doesn't matter how beautiful the code you've writt
 <dt>External services</dt>
 <dd>
 <p>
-This is probably the most common understanding of the term 'integration' - talking to some external system through a well-defined API. There is a lot that can go wrong with this sort of setup - the smallest misconfiguration, and the two sides will be unable to understand each other. Anyone who tried to change the signature of a Java remote EJB method call will surely agree with me. Another example would be the secret tokens that a lot of APIs generate for you in order to authenticate. You usually have to perform some cryptographic operations using the given key to sign the request in a specific way. You can never be 100% certain you've done it correctly until you call the API and get a positive answer back. For these kind of concerns, unit tests are pretty much useless.
+This is probably the most common understanding of the term 'integration' -- talking to some external system through a well-defined API. There is a lot that can go wrong with this sort of setup -- the smallest misconfiguration, and the two sides will be unable to understand each other. Anyone who tried to change the signature of a Java remote EJB method call will surely agree with me. Another example would be the secret tokens that a lot of APIs generate for you in order to authenticate. You usually have to perform some cryptographic operations using the given key to sign the request in a specific way. You can never be 100% certain you've done it correctly until you call the API and get a positive answer back. For these kind of concerns, unit tests are pretty much useless.
 </p>
 <p>
-Note that in our modern era of microservices, this sort of communication pattern is much more common, and not restricted only to the boundary of your system - on the contrary, the majority of your internal components will most likely talk to each other this way. Which means properly testing these interactions - using real clients and servers, not mocks - becomes even more crucial.
+Note that in our modern era of microservices, this sort of communication pattern is much more common, and not restricted only to the boundary of your system -- on the contrary, the majority of your internal components will most likely talk to each other this way. Which means properly testing these interactions -- using real clients and servers, not mocks -- becomes even more crucial.
 </p>
 </dd>
 
@@ -89,7 +89,7 @@ Note that in our modern era of microservices, this sort of communication pattern
 These probably aren't the first things that come to mind when thinking about integration tests. However, it's very important to realize that there are as outside of your control as a database or an external system.
 </p>
 <p>
-Frameworks and libraries often place restrictions on your code, and will break if you don't follow them perfectly. A simple example in the Java world might be JPA (the Java Persistence API) - the ORM (Object-Relational Mapping) solution. The `@Entity` classes that map to the database tables must fulfill certain criteria for it to work correctly. So, it doesn't matter how well you have unit tested your entity class - if you forgot to declare a no-argument constructor for it, or declared the class `final`, the code will break as soon as you try to talk to a database.
+Frameworks and libraries often place restrictions on your code, and will break if you don't follow them perfectly. A simple example in the Java world might be JPA (the Java Persistence API) -- the ORM (Object-Relational Mapping) solution. The `@Entity` classes that map to the database tables must fulfill certain criteria for it to work correctly. So, it doesn't matter how well you have unit tested your entity class -- if you forgot to declare a no-argument constructor for it, or declared the class `final`, the code will break as soon as you try to talk to a database.
 </p>
 <p>
 An often tricky part of working with some frameworks and libraries is that a lot of them have not been designed with easy testability in mind, which means asserting the correctness of your code from their perspective is very hard to do in a test. Java Enterprise Edition is notorious for this (try writing a test checking if you are using JNDI correctly, and you'll see what I mean).
@@ -97,7 +97,7 @@ An often tricky part of working with some frameworks and libraries is that a lot
 </dd>
 </dl>
 
-#### Unit vs. integration - an example
+#### Unit vs. integration – an example
 
 Finally, I want to show how does the approach vary between unit and integration tests on a concrete example. We will be using the following Spring controller:
 
@@ -141,7 +141,7 @@ public final class User {
 }
 ```
 
-Now, we could write a simple unit test for this Controller - like this:
+Now, we could write a simple unit test for this Controller -- like this:
 
 ```java
 public class UserControllerUnitTest {
@@ -175,7 +175,7 @@ public class UserControllerUnitTest {
 And while this test is fine, I don't think it adds too much value.
 
 * It doesn't actually test the Controller aspect of the class. We can remove the `@Controller` annotation, and it would still pass.
-* The paths for the endpoint are untested. For example, we used `/api/` on the class, and `/users` on the method - will Spring handle it correctly, and it will be available at `/api/users`? (spoiler alert - yes, it works like that)
+* The paths for the endpoint are untested. For example, we used `/api/` on the class, and `/users` on the method -- will Spring handle it correctly, and it will be available at `/api/users`? (spoiler alert -- yes, it works like that)
 * Our Controller is supposed to return JSON data, however that aspect of the code is completely unverified.
 
 Fortunately, Spring is a technology that has always put testability as one of its primary goals. Because of that, it's fairly easy to write an integration test verifying all of those things that the unit test was unable to check:
@@ -250,7 +250,7 @@ As you can see, integration tests, while valuable, might still leave some facets
 This is Part 3 of a 4-part article series about the different types of tests.
 
 <ul class="parts-list">
-    <li>[Part 1 - acceptance and functional tests](/unit-acceptance-or-functional-demystifying-the-test-types-part1)</li>
-    <li>[Part 2 - unit tests](/unit-acceptance-or-functional-demystifying-the-test-types-part2)</li>
-    <li>[Part 4 - end-to-end tests](/unit-acceptance-or-functional-demystifying-the-test-types-part4)</li>
+    <li>[Part 1 -- acceptance and functional tests](/unit-acceptance-or-functional-demystifying-the-test-types-part1)</li>
+    <li>[Part 2 -- unit tests](/unit-acceptance-or-functional-demystifying-the-test-types-part2)</li>
+    <li>[Part 4 -- end-to-end tests](/unit-acceptance-or-functional-demystifying-the-test-types-part4)</li>
 </ul>

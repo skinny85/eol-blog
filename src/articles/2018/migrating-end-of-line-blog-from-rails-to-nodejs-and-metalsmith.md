@@ -66,7 +66,7 @@ I was growing desperate, and even considered writing my own generator from scrat
 But then, I found [Metalsmith](http://www.metalsmith.io/).
 
 Metalsmith is a small NodeJS static generator library that has a very simple,
-clearly defined structure - it takes files from disk,
+clearly defined structure -- it takes files from disk,
 and turns them into JavaScript objects that you manipulate.
 The configuration is completely expressed in a few lines of JavaScript,
 and thus can be easily changed -
@@ -118,11 +118,11 @@ all you need to do is select your GitHub repository from a list after you've log
 provide a build command (`npm run build` in my case),
 the output directory (`build/` for me, which conveniently is also the default),
 and... that's it! After a few seconds, your site will be up and running.
-And it gets even better - when you setup a custom domain with Netlify,
+And it gets even better -- when you setup a custom domain with Netlify,
 you automatically get a free certificate from [Let's Encrypt](https://letsencrypt.org/),
 and have your blog available through HTTPS,
 without _any_ configuration
-(seriously - it's not even 1-click, it's 0-clicks!).
+(seriously -- it's not even 1-click, it's 0-clicks!).
 You can't have HTTPS support using Heroku's free tier,
 so this is pretty cool.
 

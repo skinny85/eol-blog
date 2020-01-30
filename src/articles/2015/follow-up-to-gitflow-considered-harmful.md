@@ -12,13 +12,13 @@ created_at: 2015-06-20
 
 **Edit (April 2017)**: the workflow outlined in this post has now a separate article describing it [here](/oneflow-a-git-branching-model-and-workflow)
 
-My [previous post](/gitflow-considered-harmful), in which I explained what I disliked about GitFlow, generated a lot of feedback on [/r/programming](http://www.reddit.com/r/programming/comments/3ae2tx/gitflow_considered_harmful/), [HackerNews](https://news.ycombinator.com/item?id=9744059), [Twitter](https://twitter.com/sarahmei/status/611934021463859200) and in the comments section of the article itself. I like to thank everybody who took the time to read the post and maybe write a response - it's been great knowing that a lot of you have had similar experiences to mine, and even better finding out that for some people, those things that bug me are not a problem at all (I devote a whole section to that issue below).
+My [previous post](/gitflow-considered-harmful), in which I explained what I disliked about GitFlow, generated a lot of feedback on [/r/programming](http://www.reddit.com/r/programming/comments/3ae2tx/gitflow_considered_harmful/), [HackerNews](https://news.ycombinator.com/item?id=9744059), [Twitter](https://twitter.com/sarahmei/status/611934021463859200) and in the comments section of the article itself. I like to thank everybody who took the time to read the post and maybe write a response -- it's been great knowing that a lot of you have had similar experiences to mine, and even better finding out that for some people, those things that bug me are not a problem at all (I devote a whole section to that issue below).
 
 While reading and responding to the comments, there were a few cases where the same issues would keep popping up again and again, which indicates to me that I did not make myself clear enough in a couple of places. In this post, I attempt to clarify those recurring issues.
 
 ## "I agree with the article, but we have to keep using GitFlow because your workflow can't do X"
 
-The workflow I described can do everything that GitFlow can. I am absolutely positive of this, and I know it from experience. I think when I wrote that it's simpler, some people took it to mean that it's a trimmed down version that sacrifices some of the features to achieve that simplicity. That is not the case; it's simpler, but exactly as powerful as GitFlow with regards as to how expressive the branching model is. That's why I can say with confidence that's it strictly superior to GitFlow - you can retain the same basic way of doing things as you had before, it will just be easier.
+The workflow I described can do everything that GitFlow can. I am absolutely positive of this, and I know it from experience. I think when I wrote that it's simpler, some people took it to mean that it's a trimmed down version that sacrifices some of the features to achieve that simplicity. That is not the case; it's simpler, but exactly as powerful as GitFlow with regards as to how expressive the branching model is. That's why I can say with confidence that's it strictly superior to GitFlow -- you can retain the same basic way of doing things as you had before, it will just be easier.
 
 There is a particular case of this issue that I want to address in a separate point:
 
@@ -32,7 +32,7 @@ Let's say the last production release of some example project that we're working
 
 (Some people were curious what is the GUI client I'm using for these images. It's [gitg](https://wiki.gnome.org/Apps/Gitg/), as I'm on Linux. It's funny that even though Git started as a natively Linux application, Linux has by far the worst GUI clients for it of all the major platforms)
 
-And now, disaster strikes - somebody finds a critical bug in the `2.0.0` version on production, and it needs to be fixed ASAP. Obviously, the fix should not include all the current work-in-progress on version `2.1.0` that is happening on master at this point. What do you do? You create a new branch, `hotfix/2.0.1`, which starts at the commit pointed to by tag `2.0.0`, and you fix your critical bug on that separate branch. Let's say it took you two commits to do that. Now the situation looks like this:
+And now, disaster strikes -- somebody finds a critical bug in the `2.0.0` version on production, and it needs to be fixed ASAP. Obviously, the fix should not include all the current work-in-progress on version `2.1.0` that is happening on master at this point. What do you do? You create a new branch, `hotfix/2.0.1`, which starts at the commit pointed to by tag `2.0.0`, and you fix your critical bug on that separate branch. Let's say it took you two commits to do that. Now the situation looks like this:
 
 ![](/assets/gitflow2-hotfix2.png)
 
@@ -42,13 +42,13 @@ So your fix gets deployed in the test environment, QA takes a look at it and eve
 
 ![](/assets/gitflow2-hotfix3.png)
 
-Again - none of this impacts work that is still going on on master for version `2.1.0` (commit "Even more work on version 2.1.0"). So, the release is done, and production is on version `2.0.1`. The only thing that's left to do is to make this change versioned permanently. Since there's only one eternal branch in our repository, there's only one possible way this can be done: merge the hotfix to master. Which makes the history look as follows:
+Again -- none of this impacts work that is still going on on master for version `2.1.0` (commit "Even more work on version 2.1.0"). So, the release is done, and production is on version `2.0.1`. The only thing that's left to do is to make this change versioned permanently. Since there's only one eternal branch in our repository, there's only one possible way this can be done: merge the hotfix to master. Which makes the history look as follows:
 
 ![](/assets/gitflow2-hotfix4.png)
 
 At this point, every commit reachable from `hotfix/2.0.1` can be reached also from master, so this branch contributes nothing to history. After `hotfix/2.0.1` is deleted, the bugfixing is considered closed.
 
-**EDIT**: as RobM helpfully points out in the comments, note that deleting the `hotfix/2.0.1` branch does not affect the tag `2.0.1` in any way - in particular, it's not deleted.
+**EDIT**: as RobM helpfully points out in the comments, note that deleting the `hotfix/2.0.1` branch does not affect the tag `2.0.1` in any way -- in particular, it's not deleted.
 
 Some additional notes on this subject:
 
@@ -96,17 +96,17 @@ Remember, all we changed was we renamed what was previously called 'master' to '
 
 "WAIT!", I can almost hear you say, "You JUST said in the other article that the master/develop split is redundant! And now you're using it yourself? What the hell is up?!". Let me explain.
 
-First of all, that comment was made strictly in the context of how GitFlow uses the master and develop branches. I never said keeping more than one eternal branch NEVER makes sense - for instance, I said you need to do it in the previous section, when I talked about maintaining different versions of the same project in one repository. It's this PARTICULAR master/develop split that sucks - not EVERY master/develop split.
+First of all, that comment was made strictly in the context of how GitFlow uses the master and develop branches. I never said keeping more than one eternal branch NEVER makes sense -- for instance, I said you need to do it in the previous section, when I talked about maintaining different versions of the same project in one repository. It's this PARTICULAR master/develop split that sucks -- not EVERY master/develop split.
 
-Secondly, this is a totally different way of using master than how GitFlow does it. Notice that master is never committed or merged to directly - the only way it changes is it's fast-forwarded to a commit already in the repository. To put it in another way, there is never a point in time that master points to a commit that's not reachable from another branch or tag in the repository (contrary to how it works in GitFlow). It's never used in the day-to-day work of developers, and doesn't affect their workflow in any way (the only person who's affected is the one doing or scheduling the release). It's nothing more than a convenience to make reaching the production release of the project quicker. That's why in the comments of the previous post, I referred to it as a "marker" branch - a branch whose sole purpose is to point to a particular commit. You can think of it as a mutable tag. Again, to reiterate - this is NOTHING like the master from GitFlow.
+Secondly, this is a totally different way of using master than how GitFlow does it. Notice that master is never committed or merged to directly -- the only way it changes is it's fast-forwarded to a commit already in the repository. To put it in another way, there is never a point in time that master points to a commit that's not reachable from another branch or tag in the repository (contrary to how it works in GitFlow). It's never used in the day-to-day work of developers, and doesn't affect their workflow in any way (the only person who's affected is the one doing or scheduling the release). It's nothing more than a convenience to make reaching the production release of the project quicker. That's why in the comments of the previous post, I referred to it as a "marker" branch -- a branch whose sole purpose is to point to a particular commit. You can think of it as a mutable tag. Again, to reiterate -- this is NOTHING like the master from GitFlow.
 
-And lastly, you can actually argue that master IS in fact redundant in this scheme. It duplicates information that's already accessible through tags. The difference between GitFlow's redundancy is that this redundancy has a clear purpose - to make it easy for people who are cloning the repository for the first time to reach a stable state of the project.
+And lastly, you can actually argue that master IS in fact redundant in this scheme. It duplicates information that's already accessible through tags. The difference between GitFlow's redundancy is that this redundancy has a clear purpose -- to make it easy for people who are cloning the repository for the first time to reach a stable state of the project.
 
 ## "The workflow you described won't work with our CI setup"
 
 I hope the previous section adressed these concerns as well. After all, you can have master & develop this way, which is exactly what GitFlow has, so there should be no difference between them.
 
-I hope the previous section illustrated how easy it is to customize this workflow to fit your particular needs. For example, I can imagine adding another marker branch, called 'prev', which tracks the _previously_ released production version - which can be used to quickly roll back a release if it turns out the current one is broken.
+I hope the previous section illustrated how easy it is to customize this workflow to fit your particular needs. For example, I can imagine adding another marker branch, called 'prev', which tracks the _previously_ released production version -- which can be used to quickly roll back a release if it turns out the current one is broken.
 
 ## "You make good points, but I still prefer merging over rebasing"
 
@@ -114,7 +114,7 @@ Some people, when faced with choosing between the merge spaghetti and the linear
 
 If you remember, in my description of the workflow I said that you have a lot of leeway in how adamant you want to be in enforcing linear history. This means, in particular, that you can choose not to do it at all, and keep using the `--no-ff` flag. And that's OK; the workflow will still work, exactly like it was described.
 
-The debate whether to merge or rebase feature branches is old, and not one I expect will be settled soon. I'm firmly in "Team Rebase" (hmmm, that gives me an idea for a T-shirt...) - that's how I work every day, and it's absolutely natural to me. I won't waste time trying to convince you, if you prefer merging. The best argument I've ever seen in favor of rebasing was actually made in the HackerNews thread discussing the previous post. You can read it [here](https://news.ycombinator.com/item?id=9745966). If that doesn't convince you, I for sure won't.
+The debate whether to merge or rebase feature branches is old, and not one I expect will be settled soon. I'm firmly in "Team Rebase" (hmmm, that gives me an idea for a T-shirt...) -- that's how I work every day, and it's absolutely natural to me. I won't waste time trying to convince you, if you prefer merging. The best argument I've ever seen in favor of rebasing was actually made in the HackerNews thread discussing the previous post. You can read it [here](https://news.ycombinator.com/item?id=9745966). If that doesn't convince you, I for sure won't.
 
 A nice compromise that was suggested multiple times by various commenters was a hybrid approach. Basically, after you've finished your work on the feature branch (meaning, at the point you would do a `--no-ff` merge in GitFlow), you first delete the remote branch (if there was any), then rebase your changes on top of develop, simultaneously cleaning up the history (correcting commit messages, squashing some commits into one etc.), and only then do a merge with `--no-ff`. This way you can have the best of both worlds: nice, almost linear history that you get with rebases and good separation and ease of rollback that merges afford you. I agree that this is a very cool approach; the only thing that bothers me about it is I don't know of any way of enforcing it.
 

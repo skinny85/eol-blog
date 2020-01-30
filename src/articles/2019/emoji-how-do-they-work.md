@@ -1,7 +1,7 @@
 ---
 id: 38
 layout: article.html
-title: Emoji - how do they work?
+title: Emoji – how do they work?
 summary: "
   What exactly are emoji? Are they just small, silly images?
   If that's true, then why does pretty much every device,
@@ -590,7 +590,7 @@ This greatly simplifies interoperability with the huge corpus of existing files 
 ## Emoticons
 
 So, we have text encodings.
-Great - how is that related to emojis?
+Great -- how is that related to emojis?
 For that, let's go back in time again.
 
 In the 80s and 90s, the Internet was becoming mainstream,
@@ -644,7 +644,7 @@ With those improvements, it was finally possible to have actual image files disp
 The device makers and network operators were of course very aware of how popular emoticons have become.
 They decided to leverage the newly improved phone displays to make the experience of using them nicer than having to futz around with a bunch of punctuation symbols.
 This trend was especially popular in Japan,
-and that's where the name 'emoji' name comes from - it means 'pictograph' in Japanese.
+and that's where the name 'emoji' name comes from -- it means 'pictograph' in Japanese.
 
 Phone providers started allowing people to choose from a set of pre-defined, small images that were a graphical representation of the various emotes -
 like a cartoon smiling face instead of the characters `:-)`.
@@ -653,7 +653,7 @@ like animals, objects and persons (like soldiers, firemen, etc.).
 Of course, every provider implemented these in a proprietary format,
 incompatible with every other provider.
 The need for standardization became obvious pretty quickly.
-And then somebody realized that there already was a standard aiming to support all characters used by mankind - Unicode!
+And then somebody realized that there already was a standard aiming to support all characters used by mankind -- Unicode!
 
 Emoji first became part of Unicode with the release of version `6.0` of the standard in 2010.
 That version included 722 of them; the newest one at the time of writing this article, `12.0`,

@@ -13,7 +13,7 @@ created_at: 2017-06-30
 
 The Builder pattern is one of the most widely employed patterns from the original ['Gang of Four'](https://en.wikipedia.org/wiki/Design_Patterns) design patterns book. It's particularly prevalent in Java, most likely because that language lacks the named and optional parameters features. In this article, I'll quickly introduce the pattern for those unfamiliar with it, and also discuss what are its limitations, and how those limitations can be overcome by using a variant of the pattern called the Type-Safe (or Staged, or Telescopic, or Step) Builder. I'll also present [Jilt](https://github.com/skinny85/jilt), a Java annotation processor library I developed that was specifically designed to help with implementing this pattern.
 
-This article is quite long and contains a fair amount of code, so I've created a [GitHub repository](https://github.com/skinny85/type-safe-builder-example) with the complete code shown in the examples below - use it if you want to follow along, or if some snippet doesn't make sense without the larger context.
+This article is quite long and contains a fair amount of code, so I've created a [GitHub repository](https://github.com/skinny85/type-safe-builder-example) with the complete code shown in the examples below -- use it if you want to follow along, or if some snippet doesn't make sense without the larger context.
 
 ## What is the Builder pattern?
 
@@ -40,7 +40,7 @@ user.setLastName("Smith");
 user.setDisplayName("joey");
 ```
 
-But that's not the way we write Java code today. It's verbose, introduces state where there shouldn't be any, and doesn't leverage the type system in any sensible way - for example, if we forgot to set the `email` property, we wouldn't get any warning from the compiler about that fact.
+But that's not the way we write Java code today. It's verbose, introduces state where there shouldn't be any, and doesn't leverage the type system in any sensible way -- for example, if we forgot to set the `email` property, we wouldn't get any warning from the compiler about that fact.
 
 Modern Java style prefers immutable objects, so our `User` class would most likely look something like this:
 
@@ -67,7 +67,7 @@ User user = new User("joey@example.com",
 	"john_smith", "John", "Smith", "joey");
 ```
 
-This approach is fine, but not perfect. For one thing, we don't see the property names anymore. That hurts readability and, more importantly, makes the code error prone - for example, if we forget the order of the parameters, we can easily switch `email` and `username` around by mistake, and we'll have a pretty subtle bug on our hands. Another thing is that it's typical to keep the number of method (including constructors) parameters fairly low. Five is already kind of stretching it, and if the class were to get many new properties in the future, things would get quite cumbersome with the constructor.
+This approach is fine, but not perfect. For one thing, we don't see the property names anymore. That hurts readability and, more importantly, makes the code error prone -- for example, if we forget the order of the parameters, we can easily switch `email` and `username` around by mistake, and we'll have a pretty subtle bug on our hands. Another thing is that it's typical to keep the number of method (including constructors) parameters fairly low. Five is already kind of stretching it, and if the class were to get many new properties in the future, things would get quite cumbersome with the constructor.
 
 The Builder pattern is the typical solution to these problems. You can think of it as separating out the concern of constructing a class from the class itself. We define a new class, called `UserBuilder`, whose sole responsibility is to help us create instances of `User`. It will have an instance field for each field of `User`, and a public setter for each of those fields. After setting the values of the properties, we obtain an instance of `User` by invoking the `build` method on the Builder. It looks like this:
 
@@ -90,7 +90,7 @@ public class UserBuilder {
 
 (Full code: [here](https://github.com/skinny85/type-safe-builder-example/tree/master/01-classic-user-builder))
 
-Notice that, unlike with JavaBeans, each setter returns `this` - the method receiver. This is an example of a [Fluent Interface](https://martinfowler.com/bliki/FluentInterface.html), and allows you to chain the setter methods without the verbosity of constantly repeating the receiver:
+Notice that, unlike with JavaBeans, each setter returns `this` -- the method receiver. This is an example of a [Fluent Interface](https://martinfowler.com/bliki/FluentInterface.html), and allows you to chain the setter methods without the verbosity of constantly repeating the receiver:
 
 ```java
 User user = new UserBuilder()
@@ -160,7 +160,7 @@ public final class AgreementVersion {
 }
 ```
 
-This is a (slightly abridged) actual class from a project I was involved in recently. To save you some counting, it has a whooping 17 properties. Imagine trying to use a Builder for that class - just making sure you have all 17 of the properties set would be quite a challenge, especially if you're unfamiliar with this class.
+This is a (slightly abridged) actual class from a project I was involved in recently. To save you some counting, it has a whooping 17 properties. Imagine trying to use a Builder for that class -- just making sure you have all 17 of the properties set would be quite a challenge, especially if you're unfamiliar with this class.
 
 So, it seems like we're not there yet. We want the nice fluent DSL of a Builder, but with the compile-time guarantees that constructor instantiation provides, and we want it to scale to any number of properties. Can we have our cake, and eat it too?
 
@@ -168,7 +168,7 @@ So, it seems like we're not there yet. We want the nice fluent DSL of a Builder,
 
 This is exactly what the Type-Safe Builder pattern variant tries to accomplish. The idea is to leverage Java's type system to make sure (at compile time) that all of the properties are set before the instance of the built class is constructed.
 
-The way to do that is to create an interface for each property of the built class (it's typical to make them inner interfaces of some grouping interface to avoid polluting the global namespace too much). Each of those interfaces will have just one method - the setter for that particular property. The return type of that method will be the interface for the next property, forming a chain. There will also be one extra interface at the end - this one will contain the final `build` method.
+The way to do that is to create an interface for each property of the built class (it's typical to make them inner interfaces of some grouping interface to avoid polluting the global namespace too much). Each of those interfaces will have just one method -- the setter for that particular property. The return type of that method will be the interface for the next property, forming a chain. There will also be one extra interface at the end -- this one will contain the final `build` method.
 
 For example, for the `AgreementVersion` class above, it would look like this:
 
@@ -194,7 +194,7 @@ public interface AgreementVersionBuilders {
 }
 ```
 
-Now, the Builder class itself is very similar to the "classic" Builder. The main difference is that it implements all of those interfaces above, and so the setters have a different declared type - although the implementation is the same. For our `AgreementVersion` case, it looks like this:
+Now, the Builder class itself is very similar to the "classic" Builder. The main difference is that it implements all of those interfaces above, and so the setters have a different declared type -- although the implementation is the same. For our `AgreementVersion` case, it looks like this:
 
 ```java
 public class AgreementVersionBuilder implements
@@ -236,7 +236,7 @@ public class AgreementVersionBuilder implements
 }
 ```
 
-There is one more detail. We want the customers of the Builder to use our interfaces, not the concrete Builder class - without that, we will not get any help from the type system. To achieve that, we make the constructor of the Builder private, and have a static factory method that returns an instance of it - its declared type, however, is the interface for the first property of the built class. So, for `AgreementVersionBuilder`:
+There is one more detail. We want the customers of the Builder to use our interfaces, not the concrete Builder class -- without that, we will not get any help from the type system. To achieve that, we make the constructor of the Builder private, and have a static factory method that returns an instance of it -- its declared type, however, is the interface for the first property of the built class. So, for `AgreementVersionBuilder`:
 
 ```java
 public class AgreementVersionBuilder implements
@@ -265,15 +265,15 @@ AgreementVersion av = AgreementVersionBuilder.agreementVersion()
 	.build();
 ```
 
-However, note one very important thing. Because we're operating on the interface types, not the concrete Builder type, there is no way for use to skip setting some property (or even change the order in which they are set). If we comment out any of the setter lines above, the code will stop compiling. The type system prevents us from forgetting to initialize any of the properties. This is especially powerful when using an IDE for development - its AutoComplete will suggest the correct property to set at any point, which means it's not necessary to remember the exact order of the properties.
+However, note one very important thing. Because we're operating on the interface types, not the concrete Builder type, there is no way for use to skip setting some property (or even change the order in which they are set). If we comment out any of the setter lines above, the code will stop compiling. The type system prevents us from forgetting to initialize any of the properties. This is especially powerful when using an IDE for development -- its AutoComplete will suggest the correct property to set at any point, which means it's not necessary to remember the exact order of the properties.
 
-So, we have achieved our goal - we have a fluent Builder DSL, but with compile-time guarantees that all of the properties of the built class will be set before creating an instance of that class. This is what the Type-Safe Builder pattern allows you to achieve.
+So, we have achieved our goal -- we have a fluent Builder DSL, but with compile-time guarantees that all of the properties of the built class will be set before creating an instance of that class. This is what the Type-Safe Builder pattern allows you to achieve.
 
 ## Optional properties
 
 But that is not all. The Type-Safe Builder is extremely useful when dealing with classes that have optional properties.
 
-When I say "optional properties", I mean properties that the client can, but doesn't have to, provide in order to construct a valid instance of the target class - they might have a default, they can be optional etc.
+When I say "optional properties", I mean properties that the client can, but doesn't have to, provide in order to construct a valid instance of the target class -- they might have a default, they can be optional etc.
 
 Optional properties are very difficult to express solely with constructors, for two reasons. First, because of the combinatorial explosion of the numbers of constructor overloads that you need. For example, if you have a class with six properties, three of which are optional, you would need a total of 8 constructors:
 
@@ -284,11 +284,11 @@ Optional properties are very difficult to express solely with constructors, for 
 
 That's a huge number of constructors for a small class! Imagine you had the `AgreementVersion` class above with 17 properties, half of which were optional.
 
-There is also the second, even bigger, problem. If at least 2 of those optional properties have the same type, you cannot actually express the various options using constructor overloading. The signature of the constructors would be the same, and that would violate Java overloading rules. So, you have to resort to using static factory methods, and then you get into problems with how to name them, etc. - it becomes a mess very quickly.
+There is also the second, even bigger, problem. If at least 2 of those optional properties have the same type, you cannot actually express the various options using constructor overloading. The signature of the constructors would be the same, and that would violate Java overloading rules. So, you have to resort to using static factory methods, and then you get into problems with how to name them, etc. -- it becomes a mess very quickly.
 
 The Type-Safe Builder pattern allows you to express optional properties in a very elegant way.
 
-As an example, let's get back to the `User` class from the beginning of the article. Let's say that the `username` and `displayName` properties are now optional - if the client doesn't provide an explicit `username`, we will use the email address in its place, and if `displayName` is skipped, we'll set it to `firstName` concatenated with `lastName` (with a space in between). So, the class now looks like this:
+As an example, let's get back to the `User` class from the beginning of the article. Let's say that the `username` and `displayName` properties are now optional -- if the client doesn't provide an explicit `username`, we will use the email address in its place, and if `displayName` is skipped, we'll set it to `firstName` concatenated with `lastName` (with a space in between). So, the class now looks like this:
 
 ```java
 public final class User {

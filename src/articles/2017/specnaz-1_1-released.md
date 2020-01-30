@@ -29,7 +29,7 @@ public class StackSpec extends SpecnazJUnit {{
 }}
 ```
 
-The description of the test will be prefixed with `should throw <ExpectedExceptionClass>`, so take that into account when writing the test - for instance, the above example will have the description: `should throw EmptyStackException when popping an empty Stack`.
+The description of the test will be prefixed with `should throw <ExpectedExceptionClass>`, so take that into account when writing the test -- for instance, the above example will have the description: `should throw EmptyStackException when popping an empty Stack`.
 
 Another thing is that, just like with JUnit's `@Test(expected = ...)`, the actual Exception can be of the class of the expected Exception, or it can be a subclass of it; so, the above example could have been also written as:
 

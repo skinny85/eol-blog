@@ -54,7 +54,7 @@ Its flaws include:
   In larger projects, the configuration file has a tendency to quickly balloon in size to thousands of lines.
 * XML is opaque, unlike programming language code -
   it cannot be discovered in any other way than reading the appropriate documentation.
-  Quick test - do you remember from memory all of the
+  Quick test -- do you remember from memory all of the
   [namespace declarations](https://docs.spring.io/spring/docs/3.0.x/spring-framework-reference/html/xsd-config.html)
   that are required to be included in the root element?
   Yeah, me neither.

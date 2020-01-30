@@ -9,13 +9,13 @@ summary: "The blog is turning into a newsletter about Specnaz!
 created_at: 2018-03-28
 ---
 
-At what point I'll get sick of writing about [Specnaz](https://github.com/skinny85/specnaz)? Hard to say, but this third post in a row will be the last one in the series - the next one won't be about Specnaz, I promise.
+At what point I'll get sick of writing about [Specnaz](https://github.com/skinny85/specnaz)? Hard to say, but this third post in a row will be the last one in the series -- the next one won't be about Specnaz, I promise.
 
 Version `1.3` is a major release, bringing with it two long-awaited features to the library: JUnit Rules support, and the capability to define parametrized (sometimes also called data-driven) tests. Let's dive right in.
 
 ## JUnit Rules support
 
-[JUnit Rules](https://github.com/junit-team/junit4/wiki/rules) is a way of wrapping the execution of JUnit tests with your own code. You can add custom code before and/or after the test executes, fail tests that would otherwise pass, or the opposite - make failing ones pass under some conditions. The API allows you to package your logic into a class that can then be re-used between many tests.
+[JUnit Rules](https://github.com/junit-team/junit4/wiki/rules) is a way of wrapping the execution of JUnit tests with your own code. You can add custom code before and/or after the test executes, fail tests that would otherwise pass, or the opposite -- make failing ones pass under some conditions. The API allows you to package your logic into a class that can then be re-used between many tests.
 
 Over the years, a large ecosystem of third-party Rules has emerged that allows you to easily integrate your tests with libraries like [Mockito](http://site.mockito.org/), [Spring](https://spring.io/) or [Dropwizard](http://www.dropwizard.io/). Because using these third-party Rules is so convenient, it was important that Specnaz support them as well.
 
@@ -47,7 +47,7 @@ Check out the documentation for that feature [here](https://github.com/skinny85/
 
 Parametrized (sometimes also called data-driven) tests are an important way of reducing duplication in tests. You define the test body once, but instead of hard-coding the inputs and outputs, you make them parameters of the test. Afterwards, you specify with what parameters you want that test to execute, and that will result in a separate test case for every set of parameters you provided.
 
-JUnit ships with a [Parametrized Runner](https://github.com/junit-team/junit4/wiki/parameterized-tests) that allows you to define data-driven tests. However, the experience that that class offers leaves a few things to be desired - so many, in fact, that there exists a separate library just for that functionality, [JUnitParams](https://github.com/Pragmatists/JUnitParams) (created, incidentally, by the CEO of the company I worked at before Amazon, [Pragmatists](http://pragmatists.pl/)).
+JUnit ships with a [Parametrized Runner](https://github.com/junit-team/junit4/wiki/parameterized-tests) that allows you to define data-driven tests. However, the experience that that class offers leaves a few things to be desired -- so many, in fact, that there exists a separate library just for that functionality, [JUnitParams](https://github.com/Pragmatists/JUnitParams) (created, incidentally, by the CEO of the company I worked at before Amazon, [Pragmatists](http://pragmatists.pl/)).
 
 The lambda-based structure of tests that Specnaz uses lends itself perfectly to defining parametrized tests. Instead of passing a no-argument lambda to the `should` method, you can now pass a lambda expecting between one and nine arguments to `should`, and use those arguments as parameters inside the test body. To specify the values for the parameters, you need to call the `provided` method on the object that `should` returns. As arguments to `provided`, you supply instances of the `ParamsX` class, where `X` is the arity of the lambda you gave to `should` (so, if you called `should` with a 3-argument lambda, you need to supply instances of the `Params3` class).
 
@@ -73,9 +73,9 @@ public class FibonacciSpec extends SpecnazParamsJUnit {{
 
 A couple of things to note about the above code:
 
-*   It's fairly concise - at least more concise than the JUnit equivalent. The parameters are also per-test, instead of being global to the entire class.
-*   It's completely type-safe (also unlike the JUnit equivalent) - if you try to change the integer `21` to a String, for example, the code will no longer compile. And, thanks to Java's type inference, the types only need to be specified once - on the parameters of the lambda passed to `should`.
-*   We used the special placeholders `%1` and `%2` in the test description. These will be replaced at runtime by the values of the parameters at the appropriate index, counting from one - so, the last test above will be reported with the description `should show Fib(8) = 21`.
+*   It's fairly concise -- at least more concise than the JUnit equivalent. The parameters are also per-test, instead of being global to the entire class.
+*   It's completely type-safe (also unlike the JUnit equivalent) -- if you try to change the integer `21` to a String, for example, the code will no longer compile. And, thanks to Java's type inference, the types only need to be specified once -- on the parameters of the lambda passed to `should`.
+*   We used the special placeholders `%1` and `%2` in the test description. These will be replaced at runtime by the values of the parameters at the appropriate index, counting from one -- so, the last test above will be reported with the description `should show Fib(8) = 21`.
 *   `provided` is overloaded, accepting either variadic arguments as above, or a Collection of the appropriate `ParamsX` instances, which is more useful when generating the parameters programmatically (by reading a file, for example).
 
 In addition to parametrized `should` (and `shouldThrow`), you can also define parametrized `describes`, this way creating an entire parametrized sub-tree of tests.

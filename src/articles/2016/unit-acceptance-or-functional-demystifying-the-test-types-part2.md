@@ -1,9 +1,9 @@
 ---
 id: 21
 layout: article.html
-title: Unit, acceptance or functional? Demystifying the test types - Part 2
+title: Unit, acceptance or functional? Demystifying the test types – Part 2
 summary: "In another four-part article series, I want to tackle the topic of
-	various test types - clearly define their different kinds, and show some
+	various test types – clearly define their different kinds, and show some
 	concrete examples of tests on various levels of abstraction. If you've
 	ever wondered what does it mean to write a non-functional integration
 	test, or what exactly is the 'unit' in 'unit tests', these are the
@@ -15,26 +15,26 @@ created_at: 2016-08-01
 This is Part 2 of a 4-part article series about the different types of tests.
 
 <ul class="parts-list">
-	<li>[Part 1 - acceptance and functional tests](/unit-acceptance-or-functional-demystifying-the-test-types-part1)</li>
-	<li>[Part 3 - integration tests](/unit-acceptance-or-functional-demystifying-the-test-types-part3)</li>
-	<li>[Part 4 - end-to-end tests](/unit-acceptance-or-functional-demystifying-the-test-types-part4)</li>
+	<li>[Part 1 -- acceptance and functional tests](/unit-acceptance-or-functional-demystifying-the-test-types-part1)</li>
+	<li>[Part 3 -- integration tests](/unit-acceptance-or-functional-demystifying-the-test-types-part3)</li>
+	<li>[Part 4 -- end-to-end tests](/unit-acceptance-or-functional-demystifying-the-test-types-part4)</li>
 </ul>
 
 <hr class="parts-separator">
 
 ### Unit tests
 
-**Unit tests** are probably the most commonly seen type of automated tests "in the wild" - mainly because they are the easiest kind to write. They are your first line of defense against bugs in this constant war that is software development. For being so common, however, there is very little agreement on what a unit test actually is. It's one of those things in software engineering that you immediately recognize when you see it, but which is very difficult to precisely define.
+**Unit tests** are probably the most commonly seen type of automated tests "in the wild" -- mainly because they are the easiest kind to write. They are your first line of defense against bugs in this constant war that is software development. For being so common, however, there is very little agreement on what a unit test actually is. It's one of those things in software engineering that you immediately recognize when you see it, but which is very difficult to precisely define.
 
-Kent Beck in his ["TDD: By Example"](https://www.amazon.com/gp/product/0321146530/ref=as_li_tl?ie=UTF8&tag=endoflineblog-20&camp=1789&creative=9325&linkCode=as2&creativeASIN=0321146530&linkId=2a5be095ac3298a61cf2a59842b64665) book defines unit tests as tests that are independent of one another - meaning, executing one should not have any effect on the result of another. The problem I have with this definition is that it should actually apply to all tests! For example, I could write two end-to-end tests that sign in as two different users into my application, and perform some independent actions (for example, they edit their profile data) - all using a real browser with the help of WebDriver. And while these tests cannot influence each other's results, no one in their right mind would call them unit tests. Conversely, I've seen many tests that execute strictly in memory, without any external dependencies, but which mutate a static field of a Java class - which means they can definitely alter the outcome of ones executing after them. Anybody who tried running their unit tests in parallel for the first time knows for sure what I'm talking about - the number of hidden dependencies between the tests that you discover during this process can be quite surprising.
+Kent Beck in his ["TDD: By Example"](https://www.amazon.com/gp/product/0321146530/ref=as_li_tl?ie=UTF8&tag=endoflineblog-20&camp=1789&creative=9325&linkCode=as2&creativeASIN=0321146530&linkId=2a5be095ac3298a61cf2a59842b64665) book defines unit tests as tests that are independent of one another -- meaning, executing one should not have any effect on the result of another. The problem I have with this definition is that it should actually apply to all tests! For example, I could write two end-to-end tests that sign in as two different users into my application, and perform some independent actions (for example, they edit their profile data) -- all using a real browser with the help of WebDriver. And while these tests cannot influence each other's results, no one in their right mind would call them unit tests. Conversely, I've seen many tests that execute strictly in memory, without any external dependencies, but which mutate a static field of a Java class -- which means they can definitely alter the outcome of ones executing after them. Anybody who tried running their unit tests in parallel for the first time knows for sure what I'm talking about -- the number of hidden dependencies between the tests that you discover during this process can be quite surprising.
 
 Remember that Kent wrote his book in the 90s. For context, when people talked about automated testing before his book was released, they almost always meant pre-recorded UI tests that clicked on the screen in the same places and in the same sequence, over and over again. Which means that if one failed (for example, it was expecting to click the close button on a popup, but the popup never appeared), all of the subsequent ones would automatically fail as well.
 
 Automated testing has advanced quite a lot since that time, and "be independent from one another" is a bar I hope all tests should clear now. That's why I don't think Kent's definition is that useful today.
 
-The most prevalent, differentiating trait of unit tests that is pretty much universally agreed upon is **isolation**. This implies that these tests should avoid any interactions with the outside world - so, things like filesystems, databases, external APIs etc. are off-limits (we will come back to this vaguely defined notion of "the outside world" and make it more precise when discussing integration tests later, as it's a very important issue). In order to be able to achieve this isolation, we have a slew of object-oriented design techniques:
+The most prevalent, differentiating trait of unit tests that is pretty much universally agreed upon is **isolation**. This implies that these tests should avoid any interactions with the outside world -- so, things like filesystems, databases, external APIs etc. are off-limits (we will come back to this vaguely defined notion of "the outside world" and make it more precise when discussing integration tests later, as it's a very important issue). In order to be able to achieve this isolation, we have a slew of object-oriented design techniques:
 
-* [Separation of Concerns](http://enterprisecraftsmanship.com/2016/06/15/pragmatic-unit-testing/), so that classes either have business logic in them, or deal with The Outside World - but not intertwine both
+* [Separation of Concerns](http://enterprisecraftsmanship.com/2016/06/15/pragmatic-unit-testing/), so that classes either have business logic in them, or deal with The Outside World -- but not intertwine both
 * [Dependency Injection](https://sites.google.com/site/unclebobconsultingllc/blogs-by-robert-martin/dependency-injection-inversion)
 * [Test Doubles](/testing-with-doubles-or-why-mocks-are-stupid-part-1)
 
@@ -94,7 +94,7 @@ public class SinglyLinkedListTest {
 
 (If he/she was very inexperienced, he/she might also want to change the `doAdd()` method to package-private and write a test for it as well. Let's give him/her some credit, and assume he/she won't make that mistake.)
 
-Why is this bad? Because this division of tests makes no sense. The only way to completely test the `isEmpty` method, for example, is to add some elements to the list - which means calling the `add` method. In general - you don't test methods of classes; you test **behaviors**.
+Why is this bad? Because this division of tests makes no sense. The only way to completely test the `isEmpty` method, for example, is to add some elements to the list -- which means calling the `add` method. In general -- you don't test methods of classes; you test **behaviors**.
 
 In this case, the behaviors you want to test are: `SinglyLinkedList` behaves like a correct `List` implementation. Knowing this, the corrected tests would look something like this:
 
@@ -128,7 +128,7 @@ Now, the programmer who thinks that the unit of tests should be the class would 
 
 This is exactly the same mistake as when trying to test the private `doAdd` method, and it stems from the same misunderstanding of what the unit of testing should be. If you realize that you should test behaviors, not classes or methods, then it's obvious that `ListNode` is NOT something to be tested; `ListNode` (as well as `doAdd`) is an **implementation detail**, and I hope I don't have to explain that you should NEVER test those.
 
-Note that the same warning applies to classes that are not inner, or package-private. Even if you have public classes in your module, but they are not part of the behavior contract with the clients of said module - you should not write tests for them. Failing to adhere to this principle leads to large, brittle test suites that fail with every refactoring that you attempt to perform.
+Note that the same warning applies to classes that are not inner, or package-private. Even if you have public classes in your module, but they are not part of the behavior contract with the clients of said module -- you should not write tests for them. Failing to adhere to this principle leads to large, brittle test suites that fail with every refactoring that you attempt to perform.
 
 So, remember:
 
@@ -157,12 +157,12 @@ As they are only concerned with their code, unit tests are the simplest ones to 
 
 <dt>Error locality</dt>
 <dd>
-When a unit test fails, it's usually quite simple to locate the cause of the failure. An integration or end-to-end test might fail because of one of a multitude of reasons - both in the test, and in the application itself.
+When a unit test fails, it's usually quite simple to locate the cause of the failure. An integration or end-to-end test might fail because of one of a multitude of reasons -- both in the test, and in the application itself.
 </dd>
 
 <dt>Ease of setup</dt>
 <dd>
-Unit tests should not require any complicated setup on the part of the developer - with most modern tools, you should be able to run them immediately after checking out the code from source control. In contrast, integration and end-to-end tests are usually much more sensitive to the environment they are running in, and might force a multi-step process of execution (for example, requiring doing a local deployment before observing the changes), further lengthening the feedback loop.
+Unit tests should not require any complicated setup on the part of the developer -- with most modern tools, you should be able to run them immediately after checking out the code from source control. In contrast, integration and end-to-end tests are usually much more sensitive to the environment they are running in, and might force a multi-step process of execution (for example, requiring doing a local deployment before observing the changes), further lengthening the feedback loop.
 </dd>
 
 <dt>Stability</dt>
@@ -175,7 +175,7 @@ Wow! This is quite a list. After reading it, you might wonder why would anyone e
 
 Of course, the other tests are a crucial element, and you cannot rely on unit tests alone. The one critical trait that increases when going up the pyramid, and the reason for having the other test types, is **reliability**.
 
-While unit tests are very important, they cannot give you a lot of confidence in the entire application working as intended. That statement should be obvious if you think about the isolation requirement of unit tests - it means that a large part of the codebase (everything dealing with "the outside world") is not exercised by these tests at all.
+While unit tests are very important, they cannot give you a lot of confidence in the entire application working as intended. That statement should be obvious if you think about the isolation requirement of unit tests -- it means that a large part of the codebase (everything dealing with "the outside world") is not exercised by these tests at all.
 
 Verifying that is the domain of integration and end-to-end tests, which we will cover in the subsequent parts.
 
@@ -184,7 +184,7 @@ Verifying that is the domain of integration and end-to-end tests, which we will 
 This is Part 2 of a 4-part article series about the different types of tests.
 
 <ul class="parts-list">
-	<li>[Part 1 - acceptance and functional tests](/unit-acceptance-or-functional-demystifying-the-test-types-part1)</li>
-	<li>[Part 3 - integration tests](/unit-acceptance-or-functional-demystifying-the-test-types-part3)</li>
-	<li>[Part 4 - end-to-end tests](/unit-acceptance-or-functional-demystifying-the-test-types-part4)</li>
+	<li>[Part 1 -- acceptance and functional tests](/unit-acceptance-or-functional-demystifying-the-test-types-part1)</li>
+	<li>[Part 3 -- integration tests](/unit-acceptance-or-functional-demystifying-the-test-types-part3)</li>
+	<li>[Part 4 -- end-to-end tests](/unit-acceptance-or-functional-demystifying-the-test-types-part4)</li>
 </ul>

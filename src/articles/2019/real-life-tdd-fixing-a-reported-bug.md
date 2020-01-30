@@ -170,7 +170,7 @@ that attempts to create a CodePipeline with an identical structure to the one de
     });
 
     expect(stack).to(haveResourceLike('AWS::CodePipeline::Pipeline', {
-      // no assertion needed - validation error
+      // no assertion needed – validation error
     }));
 
     test.done();
@@ -302,7 +302,7 @@ So, the change should be:
 }
 ```
 
-That's right - the entire fix is removing 2 lines of code!
+That's right -- the entire fix is removing 2 lines of code!
 
 But how do we make sure this indeed corrects the problem?
 Some of you might be tempted to verify it manually -
@@ -348,6 +348,6 @@ I can recommend the following books:
 
 * Kent Beck's ["Test-Driven Development: By Example"](https://www.amazon.com/gp/product/0321146530/ref=as_li_tl?ie=UTF8&tag=endoflineblog-20&camp=1789&creative=9325&linkCode=as2&creativeASIN=0321146530&linkId=2a5be095ac3298a61cf2a59842b64665)
 * ["Extreme Programming Explained"](https://www.amazon.com/gp/product/0321278658/ref=as_li_tl?ie=UTF8&tag=endoflineblog-20&camp=1789&creative=9325&linkCode=as2&creativeASIN=0321278658&linkId=e9e65a372df2aa1ff5dd3ea3e2067ccf), also by Kent Beck, with Cynthia Andres
-* ["Growing Object-Oriented Software, Guided by Tests"](https://www.amazon.com/gp/product/0321503627/ref=as_li_tl?ie=UTF8&tag=endoflineblog-20&camp=1789&creative=9325&linkCode=as2&creativeASIN=0321503627&linkId=ddfb1e4d66ed48d7afdb4063de0e7b32), by Steve Freeman and Nat Pryce (I [wrote about this book on this blog before](/recreating-the-code-from-the-goos-book-example-project)) - especially if you want to see how TDD extends to non-unit tests
+* ["Growing Object-Oriented Software, Guided by Tests"](https://www.amazon.com/gp/product/0321503627/ref=as_li_tl?ie=UTF8&tag=endoflineblog-20&camp=1789&creative=9325&linkCode=as2&creativeASIN=0321503627&linkId=ddfb1e4d66ed48d7afdb4063de0e7b32), by Steve Freeman and Nat Pryce (I [wrote about this book on this blog before](/recreating-the-code-from-the-goos-book-example-project)) -- especially if you want to see how TDD extends to non-unit tests
 
 Thanks for reading!
