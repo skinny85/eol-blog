@@ -5,7 +5,7 @@ title: Specnaz 1.5 released!
 summary: "
   November saw the release of a new version of Specnaz,
   my Java and Kotlin testing library.
-  This relase brings with it one major feature -
+  This relase brings with it one major feature –
   support for JUnit 5 as the test execution engine."
 created_at: 2019-11-30
 ---
@@ -156,7 +156,7 @@ In addition, there is a `SpecnazKotlinJUnitPlatform` class,
 which is analogous to the `SpecnazKotlinJunit` class from the `specnaz-junit` module and the `SpecnazKotlinTestNG` class from the `specnaz-testng` module.
 It implements the `SpecnazKotlin` interface,
 is already annotated with the `@Testable` annotation,
-and calls the `describes` method in its primary constructor -
+and calls the `describes` method in its primary constructor --
 which means you can save a little boilerplate code,
 and some indentation,
 if your spec class does not need to extend a particular class.

@@ -6,7 +6,7 @@ summary: "
   This week, I've released version 1.4.1 of Specnaz,
   my Java and Kotlin testing library.
   In the article, I explain in depth the bug that caused the patch release,
-  and how was it fixed -
+  and how was it fixed –
   including an interesting discussion on dependencies vs. duplication."
 created_at: 2019-09-08
 ---
@@ -23,17 +23,17 @@ The issue only happens when you use Specnaz with [TestNG](http://testng.org/) as
 To explain what the problem is,
 I need to first dive a little bit deeper into how Specnaz integrates with test harnesses like JUnit and TestNG.
 
-Specnaz tests are defined by writing them in a class implementing a special interface, called `Specnaz<Something>` -
+Specnaz tests are defined by writing them in a class implementing a special interface, called `Specnaz<Something>` --
 the `<Something>` depends on which language bindings (Java or Kotlin)
 you're using, and whether you're writing [parametrized tests](/specnaz-1_3-released#parametrized-tests) or not.
-All of those interfaces define only default (that is, containing an implementation, not abstract) methods -
+All of those interfaces define only default (that is, containing an implementation, not abstract) methods --
 at this moment, 2 of them: `describes` and `xdescribes`,
 but others, like `fdescribes`, could be added in the future.
 The entry point to constructing a Specnaz specification is calling one of those
 `describes` methods in the constructor of your test class.
 
 Now, when running tests with JUnit,
-the fact that your test class has these `describes` methods is not a big deal -
+the fact that your test class has these `describes` methods is not a big deal --
 JUnit only considers `public`, `void`-returning methods without arguments as tests,
 so they are simply ignored.
 However, with TestNG, the situation is different.
@@ -41,7 +41,7 @@ TestNG allows test methods to have parameters,
 and they will be injected by the framework,
 provided it has enough information to infer where should it get values for them.
 Of course, the Specnaz methods don't provide that information,
-as they don't know anything about TestNG -
+as they don't know anything about TestNG --
 they're framework-agnostic by design.
 And so, attempting to run the test class ends with failure.
 

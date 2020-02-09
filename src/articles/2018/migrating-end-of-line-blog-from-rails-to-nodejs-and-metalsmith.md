@@ -5,7 +5,7 @@ title: "Migrating 'End of Line' blog from Rails to NodeJS and Metalsmith"
 summary: "
 	I've recently changed the tech stack powering this blog,
 	abandoning Ruby on Rails in favor of NodeJS and the Metalsmith library.
-	In this article, I talk about the details of the migration -
+	In this article, I talk about the details of the migration –
 	the justification behind it, why did I choose that stack that I did,
 	and how did the migration itself go."
 created_at: 2018-09-16
@@ -14,14 +14,14 @@ created_at: 2018-09-16
 As I've [mentioned](/a-blog-article-on-blogging) [before](/end-of-line-blog-2016-year-in-review),
 since its inception in 2014,
 'End of Line' has been powered by [Ruby on Rails](https://rubyonrails.org/).
-I chose that stack mainly because it was a learning opportunity for me -
+I chose that stack mainly because it was a learning opportunity for me --
 while I heard a lot about the framework over the years,
 by that point I have never written a line of Ruby in my life.
 Rails was very "in" at that time,
 and I was curious whether reality lived up to the hype.
 
 As the years went by, however, I've grown more and more dissatisfied and disillusioned with both the Ruby language, and its ecosystem.
-I don't want to get into exactly why right now -
+I don't want to get into exactly why right now --
 perhaps I'll write a separate article one day going over my experience
 (for a general idea of what that article would look like,
 check out [this famous 'Sick of Ruby'](https://blog.abevoelker.com/sick-of-ruby-dynamic-typing-side-effects-object-oriented-programming/) blog post by Abe Voelker).
@@ -42,15 +42,15 @@ I had a few requirements:
   (like the lightbox in the [Docker primer](/my-primer-on-Docker),
   or the block of links at the beginning and end of each article in the ['Test types' series](/unit-acceptance-or-functional-demystifying-the-test-types-part1)),
   without needing to resort to things like custom reStructuredText directives.
-2. I wanted the migration to be completely transparent -
+2. I wanted the migration to be completely transparent --
   nobody other than me should know that the implementation of the site changed.
   That meant that things like the styles, URLs (including for things like images),
-  the home page, the 'Archive' page, etc. -
+  the home page, the 'Archive' page, etc. --
   all had to remain exactly the same.
-3. I wanted the site to be statically generated. My Rails app was dynamic -
+3. I wanted the site to be statically generated. My Rails app was dynamic --
   even though I never actually stored the articles in a database!
   Instead, each post was a separate Rails partial, kept in version control.
-  That setup is obviously quite wasteful -
+  That setup is obviously quite wasteful --
   you're dynamically generating the HTML for each request,
   even though it will be exactly the same each time.
 
@@ -69,7 +69,7 @@ Metalsmith is a small NodeJS static generator library that has a very simple,
 clearly defined structure -- it takes files from disk,
 and turns them into JavaScript objects that you manipulate.
 The configuration is completely expressed in a few lines of JavaScript,
-and thus can be easily changed -
+and thus can be easily changed --
 the library doesn't make any assumptions about how your source files,
 or your resulting website, should be laid out
 (which is not the case for many static site generators).
@@ -87,8 +87,8 @@ I use the following plugins when generating this blog:
 * [express](https://www.npmjs.com/package/metalsmith-express)
 * [watch](https://www.npmjs.com/package/metalsmith-watch)
 
-Additionally, because Metalsmith plugins are extremely simple -
-they're just JavaScript functions -
+Additionally, because Metalsmith plugins are extremely simple --
+they're just JavaScript functions --
 it's very easy to write one-off plugins specific to your site.
 For example, I have separate plugins that make sure my 'Archive' and home pages look exactly the same as the ones written in Rails.
 
@@ -113,7 +113,7 @@ I wanted to try a new service I've been hearing a lot of good things about latel
 [Netlify](https://www.netlify.com/).
 It specializes in running static sites,
 and has a reputation of being extremely easy to set up.
-And my experience confirms that -
+And my experience confirms that --
 all you need to do is select your GitHub repository from a list after you've logged in with your GitHub credentials,
 provide a build command (`npm run build` in my case),
 the output directory (`build/` for me, which conveniently is also the default),
@@ -126,7 +126,7 @@ without _any_ configuration
 You can't have HTTPS support using Heroku's free tier,
 so this is pretty cool.
 
-Another nice thing I was able to set up in the NodeJS version was hot reloading of the site when doing local development -
+Another nice thing I was able to set up in the NodeJS version was hot reloading of the site when doing local development --
 now, when writing an article, I never have to refresh the browser anymore,
 simply saving the file will automatically show me the changes.
 It was especially useful when converting the existing articles,
@@ -136,7 +136,7 @@ All in all, I'm extremely satisfied with Metalsmith.
 You have to write a little bit of code to get off the ground,
 but it's a relatively small amount,
 and the flexibility you get in return is invaluable.
-You're not fighting against the documented and undocumented assumptions of the generator tool you're using -
+You're not fighting against the documented and undocumented assumptions of the generator tool you're using --
 instead, you have absolute control over every detail of how you want your site to look,
 and the way the source code should be laid out.
 

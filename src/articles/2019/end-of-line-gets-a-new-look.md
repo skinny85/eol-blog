@@ -20,7 +20,7 @@ The familiar Stonehenge masthead picture with the blue navigation bar are gone,
 replaced with a responsive, two-column layout complete with my portrait photo.
 
 The old style has been on the site since it launched in 2014.
-It was a different time -
+It was a different time --
 the blog was just starting, and didn't have an audience.
 I was basically writing things down for myself to read later.
 Even my wife (girlfriend at the time) couldn't be bothered to read the articles
@@ -39,7 +39,7 @@ or CSS framework -- not even something relatively lightweight like [Bootstrap](h
 The experiment ended in success -- the blog launched in September of 2014,
 almost exactly five years ago.
 In the process, I learned a ton about laying out a website from scratch.
-However, I'm a developer, not a designer -
+However, I'm a developer, not a designer --
 a fact painfully obvious to anyone visiting the blog and seeing how it looked.
 My decision not to use a theme or framework only exacerbated the problem.
 I also didn't pay enough attention to making it responsive,
@@ -101,20 +101,20 @@ markedRenderer.codespan = function (contents) {
 };
 ```
 
-I'm sure the styling is still far from perfect -
+I'm sure the styling is still far from perfect --
 the margins for headers seem to be a bit too large,
 the vertical padding inside blockquotes is too wide, etc.
 But that's OK -- I'll make small tweaks to it as time goes by,
 and even in this form the current CSS is light years ahead of the previous look.
 
-I'm thinking of doing a few additional small changes to the site after this -
+I'm thinking of doing a few additional small changes to the site after this --
 for example, adding "Previous" and "Next" links at the bottom of the articles,
 and maybe buttons to easily share a given story on social media.
 Now that I got rid of code syntax highlighting using client-side JavaScript,
 I also wanted to make an [AMP](https://developers.google.com/amp) version of the site.
 
 Let me know how you like the new look of the site in the comments below,
-and what do you think of my additional ideas -
+and what do you think of my additional ideas --
 if you have any suggestions, on either of those topics, I'm all ears!
 Also, please let me know if you notice any rendering issues with the blog after the redesign:
 styles for an element being off, something looking weird, etc.,

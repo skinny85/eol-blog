@@ -7,7 +7,7 @@ summary: "
   If that's true, then why does pretty much every device,
   from an iPhone to an Android tablet,
   contain roughly the same set of them?
-  Everything will be explained in the article -
+  Everything will be explained in the article –
   but before we can understand emoji,
   we have to start with the basics of text encodings in computers."
 created_at: 2019-04-13
@@ -402,7 +402,7 @@ the hexadecimal values will prove useful later in the article):
 
 So, reading from the table, we can see that `A` is encoded in ASCII as `65`,
 `B`: `66`, up to `Z`: `90`.
-The uppercase letters are before the lowercase ones -
+The uppercase letters are before the lowercase ones --
 `a` is `97`, `b`: `98`, up to `z`: `122`.
 
 You might be scratching your head at the first 32 characters
@@ -459,7 +459,7 @@ as its name suggests, the standard is very American English-centric.
 It only defined letters of the Latin alphabet,
 which are the ones English uses.
 But many languages require more letters than the base 26,
-even if they have Latin origins -
+even if they have Latin origins --
 for example, both Spanish and French also require accented letters like `é`.
 And this doesn't even mention all of the world languages that use an alphabet other than Latin,
 like Cyrillic, Greek, Arabic, Hebrew, Chinese, etc.
@@ -483,19 +483,19 @@ A slew of encodings emerged,
 each compliant with ASCII for values from 0 up to 127,
 and using the values 128 to 255 for their own purposes.
 Of course, 256 available slots is not enough to cover all characters for all human languages at the same time;
-so, each encoding handled at most a few languages that used similar letters -
+so, each encoding handled at most a few languages that used similar letters --
 and in some cases, just  a single one.
 
 The most famous of these, and the ones that caused the most headache,
 are the Windows-125x line of encodings.
-Each of them was used by the early Windows version in the appropriate locale -
+Each of them was used by the early Windows version in the appropriate locale --
 for example, if you bought a Greek version of Windows,
 it would use the [Windows-1253](https://en.wikipedia.org/wiki/Windows-1253) encoding.
 This would be problematic, because if a file saved with a Greek version of Windows was sent to somebody in Turkey,
 they would open it in their default encoding,
 [Windows-1254](https://en.wikipedia.org/wiki/Windows-1254),
 and all of the non-ASCII characters would be rendered differently
-(and most likely look like complete gibberish -
+(and most likely look like complete gibberish --
 even if the recipient in Turkey could read Greek).
 
 It became obvious that a wider,
@@ -505,7 +505,7 @@ And so, in 1988, [Unicode](https://en.wikipedia.org/wiki/Unicode) was born.
 ## Unicode
 
 Version `1.0` of the Unicode standard was published in 1991.
-Unicode is not a static standard -
+Unicode is not a static standard --
 in fact, it regularly publishes new versions.
 Of course, subsequent versions only add characters to the standard,
 never change the assignments of existing ones.
@@ -519,7 +519,7 @@ In Unicode, those numbers are called **code points**.
 To preserve backwards compatibility, the first 128 code points are the same as the ASCII ones we saw above.
 
 Code points are usually written as `U+`, and then the hexadecimal numeric value of the code point,
-with leading zeros to pad the length to be at least 4 -
+with leading zeros to pad the length to be at least 4 --
 for example, the letter `A` would be written as `U+0041`.
 
 Java allows you to use the same notation inside character literals;
@@ -568,21 +568,21 @@ it means that those 4 bytes should be treated together as a code point larger th
 You can read the exact calculation done to get the code point value in the
 [Wikipedia article on UTF-16](https://en.wikipedia.org/wiki/UTF-16#U+010000_to_U+10FFFF).
 UTF-16 is what we call a **variable-length encoding**,
-as the number of bytes needed to encode a character depends on the character being encoded -
+as the number of bytes needed to encode a character depends on the character being encoded --
 it could be 2, or 4.
 
 The final encoding in the Unicode standard is called UTF-8.
 It again leverages the fact that the ASCII codes only take up 7 bits.
 So, any code point from the ASCII range (so, up to 127, or `U+007F`)
 is represented simply as a single byte value equal to that code point.
-However, all code points larger than that are encoded using multiple bytes -
+However, all code points larger than that are encoded using multiple bytes --
 depending on the magnitude of the code point, using 2, 3 or 4 bytes.
 So, UTF-8 is also a variable-length encoding.
 
 Its main strength, and the reason it's the most popular encoding in the world today,
 is its built-in backwards compatibility with ASCII.
 Not only is there no size penalty when converting an ASCII file to UTF-8,
-unlike with the above encodings -
+unlike with the above encodings --
 no conversion is actually required,
 as any ASCII file is also a valid UTF-8 file!
 This greatly simplifies interoperability with the huge corpus of existing files encoded with ASCII.
@@ -599,11 +599,11 @@ As the Internet speeds were pretty bad in those early days,
 communication was happening pretty much exclusively using text.
 
 What people quickly discovered was that communication only through the written word is quite different than talking.
-You see, a huge part of information exchanged when talking with another person is through non-verbal means -
+You see, a huge part of information exchanged when talking with another person is through non-verbal means --
 things like tone of voice, body language, facial expressions, etc.
 If I call you a "sonaofabitch" while laughing,
 and giving you a pat on the back because you just told me you got a promotion,
-it's completely different than me calling you a "sonaofabitch" in a low, threating hush -
+it's completely different than me calling you a "sonaofabitch" in a low, threating hush --
 even though I've used the same exact word in both cases.
 As text is missing all those subtleties,
 it was causing many problems when trying to convey jokes, irony, etc.
@@ -615,10 +615,10 @@ Those things became known as **emoticons**
 (short for "emotion icons"), or, even shorter, **emotes**.
 The most famous examples are ones that resembled a face,
 provided you looked at it while tilting your head to one side, usually left.
-The most common one was the smile, `:-)` -
+The most common one was the smile, `:-)` --
 often written without the dash representing the nose, `:)`.
 It was so common, in fact, that many people called all emoticons *smileys*,
-even though not all of them represented happiness -
+even though not all of them represented happiness --
 like the famous frowny face, `:-(`.
 
 Emotes were created for the Internet,
@@ -646,7 +646,7 @@ They decided to leverage the newly improved phone displays to make the experienc
 This trend was especially popular in Japan,
 and that's where the name 'emoji' name comes from -- it means 'pictograph' in Japanese.
 
-Phone providers started allowing people to choose from a set of pre-defined, small images that were a graphical representation of the various emotes -
+Phone providers started allowing people to choose from a set of pre-defined, small images that were a graphical representation of the various emotes --
 like a cartoon smiling face instead of the characters `:-)`.
 That quickly expanded to images of things that were never expressed as emotes,
 like animals, objects and persons (like soldiers, firemen, etc.).
@@ -660,7 +660,7 @@ That version included 722 of them; the newest one at the time of writing this ar
 increases that number to 1,273.
 It's a safe bet that in the future, more emoji will be added to the standard.
 
-An interesting consequence of the above is that keeping your system up to date becomes even more important -
+An interesting consequence of the above is that keeping your system up to date becomes even more important --
 if an emoji has been added to the standard in a recent version,
 your system might not know how to display it!
 
@@ -675,7 +675,7 @@ Additionally, the Unicode standard defines a few more complicated constructs tha
 and those constructs allow for some very interesting capabilities when used with emoji.
 For example, you've probably had the experience of being able to select a skin tone from one of five options (six when you count the default, "unrealistic", one)
 when using an emoji that displays human body parts.
-You might suspect that each of the variants is a separate Unicode code point -
+You might suspect that each of the variants is a separate Unicode code point --
 but that is not the case!
 Instead, the variants are achieved by following the base emoji character with a special modifier,
 from the range `U+1F3FB` up to `U+1F3FF`,

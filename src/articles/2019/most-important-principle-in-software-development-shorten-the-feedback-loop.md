@@ -23,35 +23,35 @@ so any universal principles that we can glean from past experiences seem valuabl
 
 ## Big picture
 
-Let's step back for a second from the details of software development -
+Let's step back for a second from the details of software development --
 whether static typing prevents more bugs than dynamic typing,
 whether Gradle is a better build system than Maven,
-whether spaces are superior to tabs -
+whether spaces are superior to tabs --
 and let's focus on the bigger picture:
 what's the most important quality software, any software, has to posses?
 
 I would argue that it needs to fulfill the needs of the humans using it.
-If it doesn't, then it's by definition useless -
+If it doesn't, then it's by definition useless --
 because if no one can get anything useful out of it,
 then it's just a waste of time and energy to run it.
-Software is not like art in this sense -
+Software is not like art in this sense --
 we don't write code to hang it on a wall in some gallery.
 We write code to be executed,
-and for that execution to fulfill some human-devised goal -
+and for that execution to fulfill some human-devised goal --
 whether that goal is uploading a picture of your cat on social media,
 writing a doctoral dissertation,
 or emailing your mom.
 
 If we accept that premise,
 then it seems natural that there is a single,
-most important question that guides the development of any software project -
+most important question that guides the development of any software project --
 regardless of what kind of software it is,
 regardless of which specific technology is used to build it.
 That question is extremely simple, and it is:
 
 > Does this code, that has just been written or changed, do what I need it to do?
 
-This question is not asked once, but constantly -
+This question is not asked once, but constantly --
 hundreds, thousands of times during the lifetime of a project.
 Every time any sort of change is performed on the software,
 it comes up.
@@ -69,7 +69,7 @@ if the answer is "no",
 we need to keep iterating on the current change,
 until we can finally say "yes".
 As we established above,
-we cannot accept "no" as an answer here -
+we cannot accept "no" as an answer here --
 that would mean we are OK with shipping useless software.
 
 My thesis is that the most important principle in software development

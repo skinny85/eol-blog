@@ -4,7 +4,7 @@ layout: article.html
 title: Evolving public APIs based on Type-Safe Builders
 summary: "
 	The Type-Safe Builder pattern is well understood when used within the confines of a single project.
-	But what happens when you expose it as part of the public API of your module -
+	But what happens when you expose it as part of the public API of your module –
 	how do you handle that API's evolution over time?
 	This article covers that topic in great depth."
 created_at: 2018-11-17
@@ -33,7 +33,7 @@ Discussions of using the Type-Safe Builder pattern are most commonly restricted 
 In that context, the type-system guarantees it provides also double as a safety net when evolving the code with time.
 So, for example, if we introduce a breaking change to how a class is supposed to be constructed
 (let's say, we remove a previously required property),
-the compiler will help us by reporting every place in our project which constructs the class incorrectly -
+the compiler will help us by reporting every place in our project which constructs the class incorrectly --
 exactly like it does with other breaking changes,
 like adding a new argument to an existing method.
 That is great, and one of the reasons for using this pattern.
@@ -52,7 +52,7 @@ there are 2 categories of these backwards-compatible changes we commonly encount
 
 (**Note**: we don't concern ourselves with adding a new required property,
 or changing an optional property to required,
-or removing a property (optional or required) here -
+or removing a property (optional or required) here --
 all of these are examples of non-backwards compatible changes,
 and using the Builder pattern cannot change that.)
 
@@ -75,7 +75,7 @@ User user = UserBuilder.user()
     .build();
 ```
 
-It's pretty clear we can't make the `email` property optional -
+It's pretty clear we can't make the `email` property optional --
 if we made that change, the above code would no longer compile,
 as the call to `email("joey@example.com")` would have to come after the last required property (`lastName` in this case) has been set.
 
@@ -95,16 +95,16 @@ Continuing the example from above,
 after changing `email` to optional,
 that property can only be set as the first one in the Builder.
 If you don't set it as the first one,
-you won't have another chance to do it -
+you won't have another chance to do it --
 `email` will always be `null` then.
 
 Why is that a problem?
-Well, there are some natural orderings between some sets of properties -
+Well, there are some natural orderings between some sets of properties --
 `firstName` -> `lastName`, `createDate` -> `updateDate` -> `deleteDate`,
 `initialBalance` -> `endingBalance`, etc.
 In all those cases, you can reasonably expect your customers to have an intuition on the order they need to provide the properties in.
 Even in the `User` example above,
-the `email` -> `username` -> `firstName` -> `lastName` -> `displayName` order seems fine -
+the `email` -> `username` -> `firstName` -> `lastName` -> `displayName` order seems fine --
 maybe not obvious, but at least reasonable.
 
 However, there are many classes for which there is no intuitive order you can specify their properties in.
@@ -122,7 +122,7 @@ Furthermore, let's assume you're not writing the client by hand,
 but automatically generating it from some service description format,
 like a ~~Swagger~~[Open API](https://www.openapis.org/) specification.
 In this kind of situation,
-you definitely don't want to fix the order of the properties to be the same as the order of the declarations in the specification -
+you definitely don't want to fix the order of the properties to be the same as the order of the declarations in the specification --
 somebody updating the specification in the future will not expect the order of the declarations to matter,
 and basing your public API on that order will make it extremely fragile.
 
@@ -138,7 +138,7 @@ How might a Builder like that look?
 
 The key are the intermediate interfaces used to force all of the required properties to be provided before constructing an instance of the target class.
 In the previously discussed Type-Safe Builders,
-they are very simple -
+they are very simple --
 there is an interface for each required property of the class
 (the `TYPE_SAFE_UNGROUPED_OPTIONALS` style has an interface for each optional property as well),
 and then a final interface containing the `build` method.
@@ -173,7 +173,7 @@ as that would make it impossible to achieve order independence,
 like we've seen for the "traditional" Type-Safe Builders).
 The setters differ in their return types.
 When providing a required property that we haven't seen yet,
-we transition to a new state -
+we transition to a new state --
 we add a new number to our sequence.
 For example, if we're in `B_1_Interf`,
 and we call the setter for the second required property,
@@ -276,7 +276,7 @@ interface FinalBuilderInterf {
 (Full code [here](https://github.com/skinny85/future-proof-step-builder/blob/master/src/main/java/three_required_props/interfaces_variant/UserBuilderInterfaces.java))
 
 I hope you can see how this fulfills our original requirements for backwards-compatible evolution.
-Adding a new optional property does not change the interface layout -
+Adding a new optional property does not change the interface layout --
 it simply adds a new setter to each interface,
 with the return type of that setter being always just the interface the setter is declared in,
 like it is for `username` and `displayName` above.
@@ -400,10 +400,10 @@ That's not good news.
 That means that using this method for a class with 6 required properties would require us to generate 64 interfaces!
 That is a huge number of interfaces needed for a relatively small number of required properties.
 
-Perhaps that's fine for your use case -
+Perhaps that's fine for your use case --
 maybe your classes have very few required properties,
 or the extra interfaces overhead doesn't seem like a problem.
-If this sounds like a dealbreaker, however, don't worry -
+If this sounds like a dealbreaker, however, don't worry --
 there is a way to reduce this 2 to the power of `n` number to... simply 2.
 That's right, regardless of how many required properties your target class has,
 there is a way to ensure type-safety with just 2 extra interfaces.
@@ -524,7 +524,7 @@ Now tell me this isn't the craziest method signature in Java that you've ever se
 
 But it all works.
 We need an unchecked cast in there,
-of course, as we're casting to a type parameter that only exists at compile time -
+of course, as we're casting to a type parameter that only exists at compile time --
 but we know it's correct from the way we've defined the other type parameters,
 so we can safely suppress the warning.
 
@@ -546,7 +546,7 @@ which doesn't contain the `build` method!)
 
 We're taking advantage of Java's type inference for methods here,
 which means when calling `UserBuilder.user()`,
-you don't have to provide any of the crazy type variables we've defined -
+you don't have to provide any of the crazy type variables we've defined --
 the language will infer them for you.
 
 Full code is [here](https://github.com/skinny85/future-proof-step-builder/tree/master/src/main/java/three_required_props/static_fact_meth_variant),
@@ -581,7 +581,7 @@ And the reason is that I have 2 issues with these Builders.
     You simply remove the setters for the optional properties from all interfaces except `FinalBuilderInterf`.
     This no longer allows you to change a required property to optional
     (but adding a new optional property works fine).
-    However, your clients experience improves considerably -
+    However, your clients experience improves considerably --
     they will immediately know which properties they have to provide
     (vs. which ones they *might* provide).
 
@@ -603,7 +603,7 @@ And the reason is that I have 2 issues with these Builders.
     However, adding a new optional property does preserve backwards compatibility of even the intermediate expressions.
     Note that this is consistent with the "improve the client experience" plan from point #1 above.
 
-    It's worth to point out that this flaw also affects the `TYPE_SAFE_UNGROUPED_OPTIONALS` Builder from Jilt -
+    It's worth to point out that this flaw also affects the `TYPE_SAFE_UNGROUPED_OPTIONALS` Builder from Jilt --
     but in an opposite way!
     When introducing a new optional property,
     we need to create a new interface for it,
@@ -612,7 +612,7 @@ And the reason is that I have 2 issues with these Builders.
     But changing a property from required to optional simply adds more methods to the interface corresponding to that method,
     and so is fully backwards compatible.
 
-    You might consider these musing to be stupid -
+    You might consider these musing to be stupid --
     who might be interested in using intermediate results of a Builder?
     But I don't agree.
     When exposing a public API,
@@ -627,7 +627,7 @@ And the reason is that I have 2 issues with these Builders.
 So, the situation is quite interesting.
 We were unable to achieve the ideal of a Type-Safe Builder that allows perfect backwards-compatible evolution alongside its target class.
 As is often the case in computer science,
-we don't have a clear best solution -
+we don't have a clear best solution --
 just a number of choices with different tradeoffs.
 A quick guideline summing up the possibilities could look something like this.
 

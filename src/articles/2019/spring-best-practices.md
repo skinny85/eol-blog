@@ -52,7 +52,7 @@ Its flaws include:
 
 * XML is known to be verbose, and Spring's Bean dialect is no exception to that rule.
   In larger projects, the configuration file has a tendency to quickly balloon in size to thousands of lines.
-* XML is opaque, unlike programming language code -
+* XML is opaque, unlike programming language code --
   it cannot be discovered in any other way than reading the appropriate documentation.
   Quick test -- do you remember from memory all of the
   [namespace declarations](https://docs.spring.io/spring/docs/3.0.x/spring-framework-reference/html/xsd-config.html)
@@ -127,7 +127,7 @@ A common way to introduce that sort of dependency is by using annotations like
 Why is this bad?
 Well, it goes back to what we discussed above,
 about writing modular code.
-You don't want your domain-specific classes to know anything about Spring -
+You don't want your domain-specific classes to know anything about Spring --
 they should work the same,
 regardless of which dependency injection container you're using.
 Not following this rule leads to classes that are too big,
@@ -184,7 +184,7 @@ But even worse, it introduces what in programming is sometimes called "spooky ac
 For instance, you can add a new dependency to your project,
 and, without any actual code change,
 your application might no longer start,
-because of a conflicting Bean definition -
+because of a conflicting Bean definition --
 or, even worse, it will start,
 but its behavior will now change,
 because a different implementation of some Bean will be injected.
@@ -200,10 +200,10 @@ orders of magnitude longer than that initial upfront cost.
 
 Now, you might read my above advice as "Just never use `@Autowired`, ever".
 But that's not what I'm saying at all!
-Annotations like `@Autowired` do have their place -
+Annotations like `@Autowired` do have their place --
 I've even included one in the example configuration class above.
 My point was to keep it out of your *business logic* classes.
-But a `@Configuration` class is not a business logic class -
+But a `@Configuration` class is not a business logic class --
 it's something intrinsically tied to Spring,
 so it makes perfect sense to use all of the available Spring features when dealing with it.
 

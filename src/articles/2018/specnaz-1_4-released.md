@@ -56,7 +56,7 @@ public class StackSpec implements SpecnazFactoryTestNG {{
 }}
 ```
 
-Naturally, you can also write [parametrized tests](specnaz-1_3-released) in TestNG -
+Naturally, you can also write [parametrized tests](specnaz-1_3-released) in TestNG --
 the only difference is that you need to implement the `SpecnazParamsFactoryTestNG` interface
 from the `org.specnaz.params.testng` package instead of `SpecnazFactoryTestNG`.
 
@@ -110,7 +110,7 @@ class StackSpec : SpecnazKotlinTestNG("A Stack", {
 })
 ```
 
-Similarly for parametrized TestNG Kotlin specs -
+Similarly for parametrized TestNG Kotlin specs --
 you have the `SpecnazKotlinParamsFactoryTestNG` interface in the `org.specnaz.kotlin.params.testng` package,
 and the `SpecnazKotlinParamsTestNG` abstract helper class in the same package.
 

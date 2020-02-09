@@ -65,12 +65,12 @@ It allows you to model your release process, starting with your source code,
 through building and testing,
 and ending with deploying the built software to its target environments.
 Let me briefly describe how the service works,
-as it's actually important to the story -
+as it's actually important to the story --
 feel free to skip down to the ['Issue'](#issue) paragraph below if you're already familiar with CodePipeline.
 
 A CodePipeline deployment Pipeline consists of *Stages*.
 Stages form a list.
-Execution flows linearly between them -
+Execution flows linearly between them --
 a given Stage will start executing only when the previous one completes successfully.
 
 Each Stage contains one or more *Actions*.
@@ -105,7 +105,7 @@ Some of them are:
 * The same Artifact can never be used as an output more than once.
 
 To help discover problems sooner in the development cycle,
-the CodePipeline CDK library implements these validations -
+the CodePipeline CDK library implements these validations --
 if you break any of the above rules,
 you will get an exception executing your CDK code.
 And it was in these validations that a bug was lurking.
@@ -193,10 +193,10 @@ Couple of notes about the above code:
 
 When I ran this test, it failed with the exact same error message Bogdan saw:
 `Artifact 'buildOutput1' was used as input before being used as output`.
-Since clearly this was not true -
+Since clearly this was not true --
 `buildOutput1` was given as the output Artifact of the `build1` Action,
 which executes before `build2`,
-because of `RunOrder` being set to the default 1 value -
+because of `RunOrder` being set to the default 1 value --
 the bug was now confirmed and reproduced.
 
 We are now in the "Red" part of the
@@ -305,10 +305,10 @@ So, the change should be:
 That's right -- the entire fix is removing 2 lines of code!
 
 But how do we make sure this indeed corrects the problem?
-Some of you might be tempted to verify it manually -
+Some of you might be tempted to verify it manually --
 create a CodePipeline similar to the one Bogdan had,
 and see if it deploys and runs correctly.
-But there is a much more efficient way to get feedback than that -
+But there is a much more efficient way to get feedback than that --
 remember, we're using Test-Driven Development,
 and we just wrote a new test covering this case,
 which we saw fail!
@@ -338,7 +338,7 @@ If the problem manifested itself not during validation,
 but later in the lifecycle
 (for example, during deployment, or even during the Pipeline's runtime),
 writing a test reproducing it would be much, much harder.
-However, I think there's still value in the story -
+However, I think there's still value in the story --
 in many projects, unit tests can cover a wide area of functionality,
 and a similar process can be used with integration or even end-to-end tests
 (see below).
