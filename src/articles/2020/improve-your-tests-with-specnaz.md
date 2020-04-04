@@ -53,7 +53,7 @@ dependencies {
     implementation 'com.google.guava:guava:28.0-jre'
 
     testCompile 'org.junit.jupiter:junit-jupiter:5.5.2'
-    testCompile 'org.specnaz:specnaz-junit-platform:1.5'
+    testCompile 'org.specnaz:specnaz-junit-platform:1.5.1'
     testCompile 'org.assertj:assertj-core:3.14.0'
 }
 
