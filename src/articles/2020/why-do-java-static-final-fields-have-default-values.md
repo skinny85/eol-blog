@@ -80,7 +80,7 @@ class B {
 }
 ```
 
-At first, you might be surprised - is that sort of cycle even allowed??
+At first, you might be surprised -- is that sort of cycle even allowed??
 But as it turns out, yes, this is perfectly valid Java code --
 it does not cause any infinite loops in the JVM or anything like that.
 In fact, because of the default value rule,
