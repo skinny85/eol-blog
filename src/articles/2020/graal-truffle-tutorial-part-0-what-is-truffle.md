@@ -139,9 +139,9 @@ which is a JDK extension introduced in Java 9 that allows you to swap out the JI
 Which leads me to Truffle.
 Truffle is a language implementation framework whose goal is to make it much easier to develop high-performance implementations of new programming languages.
 
-Traditionally, there are 2 ways to implement a new programming langauge:
+Traditionally, there are 2 ways to implement a new programming language:
 
-1. An interpreter, which is (relativey, of course) easy to implement,
+1. An interpreter, which is (relatively, of course) easy to implement,
 but slow.
 2. A compiler that generates code,
 which is much more efficient to execute than the interpreter,
@@ -206,7 +206,7 @@ mainly [inlining](https://en.wikipedia.org/wiki/Inline_expansion),
 [dead code elimination](https://en.wikipedia.org/wiki/Dead_code_elimination).
 
 Let's see a concrete example.
-Let's say you're interpreting the following program in our simple integer literal additions language from above: `12 + 34`.
+Let's say you're interpreting the following program in our simple "integer literal with additions" language from above: `12 + 34`.
 After parsing and creating the correct Nodes from the parse tree,
 the interpreter looks something like this:
 
@@ -217,13 +217,13 @@ public int interpretMyLanguage() {
 }
 ```
 
-If the number of invocations of this code exceeds some pre-determined threshold,
+If the number of invocations of this code exceeds some predetermined threshold,
 Truffle sends it to Graal for compilation to machine code using partial evaluation
 (remember, Graal is a compiler written in Java,
 which means it exposes an API that can be invoked from other Java code).
 Even though this code operates on specific instances of classes like `IntAddNode` and `IntLiteralNode`,
 Graal has access to their class' original bytecode through standard JVM reflection.
-Graal does aggresive inlining of the `executeInt` method and constant folding for these objects,
+Graal does aggressive inlining of the `executeInt` method and constant folding for these objects,
 and produces something like this
 (I'm showing the code in [Static Single Assignment](https://en.wikipedia.org/wiki/Static_single_assignment_form) form):
 
