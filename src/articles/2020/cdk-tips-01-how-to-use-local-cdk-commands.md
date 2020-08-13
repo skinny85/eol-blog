@@ -1,6 +1,6 @@
 ---
 id: 47
-layout: article.html
+layout: cdk-tips.html
 title: CDK tips, part 1 – how to use local CDK commands
 summary: |
   I'm starting a new series with practical tips on working with the Cloud Development Kit.
