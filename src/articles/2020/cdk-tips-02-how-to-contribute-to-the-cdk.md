@@ -6,7 +6,7 @@ summary: |
   The second article in the "CDK tips" series is all about contributing to the core CDK project.
   I want to show how easy it is,
   even if you never submitted a change to an open-source project before!
-created_at: 2020-08-10
+created_at: 2020-08-20
 ---
 
 The Cloud Development Kit is an open-source project with a very vibrant community.
@@ -333,3 +333,5 @@ Some useful other resources:
 * There is a session from the 2019 re:Invent conference,
   ['Contributing to the AWS Construct Library'](https://www.youtube.com/watch?v=LsYlf7ggyrY),
   presented by Rico Huijbers, a member of the CDK core team
+* For more information on Gitpod, check out
+  [their documentation](https://www.gitpod.io/docs)
