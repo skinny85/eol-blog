@@ -328,6 +328,7 @@ Congratulations -- you've just submitted your first change to the CDK!
 Hopefully this is enough to get you started with working on the CDK codebase.
 Some useful other resources:
 
+* I recorded a [video showing the process described above](https://youtu.be/u6XcIgs-Nok)
 * The [CDK 'Contributing' guide](https://github.com/aws/aws-cdk/blob/master/CONTRIBUTING.md)
   is always the most up-to-date reference on the process of proposing changes to the CDK
 * There is a session from the 2019 re:Invent conference,
