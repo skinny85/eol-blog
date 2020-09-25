@@ -1,6 +1,6 @@
 ---
 id: 48
-layout: article.html
+layout: truffle-tutorial.html
 title: Graal Truffle tutorial part 0 – what is Truffle?
 summary: |
   I recently worked with GraalVM's Truffle language implementation framework.
