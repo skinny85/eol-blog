@@ -12,14 +12,6 @@ created_at: 2018-05-06
 
 My last three articles on the blog were about new releases of [Specnaz](https://github.com/skinny85/specnaz), my open-source Java/Kotlin testing library. In the [last post](/specnaz-1_3-released), I promised the next one will be about something else. That's why today, I'll be talking about a new release of [Jilt](https://github.com/skinny85/jilt), which is... also an open-source Java library that I've created. This one, however, is an annotation processor for automatically generating classes that implement the [Builder design pattern](https://en.wikipedia.org/wiki/Builder_pattern#Java), including its Type-Safe variant (I've written about the Type-Safe Builder pattern variant, and Jilt, previously on this blog [here](/type-safe-builder-pattern-in-java-and-the-jilt-library)).
 
-Are these "smart" quotes? Woah, they are!
-
-But... `"smart"` quotes don't work in inline code blocks, right? Uff, they don't!
-
-```javascript
-var a = "and neither in code blocks"; // uff!
-```
-
 Version `1.1` brings with it only one feature -- the `@BuilderInterfaces` annotation. This annotation can be used alongside the existing `@Builder` annotation. It allows customizing the interfaces that will be generated for each property of the target class to ensure the type-safety of the resulting Builder. Because of that, it has any effect only when generating a Type-Safe Builder (so, when the `style` attribute of the `@Builder` annotation is either `BuilderStyle.TYPE_SAFE` or `BuilderStyle.TYPE_SAFE_UNGROUPED_OPTIONALS`).
 
 `@BuilderInterfaces` has 4 attributes. All of them are Strings, and all of them are optional. They are:
