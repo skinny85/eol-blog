@@ -9,7 +9,7 @@ summary: |
   which results in the dreaded
   "Export cannot be deleted as it is in use by another Stack"
   error message.
-created_at: 2020-10-10
+created_at: 2020-10-19
 ---
 
 One of the more powerful capabilities the CDK offers are automatic cross-stack references.

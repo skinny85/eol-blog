@@ -22,13 +22,14 @@ which is a very simplified subset of JavaScript.
 We'll start with basics expressions in this part,
 and add more features to the language as the series progresses.
 
-Let's begin by making sure you actually have GraalVM installed.
+Let's begin by setting up GraalVM.
 
 ## GraalVM setup
 
-First of all, you need a GraalVM installation on your local machine.
+We need a GraalVM installation on our local machine.
 The free Community Edition works fine if you don't have the paid Enterprise Edition.
-You can download it from here: https://github.com/graalvm/graalvm-ce-builds/releases.
+You can download it from here: https://github.com/graalvm/graalvm-ce-builds/releases
+(we need one of the binaries whose name starts with `graalvm-ce`).
 The example code I'll be showing in these blog posts uses Java 11 features,
 so make sure to download a version for Java 11.
 
@@ -350,7 +351,6 @@ All of the code from the article is available on
 
 ## Next article
 
-In part 2 of the series,
-we'll talk about the `Language` class,
-parsing, the `TypeSystem` class,
-and specializations.
+In [part 2 of the series](/graal-truffle-tutorial-part-2-introduction-to-specializations),
+we'll introduce one of the most important concepts in Truffle --
+**specializations**.

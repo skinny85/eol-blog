@@ -288,7 +288,7 @@ public class IntAverageNode extends MyNode {
 However, there's something interesting here.
 Even though the interpreter uses a loop,
 every instance of the `IntAverageNode` class will require a constant number of iterations to calculate its result,
-and that number will never change through the lifetime of a specific `IntAverageNode` object.
+and that number will never change throughout the lifetime of a specific `IntAverageNode` object.
 For instance,
 our example from above,
 `avg(1, 2, 3)`,
