@@ -4,7 +4,8 @@ layout: truffle-tutorial.html
 title: Graal Truffle tutorial part 2 – introduction to specializations
 summary: |
   In the second part of the Truffle tutorial,
-  we talk about
+  we introduce one of the most important concepts for achieving high performance with Truffle –
+  specializations.
 created_at: 2020-11-16
 ---
 
