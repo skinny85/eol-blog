@@ -468,7 +468,7 @@ and we haven't even covered the entire semantics of the 'plus' operator in JavaS
 which allows string concatenation, and even adding arbitrary values
 (for example, the expression `{} + []` is valid in JavaScript).
 
-In the next article, we'll see how to use the
+In the [next article](/graal-truffle-tutorial-part-3-specializations-with-truffle-dsl-typesystem), we'll see how to use the
 [Truffle DSL](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/dsl/package-summary.html)
 to achieve exactly the same result,
 but with a fraction of the code.
