@@ -98,6 +98,36 @@ we say the specialization for that subset is _active_.
 If the node is in a state that handles all possible inputs,
 we call that the _generic_ state.
 
+In JIT literature, you might come across this state machine being called an **inline cache**
+(or sometimes a **polymorphic inline cache**,
+although this longer term is a actually less precise than the shorter one).
+The "inline" here refers to the fact that the cache is kept in the AST node itself,
+as opposed to being global for the entire program.
+
+If there is a single active specialization,
+we say that the inline cache is *monomorphic* --
+which is the best possible case from a performance optimization perspective.
+If the number of active specializations is larger than one,
+but still relatively small
+(how small exactly usually depends on the exact JIT compiler and its version being discussed,
+but the cutoff is generally somewhere around four),
+we say the cache is in a *polymorphic* state.
+That's worse from a performance perspective than monomorphic,
+but not the worst;
+that would be the *megamorphic* state,
+which is when the number of active specializations exceeds that above "small" threshold.
+The optimizing compiler usually has some tricks up its sleeve to improve the performance of polymorphic cases,
+but gives up completely for megamorphic ones,
+and simply emits the obvious (and slow) code.
+
+If you're interested in learning more about inline caches,
+I would recommend
+[this blog article](https://mrale.ph/blog/2015/01/11/whats-up-with-monomorphism.html)
+by Vyacheslav Egorov --
+he talks about V8,
+the optimizing JavaScript runtime that is part of the Chrome browser,
+but most of what he says is broadly applicable to all JIT compilers for all dynamically-typed languages.
+
 Let's draw this state machine for our current EasyScript implementation.
 Since we have to introduce `double`s anyway to handle `int`s overflowing,
 let's also add `double` literals to the language.
