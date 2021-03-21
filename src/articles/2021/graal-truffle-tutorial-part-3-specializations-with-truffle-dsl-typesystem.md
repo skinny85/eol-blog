@@ -607,6 +607,7 @@ as we add more features to our EasyScript language.
 As always, all of the code from the article is
 [available on GitHub](https://github.com/skinny85/graalvm-truffle-tutorial/tree/master/part-03/ReadMe.md).
 
-In the next part of the series,
+In the [next part](/graal-truffle-tutorial-part-4-parsing-and-the-trufflelanguage-class)
+of the series,
 we'll talk about parsing,
-and Truffle's polyglot API.
+and introduce GraalVM's polyglot API.

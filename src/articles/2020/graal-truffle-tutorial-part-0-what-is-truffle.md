@@ -235,7 +235,7 @@ int interpretMyLanguage();
 	return $tmp3
 ```
 
-(By the way, it's very probable that Graal would keep applying constant folding until it reduced that code to just `return 46`,
+(By the way, it's very probable that Graal would keep applying constant folding until it reduced this code to just `return 46`,
 but for illustrative purposes,
 let's leave it as-is)
 
