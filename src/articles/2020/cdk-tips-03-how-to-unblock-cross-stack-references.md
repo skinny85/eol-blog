@@ -13,7 +13,7 @@ created_at: 2020-10-19
 ---
 
 One of the more powerful capabilities the CDK offers are automatic cross-stack references.
-It's built on a CloudFormation feature where you can designate a given
+They are built on a CloudFormation feature where you can designate a given
 [Output](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/outputs-section-structure.html)
 (that can refer to a late-bound value,
 like a name that will be generated only at deploy time)
@@ -126,7 +126,13 @@ For that reason, you have to create the exports manually yourself in the produci
 Since the exports don't serve any purpose other than making the deployment succeed,
 I call this pattern "dummy exports".
 
-You create exports by using the `CfnOutput` class with the `exportName` property filled.
+If you're using CDK in version `1.90.1` or later,
+there is a helper method in the `Stack` class, `exportValue`,
+that allows you to easily maintain the given attribute of a resource as an export of the Stack.
+
+If you're using a version of CDK earlier than `1.90.1`,
+you need to create the dummy exports manually.
+You do it using the `CfnOutput` class with the `exportName` property filled.
 Both the `exportName`,
 and the logical ID of the Output itself need to be exactly the same as the names the CDK generated for them.
 You can use the `overrideLogicalId()` method of `CfnOutput` to make sure it has the correct name.
@@ -154,6 +160,11 @@ class ProducingStack extends cdk.Stack {
 		this.bucket = new s3.Bucket(this, 'Bucket');
 
 		// create the "dummy export"
+		// if you're using CDK version 1.90.1 or later,
+		// you can do it in one line:
+		// this.exportValue(bucket.bucketArn);
+		// if you're using CDK in a version before 1.90.1,
+		// you need to do it manually:
 		const bucketArnOutput = new cdk.CfnOutput(this, 'BucketArnOutput', {
 			value: this.bucket.bucketArn,
 			exportName: 'ProducingStack:ExportsOutputFnGetAttBucket83908E77Arn063C8555',
