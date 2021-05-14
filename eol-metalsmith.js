@@ -13,6 +13,10 @@ var homePage    = require('./blog-plugins/home-page');
 var archivePage = require('./blog-plugins/archive-page');
 var rssFeed     = require('./blog-plugins/rss-feed');
 
+Handlebars.registerHelper('notEqual', function(val1, val2) {
+  return val1 !== val2;
+});
+
 Handlebars.registerHelper('articleDate', function(date) {
   return dateFormat(date, 'UTC:yyyy-mm-dd');
 });
