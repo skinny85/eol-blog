@@ -3,7 +3,10 @@ id: 57
 layout: git.html
 title: Implementing OneFlow on GitHub, BitBucket and GitLab
 summary: |
-  Description
+  In this article, I describe OneFlow,
+  the Git workflow that I successfully use for my projects as an alternative to GitFlow,
+  once more, but this time focusing on the case when your repository is hosted on one of the managed Git providers,
+  like GitHub, BitBucket, or GitLab.
 created_at: 2021-05-31
 ---
 
