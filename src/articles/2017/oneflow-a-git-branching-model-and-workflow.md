@@ -1,6 +1,6 @@
 ---
 id: 27
-layout: article.html
+layout: git.html
 title: OneFlow – a Git branching model and workflow
 summary: "In the 'GitFlow considered harmful' article,
 	I outlined an alternative Git versioning workflow that I

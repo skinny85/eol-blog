@@ -1,6 +1,6 @@
 ---
 id: 7
-layout: article.html
+layout: git.html
 title: GitFlow considered harmful
 summary: "GitFlow is the most popular Git branching model. After using it
 	(and, more importantly, after seeing how it is used) for over a year now, I can
@@ -8,8 +8,6 @@ summary: "GitFlow is the most popular Git branching model. After using it
 	to explain why, and offer a better alternative."
 created_at: 2015-05-03
 ---
-
-**Edit (April 2017)**: the workflow outlined in this post has now a separate article describing it [here](/oneflow-a-git-branching-model-and-workflow)
 
 [GitFlow](http://nvie.com/posts/a-successful-git-branching-model/) is probably the most popular Git branching model in use today. It seems to be everywhere. It certainly _is_ everywhere for me personally -- practically every project at [my current job](http://pragmatists.pl) uses it, and often it's the clients themselves who have chosen it.
 
@@ -108,16 +106,11 @@ Here it is:
 * Releases are done similarly to in GitFlow. You create a new branch for the release, branching off at the point in master that you decide has all the necessary features. From then on new work, aimed for the next release, is pushed to master as always, and any necessary changes are pushed to the release branch (in my opinion, it's an anti-pattern and a huge red flag if your release requires separate commits to work, but that's a topic for another article -- for simplicity, let's assume you can't or don't want to change that). Finally, once the release is ready, you tag the top of the release branch. Then, because there is one eternal branch, there is only one way to get your release to be versioned permanently -- and that is to merge the release branch into master and push that changed master. After that, all the changes that were made during the release are now part of master, and the release branch is deleted.
 * Hotfixes are very similar to releases, except you don't branch from an arbitrary commit on master, but from the release tag that you want to make the fix in. Again, work on master continues as always, and the necessary fixes are pushed to the hotfix branch. Once the fix is ready, the procedure is exactly the same as for a release -- tag the top of the branch creating a new release, merge it into master, then delete the hotfix branch.
 
+(For a more detailed description of this workflow,
+see the ["OneFlow – a Git branching model and workflow" article](/oneflow-a-git-branching-model-and-workflow))
+
 As you can see, this workflow is quite similar to GitFlow, but tries to avoid its pitfalls mentioned earlier. Linear history makes merges and/or rebases easier, while having only one eternal branch takes away a lot of the complex rules. The state of the project is clear -- the top of master is what will be in the next release, and the latest tag is what is on production. This workflow, even though it's simpler, loses nothing in terms of expressiveness of how the project's history is managed compared to GitFlow -- on the contrary, the history is more useful, because encouraging keeping it linear makes it that much easier to search.
 
 ## Moving forward
 
 I hope I wasn't too critical of the author of GitFlow in this article. That certainly wasn't my intention. He simply shared a way of using Git that worked for him and his team(s) with the rest of the world, thinking that others may find it useful. There is absolutely nothing wrong with that. His approach does contain some sound ideas. However, I also believe that GitFlow is fundamentally flawed in many aspects, and my experiences of observing people trying to apply it only confirm that impression. And because there is a simpler, equally (or, I would even argue, more) expressive way to manage your project's history, I don't see a reason to ever use GitFlow anymore.
-
-#### Edit (June 2015):
-
-Thanks everyone for such a great response to this article. Based on the feedback in the comments, I try to address some common issues that you raised in a follow-up post [here](/follow-up-to-gitflow-considered-harmful).
-
-#### Edit (April 2017):
-
-The workflow outlined in this post has now a separate article describing it [here](/oneflow-a-git-branching-model-and-workflow).

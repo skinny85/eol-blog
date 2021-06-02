@@ -1,6 +1,6 @@
 ---
 id: 8
-layout: article.html
+layout: git.html
 title: Follow-up to 'GitFlow considered harmful'
 summary: "The post about how I disliked GitFlow generated quite a bit of interesting
 	discussion. There were a few issues that kept popping up again and again
@@ -9,8 +9,6 @@ summary: "The post about how I disliked GitFlow generated quite a bit of interes
 	confusion in this article."
 created_at: 2015-06-20
 ---
-
-**Edit (April 2017)**: the workflow outlined in this post has now a separate article describing it [here](/oneflow-a-git-branching-model-and-workflow)
 
 My [previous post](/gitflow-considered-harmful), in which I explained what I disliked about GitFlow, generated a lot of feedback on [/r/programming](http://www.reddit.com/r/programming/comments/3ae2tx/gitflow_considered_harmful/), [HackerNews](https://news.ycombinator.com/item?id=9744059), [Twitter](https://twitter.com/sarahmei/status/611934021463859200) and in the comments section of the article itself. I like to thank everybody who took the time to read the post and maybe write a response -- it's been great knowing that a lot of you have had similar experiences to mine, and even better finding out that for some people, those things that bug me are not a problem at all (I devote a whole section to that issue below).
 
@@ -123,5 +121,3 @@ The main point I'm trying to make is this: even if you don't agree with me about
 ## Summary
 
 I hope this article clears up some of the confusion that I may have caused by not being precise enough in my previous post. If there's still something that is unclear to you, please let me know in the comments, and I'll try my best to clarify it further.
-
-**Edit (April 2017)**: the workflow outlined in this post has now a separate article describing it [here](/oneflow-a-git-branching-model-and-workflow)
