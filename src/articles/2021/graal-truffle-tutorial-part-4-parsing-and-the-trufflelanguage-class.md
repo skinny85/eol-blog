@@ -312,7 +312,7 @@ we've made EasyScript a fully-fledged language,
 with a parser,
 and a first-class citizen of the GraalVM polyglot ecosystem.
 
-In the next part of the series,
+In the [next part of the series](/graal-truffle-tutorial-part-5-global-variables),
 we will finally start making EasyScript look more like a real programming language --
 we will add support for variables.
 
