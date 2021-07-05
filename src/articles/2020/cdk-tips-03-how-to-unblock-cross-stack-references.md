@@ -162,7 +162,7 @@ class ProducingStack extends cdk.Stack {
 		// create the "dummy export"
 		// if you're using CDK version 1.90.1 or later,
 		// you can do it in one line:
-		// this.exportValue(bucket.bucketArn);
+		this.exportValue(this.bucket.bucketArn);
 		// if you're using CDK in a version before 1.90.1,
 		// you need to do it manually:
 		const bucketArnOutput = new cdk.CfnOutput(this, 'BucketArnOutput', {
