@@ -4,7 +4,7 @@ layout: truffle-tutorial.html
 title: Graal Truffle tutorial part 5 – global variables
 summary: |
   In the fifth part of the Truffle tutorial,
-  we add support for global variable to our EasyScript language.
+  we add support for global variables to our EasyScript language.
 created_at: 2021-06-30
 ---
 
@@ -39,8 +39,8 @@ Let's dive right in, because there's a lot to do!
 ## Grammar
 
 Our language's grammar will need a few more elements --
-most importantly, we will need the concept of 'statements'.
-We also need to add a new expression kind,
+most importantly, we will have to introduce the concept of 'statements' to it.
+It will also need a new type of expressions,
 as assignment is an expression in JavaScript.
 
 Our ANTLR grammar looks as follows:
@@ -123,6 +123,7 @@ A few notes about the grammar:
   However, to implement that, I would have to introduce `undefined`
   as a value, and I don't want to do that just yet --
   there's enough new stuff in this article already!
+  For that reason, I've made the initializer required for all variable declarations.
 * JavaScript hoists `var` definitions to the beginning of the block.
   For example, the following code:
 
@@ -142,13 +143,13 @@ A few notes about the grammar:
     ```
 
     Implementing this would also require introducing `undefined`,
-    so I've also skipped this for now.
+    so I've skipped this for now as well.
 
 ## Frames, descriptors, and slots
 
 So, how do you implement variables in Truffle?
 You obviously need to store their value somewhere,
-update it when an assignment happens,
+update that value when an assignment happens,
 and then retrieve it when an expression references a variable by name.
 
 You store the values of the variables inside the `VirtualFrame`
@@ -265,7 +266,7 @@ Notice that we don't pass the name of the variable to the Truffle AST Node,
 only the slot; which means the node itself does not know the name of the variable it represents,
 only the slot it occupies in the frame.
 That becomes important when you implement lexical scoping in your language,
-in which inner scopes can shadow variables from outer scopes.
+in which variables in inner scopes can shadow variables with the same names from outer scopes.
 
 We also introduce an enum that represents whether a given variable can be reassigned
 (basically, whether it's `const`, or `let` / `var`).
@@ -277,10 +278,9 @@ We use that extra info when we encounter an assignment expression:
 ```java
     private AssignmentExprNode parseAssignmentExpr(EasyScriptParser.AssignmentExpr1Context assignmentExpr) {
         EasyScriptParser.BindingContext binding = assignmentExpr.binding();
-        // create a new frame slot for this variable
         String variableId = binding.ID().getText();
-        FrameSlot frameSlot;
-        frameSlot = this.frameDescriptor.findFrameSlot(variableId);
+        // retrieve the frame slot for this variable
+        FrameSlot frameSlot = this.frameDescriptor.findFrameSlot(variableId);
         if (frameSlot == null) {
             throw new EasyScriptException("'" + variableId + "' is not defined");
         }
@@ -477,7 +477,7 @@ and so it can be marked `final`.
 
 To use the field in the abstract superclass of the generated class,
 we can declare an abstract getter for it,
-like we do here with `getFrameSlot()` and `getFrameDescriptor()`.
+like we do here with `getFrameSlot()`.
 The DSL will override those methods in the generated subclass.
 
 The field will be populated by getting its value from the generated `create()`
@@ -566,7 +566,6 @@ import com.oracle.truffle.api.nodes.RootNode;
 import java.util.List;
 
 public final class EasyScriptRootNode extends RootNode {
-    @SuppressWarnings("FieldMayBeFinal")
     @Children
     private final EasyScriptStmtNode[] stmtNodes;
 
@@ -607,12 +606,13 @@ but converts it to an array internally.
 ## Summary
 
 Bringing it all together,
-we can write a unit test executing the program we started with:
+we can write a unit test executing the program we set as our goal in the beginning of the article:
 
 ```java
     @Test
     public void evaluates_statements() {
-        Value result = this.context.eval("ezs",
+        Context context = Context.create();
+        Value result = context.eval("ezs",
                 "var a = 0; " +
                 "let b = 1; " +
                 "const c = 2.0; " +
