@@ -36,7 +36,7 @@ Here's a simple example:
 **Note**: all of the code in this article is in TypeScript,
 but the concepts I'm talking about are the same in every language CDK supports.
 
-```ts
+```typescript
 import * as cdk from '@aws-cdk/core';
 import * as lambda from '@aws-cdk/aws-lambda';
 import * as s3 from '@aws-cdk/aws-s3';
@@ -146,7 +146,7 @@ Keep running `cdk diff` until it shows no edits or deletions in the producing St
 For instance, here's how we would create the "dummy exports"
 for the above example code:
 
-```ts
+```typescript
 import * as cdk from '@aws-cdk/core';
 import * as lambda from '@aws-cdk/aws-lambda';
 import * as s3 from '@aws-cdk/aws-s3';
