@@ -176,7 +176,8 @@ which ships with all modern distributions of NodeJS.
 So, instead of invoking `cdk init --language=<lang>`
 you would call `npx cdk init --language`,
 and `npx` will download the latest version of the `aws-cdk` package,
-and store it in a temporary directory. You can use a specific `aws-cdk` package version if needed:
+and store it in a temporary directory.
+You can use a specific `aws-cdk` package version if needed:
 `npx cdk@1.44.0 init --language`.
 The end effect will be the same,
 without the need for installing anything globally.
