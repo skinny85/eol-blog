@@ -52,7 +52,7 @@ instead of forcing you to build the AST yourself by inserting code directly into
 which I consider an anti-pattern.
 
 I won't be focusing too much in these posts on the parsing aspect of implementing a new language,
-or the details of using ANTLR,
+nor on the details of using ANTLR,
 as both of those are deep topics,
 each worthy of its own article series.
 Feel free to use my code as the jumping-off point when implementing your own language,
