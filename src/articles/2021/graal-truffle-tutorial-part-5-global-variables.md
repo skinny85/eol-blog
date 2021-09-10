@@ -242,7 +242,8 @@ public final class GlobalScopeObject {
 }
 ```
 
-The interesting question is how do we surface this `GlobalScopeObject` instance to the AST Nodes that will read and write to it?
+The interesting question is:
+how do we surface this `GlobalScopeObject` instance to the AST Nodes that will read and write to it?
 
 One way could be to store this `GlobalScopeObject` instance in the `TruffleLanguage` instance itself.
 Another would be to use the `Context` type parameter of `TruffleLanguage`,
@@ -553,7 +554,7 @@ const a = b;
 var b = 1;
 ```
 
-Is actually valid in JavaScript,
+is actually valid in JavaScript,
 and gets transformed to:
 
 ```js

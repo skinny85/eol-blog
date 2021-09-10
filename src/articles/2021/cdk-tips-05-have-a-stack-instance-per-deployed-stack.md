@@ -113,7 +113,7 @@ they immediately want to recreate this familiar pattern.
 
 So, their CDK code looks something like this:
 
-```ts
+```typescript
 import { App, CfnCondition, CfnParameter, Fn, Stack, Token } from '@aws-cdk/core';
 import * as dynamodb from '@aws-cdk/aws-dynamodb';
 
@@ -204,7 +204,7 @@ To prevent any code duplication,
 we will introduce our own stack class that extends the CDK's `Stack`.
 The code looks something like this:
 
-```ts
+```typescript
 import { App, Construct, Stack, StackProps } from '@aws-cdk/core';
 import * as dynamodb from '@aws-cdk/aws-dynamodb';
 
@@ -323,7 +323,7 @@ stacks that are used by individual developers on the team to play around with th
 and try out their changes in a safe environment before publishing them.
 Their usage looks something like this:
 
-```ts
+```typescript
 interface MyStackProps extends StackProps {
     readonly isProd?: boolean;
 }
