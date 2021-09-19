@@ -361,6 +361,7 @@ And here is the extra step -- fast-forwarding `master` to the latest release tag
 ```bash
 $ git checkout master
 $ git merge --ff-only 2.3.0
+$ git push origin master
 ```
 
 Here's a visualization of the state of the repository after finishing the release branch:
@@ -401,6 +402,7 @@ And here is the additional step of fast-forwarding `master` to the latest releas
 ```bash
 $ git checkout master
 $ git merge --ff-only 2.3.1
+$ git push origin master
 ```
 
 If we continue our release example, the visual illustration looks something like this:
