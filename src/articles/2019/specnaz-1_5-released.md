@@ -153,7 +153,7 @@ class StackSpec : SpecnazKotlin {
 ```
 
 In addition, there is a `SpecnazKotlinJUnitPlatform` class,
-which is analogous to the `SpecnazKotlinJunit` class from the `specnaz-junit` module and the `SpecnazKotlinTestNG` class from the `specnaz-testng` module.
+which is analogous to the `SpecnazKotlinJUnit` class from the `specnaz-junit` module and the `SpecnazKotlinTestNG` class from the `specnaz-testng` module.
 It implements the `SpecnazKotlin` interface,
 is already annotated with the `@Testable` annotation,
 and calls the `describes` method in its primary constructor --
