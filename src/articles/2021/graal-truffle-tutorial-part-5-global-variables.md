@@ -21,8 +21,9 @@ Our goal is to be able to execute the following JavaScript program:
 
 ```js
 var a = 0;
-let b = 1;
+let b;
 const c = 2.0;
+b = 1;
 a + b + c
 ```
 
@@ -780,8 +781,9 @@ we can execute the program we set as our goal at the beginning of the article:
         Context context = Context.create();
         Value result = context.eval("ezs",
                 "var a = 0; " +
-                "let b = 1; " +
+                "let b; " +
                 "const c = 2.0; " +
+                "b = 1; " +
                 "a + b + c"
         );
 
