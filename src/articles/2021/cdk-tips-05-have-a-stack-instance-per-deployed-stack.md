@@ -311,6 +311,7 @@ Does this mean you should never use Stacks without the `env` property set --
 what the CDK calls ["environment-agnostic" stacks](https://docs.aws.amazon.com/cdk/latest/guide/environments.html)?
 No!
 There are many situations in which they are useful.
+
 One is example apps --
 CDK applications that are meant to demonstrate how to accomplish a specific goal using the CDK,
 and not an actual application serving production traffic.
