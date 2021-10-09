@@ -24,7 +24,7 @@ and they don't want to start from scratch when moving to
 The CDK has a dedicated module to help with this migration,
 called [CloudFormation-Include](https://docs.aws.amazon.com/cdk/api/latest/docs/cloudformation-include-readme.html).
 There is an article on the AWS blog that shows how to use it:
-https://aws.amazon.com/blogs/developer/migrating-cloudformation-templates-to-the-aws-cloud-development-kit.
+["Migrating CloudFormation templates to the AWS Cloud Development Kit"](https://aws.amazon.com/blogs/developer/migrating-cloudformation-templates-to-the-aws-cloud-development-kit).
 
 I also recently gave a talk at a
 [Berlin AWS User Group meetup](https://www.meetup.com/berlinawsug/events/266783692),
