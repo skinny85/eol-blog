@@ -3,7 +3,10 @@ id: 59
 layout: cdk-tips.html
 title: CDK tips, part 6 – speeding up CDK application development
 summary: |
-  dsdasdads
+  In part 6 of the 'CDK tips' series,
+  we show how to accelerate deployments of code-only changes
+  during development of CDK applications,
+  using the new 'hotswap deployments' functionality.
 created_at: 2021-10-09
 ---
 
