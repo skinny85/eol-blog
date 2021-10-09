@@ -36,7 +36,7 @@ that I decided to make a video going through it again:
 <iframe width="560" height="315" frameborder="0"
   src="https://www.youtube.com/embed/bTC8XV5aLTo"
   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-  style="margin: auto; display: block" allowfullscreen></iframe>
+  style="margin: auto; display: block; max-width: 100%;" allowfullscreen></iframe>
 
 I hope it's helpful in demonstrating how to migrate a real-life,
 running application from CloudFormation to CDK,

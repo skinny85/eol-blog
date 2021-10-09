@@ -90,4 +90,4 @@ I've also recorded a simple demo, showing the hotswap functionality in action:
 <iframe width="560" height="315" frameborder="0"
   src="https://www.youtube.com/embed/XBfgvXEaUz0"
   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-  style="margin: auto; display: block" allowfullscreen></iframe>
+  style="margin: auto; display: block; max-width: 100%;" allowfullscreen></iframe>
