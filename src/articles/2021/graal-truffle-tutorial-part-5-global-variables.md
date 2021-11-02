@@ -376,7 +376,7 @@ public abstract class GlobalVarDeclStmtNode extends EasyScriptStmtNode {
     public abstract DeclarationKind getDeclarationKind();
 
     @Specialization
-    protected Object assignVariable(
+    protected Object createVariable(
             Object value,
             @CachedContext(EasyScriptTruffleLanguage.class) EasyScriptLanguageContext context) {
         String variableId = this.getName();
@@ -971,6 +971,8 @@ but we finally managed to power through it.
 As usual, the full working code from the article
 [is available on GitHub](https://github.com/skinny85/graalvm-truffle-tutorial/tree/master/part-05).
 
-In the next part of the series,
+In the
+[next part](/graal-truffle-tutorial-part-6-static-function-calls)
+of the series,
 we will finally add function calls to the language,
 so make sure you don't miss it!
