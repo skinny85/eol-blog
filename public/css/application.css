@@ -198,6 +198,18 @@ main #homepage time {
     line-height: 1.1;
 }
 
+.homepage-article-divider {
+    height: 1px;
+    width: 25%;
+    border: 0;
+    opacity: .25;
+    color: inherit;
+    background-color: currentColor;
+    /*margin: 1rem 0;*/ /* this makes the divider be left-aligned */
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+}
+
 img {
     max-width: 100%;
 }
