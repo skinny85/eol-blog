@@ -67,7 +67,7 @@ but support for other types of changes is coming,
 like the definition of a StepFunctions State Machine,
 or the code of an ECS Service.
 Check out
-[this page](https://www.npmjs.com/package/aws-cdk#user-content-hotswap-deployments-for-faster-development)
+[this page](https://github.com/aws/aws-cdk/blob/master/packages/aws-cdk/README.md#hotswap-deployments-for-faster-development)
 for the most up-to-date list of the types of changes that support hotswapping.
 
 If you invoke `cdk deploy --hotswap`,
