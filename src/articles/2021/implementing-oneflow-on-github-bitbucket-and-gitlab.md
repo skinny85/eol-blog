@@ -193,10 +193,12 @@ you will need to submit a **Pull Request** with the contents of your feature bra
 (note that GitLab calls these "Merge Requests" instead,
 but other than the name, they are exactly the same).
 A Pull Request is opened using the web UI of the hosted provider your project uses.
-The source branch is your feature branch
+The source branch is the feature branch in your fork
 (`feature/my-feature` in our example),
-and the destination branch is the primary long-lived branch
-(`main` in our example).
+and the destination branch is the primary long-lived branch in the main repository
+(`main` in our example) --
+because of forks,
+all of the hosted providers allow Pull Requests to be created across repositories this way.
 
 A Pull Request is a proposal that you submit to the team that owns the project.
 It might so happen that you're a member of that team as well!
