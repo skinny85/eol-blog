@@ -13,7 +13,7 @@ created_at: 2014-11-07
 At the end of September, a very cool event took place in Warsaw.
 It was an annual free software development conference,
 with a focus on (but not limited to) the Java ecosystem.
-It is called [Warsjawa](http://workshops.warsjawa.pl),
+It is called [Warsjawa](https://web.archive.org/web/20141016215507/http://www.warsjawa.pl),
 and what is so special about it is that it consists entirely of workshops --
 there are no lectures in it whatsoever.
 I had the pleasure of leading one of them,
@@ -36,7 +36,7 @@ is available on [GitHub](https://github.com/Pragmatists/geb-workshop/).
   and seeing just how much time it takes,
   I soon realized that would be bonkers.
   So, I stole the Gradle version of the
-  [Spring Petclinic](https://github.com/whimet/spring-petclinic) sample app.
+  [Spring PetClinic](https://github.com/spring-projects/spring-petclinic) sample app.
   Even with that time-saving solution, it took me a lot of effort --
   I would estimate about four entire work-days.
   I had no idea it would be that long!
