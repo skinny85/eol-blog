@@ -840,6 +840,6 @@ mainly because optimizing function calls is such a critical part of writing a hi
 As usual, all of the code in the article
 [is available on GitHub](https://github.com/skinny85/graalvm-truffle-tutorial/tree/master/part-06).
 
-In the next article,
+In the [next article](/graal-truffle-tutorial-part-7-function-definitions),
 we continue with the topic of functions --
 we will learn how to implement function definitions.
