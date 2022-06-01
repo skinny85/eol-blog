@@ -180,7 +180,7 @@ Once the `FrameSlot`s have been created from a `FrameDescriptor` instance,
 that instance is passed to the `RootNode` Truffle class.
 When the `CallTarget` that wraps that `RootNode` is invoked,
 it will create a `VirtualFrame` instance with the appropriate number of slots
-(and of the correct types, if we've provided that information to to the slots),
+(and of the correct types, if we've provided that information to the slots),
 using the information it got from the root node's `FrameDescriptor` instance.
 
 ## Simplifications
