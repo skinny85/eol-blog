@@ -73,13 +73,6 @@ for the most up-to-date list of the types of changes that support hotswapping.
 If you invoke `cdk deploy --hotswap`,
 and you made changes to your application that can't be hotswapped,
 the tool will fall back to doing a full CloudFormation deployment.
-Note, however, that that deployment will by default use the
-[new CloudFormation 'no rollback'-type](https://aws.amazon.com/blogs/aws/new-for-aws-cloudformation-quickly-retry-stack-operations-from-the-point-of-failure)
-of deployment,
-which doesn't work well if your resources need replacement.
-If you make any changes to your CDK code that can't be hotswapped and include potential resource replacements,
-make sure to either invoke `cdk deploy` without the `--hotswap` option,
-or explicitly enable rollback by invoking `cdk deploy --hotswap --rollback`.
 
 And finally, one more important note.
 Hotswap deployments deliberately introduce drift in your CloudFormation Stacks in order to speed up deployments.
@@ -94,3 +87,57 @@ I've also recorded a simple demo, showing the hotswap functionality in action:
   src="https://www.youtube.com/embed/XBfgvXEaUz0"
   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
   style="margin: auto; display: block; max-width: 100%;" allowfullscreen></iframe>
+
+There's also another useful command that goes hand in hand with hotswapping: `watch`.
+It's both a top-level command, invoked as `cdk watch`,
+or an argument to the deploy command, as in `cdk deploy --watch`
+(the two ways of invoking it are equivalent).
+The idea behind the command is similar to watch modes in other tools,
+like the TypeScript compiler, or the Jest testing framework.
+It's a continuous process that, once started,
+monitors the files of your project.
+Whenever it detects one of those files changes,
+it immediately triggers a `cdk deploy`,
+without the need for invoking the command manually.
+This further shortens the feedback loop when doing development on your private copy of a CDK application.
+
+By default, the deployments triggered by `watch` are the faster hotswap deployments we talked about above.
+If you'd rather use the command with CloudFormation deployments,
+you can turn off hotswapping with the `--no-hotswap` switch:
+
+```shell
+$ cdk watch --no-hotswap MyDevStack
+```
+
+One thing to note here is that in order for the `watch` command to work,
+you need to have a setting in your `cdk.json` file under a `"watch"` key.
+If you're created your CDK application with the `cdk init` command with a recent
+(anything newer than `1.122.0`)
+version, chances are your application already has that key --
+if not, you'll need to add it yourself.
+The command has some defaults,
+so the smallest valid value of that key is just an empty object:
+
+```json
+{
+  "app": "<language-specific run command>",
+  "watch": {}
+}
+```
+You can specify what files you want the `watch` process to include when observing for changes,
+and which to ignore, with the `"include"` and `"exclude"` keys of that object.
+For example, for Java, you could do something like:
+
+```json
+{
+  "app": "mvn -e -q compile exec:java",
+  "watch": {
+    "include": ["**/*.java"],
+    "exclude": "**/*.class"
+  }
+}
+```
+
+As the example shows,
+the `"watch"` object accepts as values both arrays, and single paths,
+and allows specifying file blobs.
