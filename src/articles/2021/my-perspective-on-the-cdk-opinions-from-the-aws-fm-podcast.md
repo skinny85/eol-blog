@@ -308,9 +308,9 @@ Ben Kehoe said during [his interview](https://aws.fm/episodes/episode-15-ben-keh
 I think what Ben is saying here is very interesting.
 He paints a picture of a very compelling future.
 I really hope we achieve it with the CDK.
-In fact, if you read the preface to the community-written
-[CDK  book](https://thecdkbook.com)
-(which I highly recommend, BTW),
+In fact, if you read the
+[preface to the community-written CDK  book](https://www.thecdkbook.com/foreword.html)
+(I highly recommend reading the book in full, BTW),
 [Elad](https://twitter.com/emeshbi),
 the creator of the CDK,
 predicts that what Ben is envisioning will be one of the four major areas of CDK improvement in the future.
