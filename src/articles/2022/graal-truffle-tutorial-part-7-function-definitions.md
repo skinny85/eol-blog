@@ -886,5 +886,6 @@ the new elements in this part are mainly the APIs related to storing different v
 As usual, all of the code in the article
 [is available on GitHub](https://github.com/skinny85/graalvm-truffle-tutorial/tree/master/part-07).
 
-In the next part of the series,
+In the [next part](/graal-truffle-tutorial-part-8-conditionals-loops-control-flow)
+of the series,
 we will add loops and control flow to our language.
