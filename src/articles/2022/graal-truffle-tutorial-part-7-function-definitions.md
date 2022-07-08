@@ -23,8 +23,7 @@ function add(a, b) {
 }
 ```
 
-You have the "function" keyword,
-followed by the name of the function,
+We have the "function" keyword, followed by the name of the function,
 and then its arguments, in parenthesis.
 The body of the function is a block of statements, between brackets;
 the function can include their own local variables,
@@ -36,7 +35,7 @@ Now, allowing function definitions introduces a lot of complexity into our imple
 
 In the language version from the previous article,
 when we saw the usage of a variable like `a`
-(regardless whether it was a reference, or an assignment),
+(regardless whether it was in a reference, or in assignment),
 we were certain that it meant a global variable called `a`.
 However, with function definitions,
 now seeing a variable like `a` might mean three different things:
@@ -45,7 +44,7 @@ now seeing a variable like `a` might mean three different things:
 2. A reference to an argument of the function called `a`.
 3. A reference to a local variable of the function with the name `a`.
 
-The problem with these different types of references is that they are implemented differently in our Truffle interpreter.
+The problem with these different types of references is that they are implemented differently in Truffle interpreters.
 Global variables are stored in a separate `GlobalScopeObject`,
 while function arguments are kept in the `Frame` object,
 in the `arguments` array.
@@ -86,15 +85,15 @@ function addTwo(a) {
 
 Just by looking at that program,
 we can say with certainty that the reference to `two`
-inside `addTwo` is a reference to a global variable,
+inside `addTwo()` is a reference to a global variable,
 while the reference to `a` is a function argument.
 There is no reason to check whether `two` is a local variable,
 or a function argument, at runtime.
 
 This sort of examination of the program is called
-**static analysis** in the programming language implementation domain.
+**static analysis** in the domain of implementing programming languages.
 While it's most important for statically-typed languages,
-as this is the place where type checking is implemented,
+as this is where type checking happens,
 it's also important for dynamically-typed languages,
 as we can see from the above example.
 
@@ -129,8 +128,8 @@ function f() {
 ```
 
 And so, the reference to `a` in `b = a` is actually the reference to the local variable `a`
-(which shadows the global variable `a` inside the definition of `f`),
-and so calling `f` will return `undefined`.
+(which shadows the global variable `a` inside the definition of `f()`),
+and so calling `f()` will return `undefined`.
 
 ## Frame descriptors and slots
 
@@ -185,19 +184,21 @@ using the information it got from the root node's `FrameDescriptor` instance.
 
 ## Simplifications
 
-To make this already long article somewhat manageable in size,
-we'll make two simplifications in this part,
+To make this already long article at least somewhat manageable in size,
+we'll make three simplifications in this part,
 which we will eliminate later in the series:
 
 1. We won't implement a `return` statement yet --
   the function will return the result of evaluating the last statement of its body.
   Since this is the same behavior as for the entire program,
-  this will allow us to re-use that one class to implement both.
-  We will add this statement when we handle control flow in the next article of the series.
+  this will allow us to re-use one class, `BlockStmtNode` (see below), to implement both.
+  We will add the `return` statement when we handle control flow in the
+  [next article](/graal-truffle-tutorial-part-8-conditionals-loops-control-flow#return-statement)
+  of the series.
 2. We will not allow nested functions
   (that is, functions defined inside another function).
   Their presence complicates the implementation quite a bit;
-  for an example, taking a look at this code:
+  for an example, take this code:
 
     ```js
     function makeAdder(add) {
@@ -212,10 +213,13 @@ which we will eliminate later in the series:
 
     This program will print out `5`.
     The difficulty of implementing it is that the `3`
-    argument passed to `makeAdder` survives after the invocation of `makeAdder`
-    finishes -- it gets "captured" in the `adder` function returned by `makeAdder`.
+    argument passed to `makeAdder()` survives after the invocation of `makeAdder()`
+    finishes -- it gets "captured" in the `adder()` function returned by `makeAdder()`.
     This sort of function is called a **closure**,
     and we will devote an entire article to implementing them later in the series.
+3. We will not support the
+   ["magical" `arguments`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/arguments)
+   variable in function definitions, as we don't support arrays in EasyScript yet.
 
 ## Grammar
 
@@ -270,20 +274,20 @@ created using the frame descriptor stored in the `frameDescriptor` field.
 
 ### Hoisting edge cases
 
-Parsing statements will have to take hoisting into account.
-
-Note that, while we implemented hoisting in article for global variables,
-we made a shortcut.
+Parsing statements will have to take hoisting into account. Note that, while we implemented hoisting in the
+[article on global variables](/graal-truffle-tutorial-part-5-global-variables),
+we took a small shortcut while doing it.
 We only hoisted `var` declarations, leaving `const` and `let` where they are.
-However, that's not strictly correct; according to the JS standards,
+However, that's not strictly correct; according to the
+[JS standards](https://developer.mozilla.org/en-US/docs/Glossary/Hoisting#let_and_const_hoisting),
 `const` and `let` are hoisted too,
 just initialized in such a way that throws an exception if they are read before being initialized.
 In a language with only variable declarations,
-where the control flow always goes linearly from top to bottom,
+where control flow always proceeds linearly, from top to bottom,
 that's equivalent to not hoisting them at all,
 and that's why we made that simplification;
 however, once functions come into play, things get more complicated.
-For example, look at this code:
+For example, in this code:
 
 ```js
 let v = f();
@@ -292,9 +296,9 @@ function f() {
 }
 ```
 
-Suddenly, it *is* possible to access the variables before they are initialized,
-so we need to correctly implement hoisting for all variable declarations,
-not just `var`.
+Suddenly, it *is* possible to access variables before they are initialized,
+and so we need to correctly implement hoisting for all variable declarations,
+not just for `var`.
 
 ### Parsing a block of statements -- first loop
 
@@ -329,6 +333,7 @@ ignoring their initializer expressions:
                         } catch (IllegalArgumentException e) {
                             throw new EasyScriptException("Identifier '" + variableId + "' has already been declared");
                         }
+                        // a local variable cannot have the same name as a function argument
                         if (this.functionLocals.put(variableId, frameSlot) != null) {
                             throw new EasyScriptException("Identifier '" + variableId + "' has already been declared");
                         }
@@ -341,13 +346,15 @@ ignoring their initializer expressions:
 
 Here, we can see the `FrameSlot` being created from the `FrameDescriptor`
 when we encounter a variable declaration inside a function definition
-(we have to handle errors with duplicate variables too).
+(we have to handle errors with duplicate variables too,
+including a local variable having the same name as a function argument,
+which is not allowed in JavaScript).
 
 We store the kind of the declaration (`var`, `const` or `let`)
 in the slot when creating it --
 the slot has an `info` field, of type `Object`, that allows storing extra information within it --
 because we need to make sure we disallow re-assigning local `const` variables.
-We also save the name of the local variable in the `functionsLocals` map,
+We also save the name of the local variable in the `functionLocals` map,
 which we will use below to determine whether a given reference is to a local,
 or global, variable.
 
@@ -369,6 +376,7 @@ public final class LocalVarDeclStmtNode extends EasyScriptStmtNode {
     public Object executeStatement(VirtualFrame frame) {
         frame.setObject(this.frameSlot, this.frameSlot.getInfo() == DeclarationKind.VAR
             ? Undefined.INSTANCE : DUMMY);
+        frame.getFrameDescriptor().setFrameSlotKind(this.frameSlot, FrameSlotKind.Illegal);
         return Undefined.INSTANCE;
     }
 }
@@ -380,6 +388,10 @@ and a magical "dummy" value for `const` and `let`
 variables that will be treated specially by the expression Node for reading local variables
 (it will cause an error to be thrown),
 which we will see below.
+
+We also set the the type of the frame slot as "illegal",
+which is Truffle's name for "uninitialized".
+This will be used by specializations in Nodes for local variable assignment and reference.
 
 #### Global variable declaration
 
@@ -478,14 +490,23 @@ public final class GlobalScopeObject implements TruffleObject {
         }
         return existingValue != null;
     }
+
+    public Object getVariable(String name) {
+        Object ret = this.variables.get(name);
+        if (ret == DUMMY) {
+            throw new EasyScriptException("Cannot access '" + name + "' before initialization");
+        }
+        return ret;
+    }
 ```
 
-As you can see, when writing to a global variable,
+When writing to a global variable,
 we check whether its previous value was the dummy --
 if so, we allow it even for `const` variables,
 which normally shouldn't be re-assigned
 (but if their previous value was the dummy,
-we know this is the first assignment that is the result of splitting the `const` declaration to implement hoisting).
+we know this is the first assignment that is the result of splitting the `const`
+variable statement into declaration and assignment, to implement hoisting).
 
 ### Parsing a block of statements -- second loop
 
@@ -528,16 +549,20 @@ and turn every variable declaration we encounter into an assignment expression:
 Depending on whether we're parsing the program itself,
 or a function definition,
 the assignment is either to a global variable represented by `GlobalVarAssignmentExprNode`
-(which is unchanged from when it was introduced in a previous part of the series),
+(which is unchanged from when it was introduced in a
+[previous part](/graal-truffle-tutorial-part-5-global-variables#expression-nodes)
+of the series),
 or to a local variable:
 
 ```java
 @NodeChild("initializerExpr")
 @NodeField(name = "frameSlot", type = FrameSlot.class)
+@ImportStatic(FrameSlotKind.class)
 public abstract class LocalVarAssignmentExprNode extends EasyScriptExprNode {
     protected abstract FrameSlot getFrameSlot();
 
-    @Specialization
+    @Specialization(guards = "frame.getFrameDescriptor().getFrameSlotKind(getFrameSlot()) == Illegal || " +
+            "frame.getFrameDescriptor().getFrameSlotKind(getFrameSlot()) == Int")
     protected int intAssignment(VirtualFrame frame, int value) {
         FrameSlot frameSlot = this.getFrameSlot();
         frame.getFrameDescriptor().setFrameSlotKind(frameSlot, FrameSlotKind.Int);
@@ -545,7 +570,9 @@ public abstract class LocalVarAssignmentExprNode extends EasyScriptExprNode {
         return value;
     }
 
-    @Specialization(replaces = "intAssignment")
+    @Specialization(replaces = "intAssignment",
+            guards = "frame.getFrameDescriptor().getFrameSlotKind(getFrameSlot()) == Illegal || " +
+                    "frame.getFrameDescriptor().getFrameSlotKind(getFrameSlot()) == Double")
     protected double doubleAssignment(VirtualFrame frame, double value) {
         FrameSlot frameSlot = this.getFrameSlot();
         frame.getFrameDescriptor().setFrameSlotKind(frameSlot, FrameSlotKind.Double);
@@ -553,7 +580,7 @@ public abstract class LocalVarAssignmentExprNode extends EasyScriptExprNode {
         return value;
     }
 
-    @Fallback
+    @Specialization(replaces = {"intAssignment", "doubleAssignment"})
     protected Object objectAssignment(VirtualFrame frame, Object value) {
         FrameSlot frameSlot = this.getFrameSlot();
         frame.getFrameDescriptor().setFrameSlotKind(frameSlot, FrameSlotKind.Object);
@@ -564,7 +591,16 @@ public abstract class LocalVarAssignmentExprNode extends EasyScriptExprNode {
 ```
 
 We use specializations if the local variables happen to have an `int` or `double` type.
-We note the type in the frame descriptor before we save the value in the frame --
+We use the `guards` attribute of `@Specialization` to make sure they are only activated if the `FrameSlot`
+has the correct type (or has not yet been initialized).
+If an object is assigned to a given local variable at any time,
+we stop further specializations, and work on the boxed object exclusively.
+
+Note that in order to write that `guards` expression,
+we have to statically import the constants from the `FrameSlotKind` Truffle enum.
+We do that with the `@ImportStatic` annotation.
+
+We also save the type in the frame descriptor before we write the value in the frame --
 we will use that information in the Node for reading a local variable, below.
 
 Finally, we return a list of statement Nodes that is the result of parsing a statement block:
@@ -636,7 +672,30 @@ Finally, we save the `frameDescriptor` field in a local variable,
 reset our fields after parsing the body of the function
 (by setting `frameDescriptor` to `null`,
 and clearing the `functionLocals` map),
-and return a Node that implements a function declaration.
+and return a Node that implements a function declaration,
+passing it the list of statements that comprise the function's body,
+wrapped as a single `EasyScriptStatement`:
+
+```java
+public final class BlockStmtNode extends EasyScriptStmtNode {
+    @Children
+    private final EasyScriptStmtNode[] stmts;
+
+    public BlockStmtNode(List<EasyScriptStmtNode> stmts) {
+        this.stmts = stmts.toArray(new EasyScriptStmtNode[]{});
+    }
+
+    @Override
+    @ExplodeLoop
+    public Object executeStatement(VirtualFrame frame) {
+        Object ret = Undefined.INSTANCE;
+        for (EasyScriptStmtNode stmt : this.stmts) {
+            ret = stmt.executeStatement(frame);
+        }
+        return ret;
+    }
+}
+```
 
 `FuncDeclStmtNode` looks as follows:
 
@@ -670,7 +729,8 @@ public final class FuncDeclStmtNode extends EasyScriptStmtNode {
 ```
 
 We create a new `FunctionObject`,
-the same class that we used for the built-in functions in the previous article.
+the same class that we used for the built-in functions from the
+[previous article](/graal-truffle-tutorial-part-6-static-function-calls#functionobject).
 Since we need a new a `CallTarget` for `FunctionObject`,
 we have to create a new `RootNode`.
 `StmtBlockRootNode` is very simple:
@@ -804,7 +864,8 @@ function f(a, b) {
 f(1);
 ```
 
-To handle this case, we need to modify the `FunctionDispatchNode`
+To handle this case, we need to modify the `FunctionDispatchNode` from the
+[previous article](/graal-truffle-tutorial-part-6-static-function-calls#functiondispatchnode)
 to make sure we extend the array of arguments before performing the call:
 
 ```java
@@ -858,7 +919,7 @@ public abstract class LocalVarReferenceExprNode extends EasyScriptExprNode {
         return FrameUtil.getDoubleSafe(frame, this.getFrameSlot());
     }
 
-    @Fallback
+    @Specialization(replaces = {"readInt", "readDouble"})
     protected Object readObject(VirtualFrame frame) {
         Object ret = FrameUtil.getObjectSafe(frame, this.getFrameSlot());
         if (ret == LocalVarDeclStmtNode.DUMMY) {
