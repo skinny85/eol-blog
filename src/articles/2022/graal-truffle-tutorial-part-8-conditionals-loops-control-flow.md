@@ -5,7 +5,7 @@ title: Graal Truffle tutorial part 8 – conditionals, loops, control flow
 summary: |
    In the eight part of the Truffle tutorial,
    we implement comparison operators, "if" statements,
-   loops, and "break" and "continue" statements.
+   loops, and "return", "break" and "continue" statements.
 created_at: 2022-06-30
 ---
 
@@ -33,9 +33,9 @@ function fib(n) {
     if (n < 2)
         return n;
 
-    let a = 0, b = 1;
-    for (var i = 2; i <= n; i = i + 1) {
-        let f = a + b;
+    var a = 0, b = 1;
+    for (let i = 2; i <= n; i = i + 1) {
+        const f = a + b;
         a = b;
         b = f;
     }
@@ -151,7 +151,7 @@ The second challenge is that we can now have arbitrary scopes nested in each oth
 in code such as:
 
 ```js
-for (let i = 0; i < n; i = i + 1) {
+for (let i = 1; i <= n; i = i + 1) {
     // first scope
     if (i === n) {
         // second scope
@@ -252,28 +252,8 @@ then enter the `NESTED_SCOPE_IN_TOP_LEVEL` state if this is a block on the top l
 and push a new map of variables onto the stack of scopes.
 We then call our main parsing method, `parseStmtsList()`, recursively,
 and finally return a `BlockStmtNode`,
-which is unchanged from the last article:
-
-```java
-public final class BlockStmtNode extends EasyScriptStmtNode {
-    @Children
-    private final EasyScriptStmtNode[] stmts;
-
-    public BlockStmtNode(List<EasyScriptStmtNode> stmts) {
-        this.stmts = stmts.toArray(new EasyScriptStmtNode[]{});
-    }
-
-    @Override
-    @ExplodeLoop
-    public Object executeStatement(VirtualFrame frame) {
-        Object ret = Undefined.INSTANCE;
-        for (EasyScriptStmtNode stmt : this.stmts) {
-            ret = stmt.executeStatement(frame);
-        }
-        return ret;
-    }
-}
-```
+which is unchanged from the
+[last article](/graal-truffle-tutorial-part-7-function-definitions#parsing-a-function-declaration).
 
 ### Parsing `for` loops
 
@@ -310,7 +290,7 @@ To enable comparison operators,
 we need to add support for boolean expressions to EasyScript.
 
 We start by adding `boolean` to the `TypeSystem` class we've been using since
-[part 3](/graal-truffle-tutorial-part-3-specializations-with-truffle-dsl-typesystem):
+[part 3](/graal-truffle-tutorial-part-3-specializations-with-truffle-dsl-typesystem#the-typesystem-class):
 
 ```java
 @TypeSystem({
@@ -574,9 +554,9 @@ it might generate different code than if it was 50-50.
 ## Return statement
 
 In the
-[previous article](/graal-truffle-tutorial-part-7-function-definitions)
+[previous article](/graal-truffle-tutorial-part-7-function-definitions#simplifications)
 of the series,
-we made a shortcut:
+we took a small shortcut:
 we made user-defined functions return the value of the last statement they executed.
 But of course, that's not really how JavaScript functions work;
 you need to use the `return` statement for a function,
