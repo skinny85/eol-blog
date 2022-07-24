@@ -654,7 +654,7 @@ for example the following code:
 ```js
 function f(a, a) {
     return a;
- }
+}
 f(1, 23);
 ```
 
