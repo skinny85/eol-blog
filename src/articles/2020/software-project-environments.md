@@ -142,7 +142,8 @@ test is the environment they use for playing with new features and verifying the
 Test is also where you often do non-functional tests,
 like performance testing, or security testing.
 
-The big question with test is whether it shares the database with production,
+The big question with test is whether it shares the database
+(or service dependencies, in case of microservices) with production,
 or has its own, independent dataset.
 Each solution has its pros and cons:
 a separate database means you're not polluting your production database with test data when experimenting
@@ -151,18 +152,21 @@ and any performance tests are guaranteed not to cause outages in production.
 On the other hand, your performance tests will be less realistic,
 as they will not exercise the same data patterns that are present in production,
 which means their reliability will be lower.
+You also won't test your production configuration in this environment if you decide to have a separate database
+(or service dependencies).
 
 ### Staging / Pre-production
 
-Because of that, in projects that have a separate database from prod in test,
-it's common to introduce one more shared environment: pre-prod,
+Because of that, in projects that have a separate database or dependencies from prod in test,
+it's necessary to introduce one more shared environment: pre-prod,
 sometimes also called 'staging'.
 It's very similar to test,
 but, like pre-dev for dev,
 it always uses the same database as production
 (or production dependencies, in the case of a microservices project).
-Its usage is usually limited to automated performance tests,
-or possibly some light functional testing with real data.
+Its usage is usually limited to testing the production configuration with some light functional testing with real data,
+and automated performance tests.
+
 Of course, testing in this environment has to be done with care,
 as it can affect your users.
 
