@@ -44,7 +44,7 @@ function eolMetalsmith() {
         .metadata({
             production: production,
         })
-        .source('./src')
+        .source('./content')
         .destination('./build')
         .clean(true)
         .use(markdown({
