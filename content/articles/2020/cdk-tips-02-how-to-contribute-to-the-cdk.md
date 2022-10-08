@@ -333,7 +333,7 @@ Some useful other resources:
   <iframe width="560" height="315" frameborder="0"
     src="https://www.youtube.com/embed/u6XcIgs-Nok"
     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-    allowfullscreen></iframe>
+    style="margin: auto; display: block; max-width: 100%;" allowfullscreen></iframe>
 
 * The [CDK 'Contributing' guide](https://github.com/aws/aws-cdk/blob/master/CONTRIBUTING.md)
   is always the most up-to-date reference on the process of proposing changes to the CDK
