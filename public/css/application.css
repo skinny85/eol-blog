@@ -222,6 +222,7 @@ main article img {
 
 main article code[class*="language-"] {
     border-radius: 0;
+    overflow-wrap: break-word;
 }
 
 main article pre[class*="language-"] {
