@@ -192,6 +192,21 @@ as the GraalVM polyglot support has built-in caching,
 so this code will only be parsed the first time it's executed,
 and then the existing Truffle AST nodes will be re-used on subsequent `eval()`s.
 
+For simplicity, we are re-evaluating the entire program,
+including the function definition,
+on each iteration of the benchmark.
+That might introduce some overhead,
+so, for your benchmarks, you might consider splitting the definition from the invocation.
+You can take out a function as a GraalVM polyglot `Value`
+from the language's global bindings,
+like we did in [part 5](/graal-truffle-tutorial-part-5-global-variables#surfacing-the-global-bindings),
+and use the [`Value.execute()` method](https://www.graalvm.org/sdk/javadoc/org/graalvm/polyglot/Value.html#execute-java.lang.Object...-)
+to invoke it,
+or pass just the invocation code
+(so, `fib(20)` in our case)
+to `Context.eval()`,
+perhaps using the [`Source` class](https://www.graalvm.org/sdk/javadoc/org/graalvm/polyglot/Source.html).
+
 So, that method covers our EasyScript interpreter measurements;
 however, when benchmarking, it's always important not to rely solely on absolute numbers,
 but to track performance relative to other similar code.
@@ -544,6 +559,11 @@ public final class GlobalScopeObject implements TruffleObject {
     private final Set<String> constants = new HashSet<>();
 
     public FunctionObject registerFunction(String funcName, CallTarget callTarget, int argumentCount) {
+        // we allow overwriting functions, but we add them to the constants set,
+        // so that they can't be changed to a non-function value with assignment
+        // (as that would break the caching assumption in GlobalVarReferenceExprNode)
+        this.constants.add(funcName);
+
         Object existingVariable = this.variables.get(funcName);
         // instanceof returns 'false' for null,
         // so this also covers the case when we're seeing this variable for the first time
