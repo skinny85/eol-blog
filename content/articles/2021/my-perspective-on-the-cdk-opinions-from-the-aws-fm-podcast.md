@@ -12,7 +12,7 @@ summary: |
 created_at: 2021-12-31
 ---
 
-Recently, [Adam Elmore](https://twitter.com/aeduhm),
+Recently, [Adam Elmore](https://twitter.com/adamdotdev),
 host of the ["AWS FM" podcast](https://aws.fm),
 had a few guests on his show that discussed the
 [Cloud Development Kit](https://github.com/aws/aws-cdk).
