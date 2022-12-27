@@ -737,3 +737,9 @@ If you want to learn more about it, I recommend the following resources:
   by Roberto Castañeda Lozano
 - ["Visualization of Program Dependence Graphs"](https://ssw.jku.at/Research/Papers/Wuerthinger07Master),
   the master thesis of Thomas Würthinger, the author of IGV
+
+In the next
+[part of the series](/graal-truffle-tutorial-part-10-arrays-read-only-properties),
+we will talk about implementing arrays,
+and adding properties (for now, just reading them -- without writing)
+to our language.
