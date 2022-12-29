@@ -389,7 +389,7 @@ variables that will be treated specially by the expression Node for reading loca
 (it will cause an error to be thrown),
 which we will see below.
 
-We also set the the type of the frame slot as "illegal",
+We also set the type of the frame slot as "illegal",
 which is Truffle's name for "uninitialized".
 This will be used by specializations in Nodes for local variable assignment and reference.
 

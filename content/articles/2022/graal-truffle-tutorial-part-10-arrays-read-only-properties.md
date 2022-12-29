@@ -249,7 +249,7 @@ and is supported by the Truffle annotation processor
 (the same one that supports the
 [Truffle DSL](/graal-truffle-tutorial-part-3-specializations-with-truffle-dsl-typesystem)).
 The generated code is carefully tailored to be amenable to partial evaluation by Graal,
-an still allow for polymorphic methods, like with inheritance or interface.
+and still allow for polymorphic methods, like with inheritance or interface.
 
 You can create your own libraries,
 but for reading array elements,
