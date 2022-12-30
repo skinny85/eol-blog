@@ -143,7 +143,7 @@ public final class EasyScriptTruffleParser {
         List<EasyScriptStmtNode> stmts = easyScriptTruffleParser.parseStmtsList(parser.start().stmt());
         return new ParsingResult(
                 new BlockStmtNode(stmts),
-                easyScriptTruffleParser.frameDescriptor);
+                easyScriptTruffleParser.frameDescriptor.build());
     }
 ```
 
@@ -168,22 +168,22 @@ which means we can't just use the variable name as the identifier of the `FrameS
 (as these need to be unique in a given `Frame`).
 
 All of this means our state will have to become much more complicated.
-Previously, the state was just a `FrameDescriptor`,
+Previously, the state was just a `FrameDescriptor.Builder`,
 which was not `null` only if we were parsing a function definition,
-and a `Map<String, Object>` that stored all arguments and local variables of a function.
+and a `Map<String, FrameMember>` that stored all arguments and local variables of a function.
 But now, we need four fields to represent the state:
 
 ```java
     private enum ParserState { TOP_LEVEL, NESTED_SCOPE_IN_TOP_LEVEL, FUNC_DEF }
     private ParserState state;
 
-    private FrameDescriptor frameDescriptor;
-    private Stack<Map<String, Object>> localScopes;
+    private FrameDescriptor.Builder frameDescriptor;
+    private Stack<Map<String, FrameMember>> localScopes;
     private int localVariablesCounter;
 
     private EasyScriptTruffleParser() {
         this.state = ParserState.TOP_LEVEL;
-        this.frameDescriptor = new FrameDescriptor();
+        this.frameDescriptor = FrameDescriptor.newBuilder();
         this.localScopes = new Stack<>();
         this.localVariablesCounter = 0;
     }
@@ -196,14 +196,14 @@ we now have a stack of maps.
 Every time we enter a new scope, we push a new map onto the stack;
 every time we leave a scope, we pop the last map off.
 
-To find a local variable in that stack of maps,
+To find either a local variable, or a function argument, in that stack of maps,
 we can't simply search the top-most one;
 we have to search all of them, starting from the top one:
 
 ```java
-    private Object findLocalVariable(String variableId) {
+    private FrameMember findFrameMember(String memberName) {
         for (var scope : this.localScopes) {
-            Object ret = scope.get(variableId);
+            FrameMember ret = scope.get(memberName);
             if (ret != null) {
                 return ret;
             }
@@ -214,7 +214,7 @@ we have to search all of them, starting from the top one:
 
 Finally, we maintain an integer counter of the local variables,
 and we increment it for every variable we encounter.
-Using this counter, we can guarantee that we'll generate a unique `FrameSlot`
+Using this counter, we can guarantee that we'll generate a unique frame slot
 identifier for every variable
 (we'll form the identifier by combining the variable name and the unique counter value,
 instead of just the counter value --
@@ -389,43 +389,43 @@ In addition, we'll have to take into account booleans in our local variable assi
 
 ```java
 @NodeChild("initializerExpr")
-@NodeField(name = "frameSlot", type = FrameSlot.class)
+@NodeField(name = "frameSlot", type = int.class)
 @ImportStatic(FrameSlotKind.class)
 public abstract class LocalVarAssignmentExprNode extends EasyScriptExprNode {
-    protected abstract FrameSlot getFrameSlot();
+    protected abstract int getFrameSlot();
 
-    @Specialization(guards = "frame.getFrameDescriptor().getFrameSlotKind(getFrameSlot()) == Illegal || " +
-            "frame.getFrameDescriptor().getFrameSlotKind(getFrameSlot()) == Int")
+    @Specialization(guards = "frame.getFrameDescriptor().getSlotKind(getFrameSlot()) == Illegal || " +
+            "frame.getFrameDescriptor().getSlotKind(getFrameSlot()) == Int")
     protected int intAssignment(VirtualFrame frame, int value) {
-        FrameSlot frameSlot = this.getFrameSlot();
-        frame.getFrameDescriptor().setFrameSlotKind(frameSlot, FrameSlotKind.Int);
+        int frameSlot = this.getFrameSlot();
+        frame.getFrameDescriptor().setSlotKind(frameSlot, FrameSlotKind.Int);
         frame.setInt(frameSlot, value);
         return value;
     }
 
     @Specialization(replaces = "intAssignment",
-            guards = "frame.getFrameDescriptor().getFrameSlotKind(getFrameSlot()) == Illegal || " +
-                    "frame.getFrameDescriptor().getFrameSlotKind(getFrameSlot()) == Double")
+            guards = "frame.getFrameDescriptor().getSlotKind(getFrameSlot()) == Illegal || " +
+                    "frame.getFrameDescriptor().getSlotKind(getFrameSlot()) == Double")
     protected double doubleAssignment(VirtualFrame frame, double value) {
-        FrameSlot frameSlot = this.getFrameSlot();
-        frame.getFrameDescriptor().setFrameSlotKind(frameSlot, FrameSlotKind.Double);
+        int frameSlot = this.getFrameSlot();
+        frame.getFrameDescriptor().setSlotKind(frameSlot, FrameSlotKind.Double);
         frame.setDouble(frameSlot, value);
         return value;
     }
 
-    @Specialization(guards = "frame.getFrameDescriptor().getFrameSlotKind(getFrameSlot()) == Illegal || " +
-            "frame.getFrameDescriptor().getFrameSlotKind(getFrameSlot()) == Boolean")
+    @Specialization(guards = "frame.getFrameDescriptor().getSlotKind(getFrameSlot()) == Illegal || " +
+            "frame.getFrameDescriptor().getSlotKind(getFrameSlot()) == Boolean")
     protected boolean boolAssignment(VirtualFrame frame, boolean value) {
-        FrameSlot frameSlot = this.getFrameSlot();
-        frame.getFrameDescriptor().setFrameSlotKind(frameSlot, FrameSlotKind.Boolean);
+        int frameSlot = this.getFrameSlot();
+        frame.getFrameDescriptor().setSlotKind(frameSlot, FrameSlotKind.Boolean);
         frame.setBoolean(frameSlot, value);
         return value;
     }
 
     @Specialization(replaces = {"intAssignment", "doubleAssignment", "boolAssignment"})
     protected Object objectAssignment(VirtualFrame frame, Object value) {
-        FrameSlot frameSlot = this.getFrameSlot();
-        frame.getFrameDescriptor().setFrameSlotKind(frameSlot, FrameSlotKind.Object);
+        int frameSlot = this.getFrameSlot();
+        frame.getFrameDescriptor().setSlotKind(frameSlot, FrameSlotKind.Object);
         frame.setObject(frameSlot, value);
         return value;
     }

@@ -153,7 +153,7 @@ showing our addition working correctly:
                 new DoubleLiteralNode(Integer.MAX_VALUE),
                 new DoubleLiteralNode(1));
         var rootNode = new EasyScriptRootNode(exprNode);
-        CallTarget callTarget = Truffle.getRuntime().createCallTarget(rootNode);
+        CallTarget callTarget = rootNode.getCallTarget();
 
         var result = callTarget.call();
 
@@ -389,7 +389,7 @@ If we attempt to write a test for overflow using `IntLiteralNode`:
                 new IntLiteralNode(Integer.MAX_VALUE),
                 new IntLiteralNode(1));
         var rootNode = new EasyScriptRootNode(exprNode);
-        CallTarget callTarget = Truffle.getRuntime().createCallTarget(rootNode);
+        CallTarget callTarget = rootNode.getCallTarget();
 
         var result = callTarget.call();
 

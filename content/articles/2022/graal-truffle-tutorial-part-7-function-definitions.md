@@ -138,11 +138,12 @@ but not in the same place as the function's arguments.
 If not there, then where?
 
 They are stored in something called _auxiliary slots_;
-basically a map,
-whose keys are instances of the `FrameSlot` class,
-and the values are the current values of the local variables.
-You create instances of the `FrameSlot`
-class by using another class, `FrameDescriptor`.
+basically a map inside the `VirtualFrame`.
+The keys of that map historically were instances of a class called `FrameSlot`.
+However, that class has been removed in GraalVM version `22`,
+and now the map is indexed by integers,
+the same way function arguments are.
+These integer indexes are related to another important class, `FrameDescriptor`.
 
 The frame descriptor can be thought of as containing the static analysis information about a frame.
 For example, in the following JavaScript function:
@@ -166,17 +167,28 @@ they could be either integers, or `double`s.
 We will use specializations to allow Graal and Truffle to speculate on their types in order to squeeze out the maximum performance out of this code,
 like [we do for expressions](/graal-truffle-tutorial-part-2-introduction-to-specializations).
 
-A `FrameDescriptor` is created by invoking its constructor directly,
-without any arguments.
-You can create and retrieve `FrameSlot`s from it by invoking methods on the created `FrameDescriptor` instance.
-Now, the important thing to know is that while retrieving and storing values inside the `VirtualFrame`
-with `FrameSlot`s is a fast operation that gets JIT-compiled into efficient machine code,
-actually creating and finding the slots in the descriptor is slow code that never gets JIT compiled.
-For those reasons, it's important to create the slots before the execution starts,
-during static analysis.
+To create these auxiliary slots in the frame,
+we will use a [Builder class](https://en.wikipedia.org/wiki/Builder_pattern)
+for `FrameDescriptor`s, the
+[`FrameDescriptor.Builder` class](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/frame/FrameDescriptor.Builder.html).
+You create instances of it by calling the
+[`newBuilder()` static factory method](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/frame/FrameDescriptor.html#newBuilder--)
+of `FrameDescriptor`.
 
-Once the `FrameSlot`s have been created from a `FrameDescriptor` instance,
-that instance is passed to the `RootNode` Truffle class.
+You create slots in the frame descriptor by calling the
+[`addSlot()` method of `FrameDescriptor.Builder`](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/frame/FrameDescriptor.Builder.html#addSlot-com.oracle.truffle.api.frame.FrameSlotKind-java.lang.Object-java.lang.Object-),
+and you get back the integer index reserved for that slot.
+The important thing to know is that while retrieving and storing values inside the `VirtualFrame`
+is a fast operation that gets JIT-compiled into efficient machine code,
+actually creating and finding the slots in the descriptor builder is slow code that never gets JIT compiled.
+For those reasons, it's important to use the descriptor builder before execution starts,
+during static analysis, but only use the descriptor itself at runtime.
+
+Once the frame slots have been created in the `FrameDescriptor.Builder` instance,
+we call its
+[`build()` method](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/frame/FrameDescriptor.Builder.html#build--),
+which returns a `FrameDescriptor`.
+That `FrameDescriptor` instance is then passed to the `RootNode` Truffle class.
 When the `CallTarget` that wraps that `RootNode` is invoked,
 it will create a `VirtualFrame` instance with the appropriate number of slots
 (and of the correct types, if we've provided that information to the slots),
@@ -257,20 +269,39 @@ public final class EasyScriptTruffleParser {
         return new EasyScriptTruffleParser().parseStmtsList(parser.start().stmt());
     }
 
-    private final Map<String, Object> functionLocals;
-    private FrameDescriptor frameDescriptor;
+    private static abstract class FrameMember {}
+    private static final class FunctionArgument extends FrameMember {
+        public final int argumentIndex;
+        FunctionArgument(int argumentIndex) {
+            this.argumentIndex = argumentIndex;
+        }
+    }
+    private static final class LocalVariable extends FrameMember {
+        public final int variableIndex;
+        public final DeclarationKind declarationKind;
+        LocalVariable(int variableIndex, DeclarationKind declarationKind) {
+            this.variableIndex = variableIndex;
+            this.declarationKind = declarationKind;
+        }
+    }
+    private final Map<String, FrameMember> functionLocals;
+
+    private FrameDescriptor.Builder frameDescriptor;
 
     private EasyScriptTruffleParser() {
         this.functionLocals = new HashMap<>();
     }
 ```
 
-We store the local variables in the `functionLocals` field.
-The keys are the variable names;
-the values, for function arguments, are the integer index of the argument
-(the first one gets `0`, the second one `1`, etc.),
-and for local variables, the `FrameSlot`
-created using the frame descriptor stored in the `frameDescriptor` field.
+We store the variables local to a function in the `functionLocals` field.
+Since both function arguments and local variables are indexed with integer numbers,
+we introduce a private class, `FrameMember`,
+with two subclasses, `FunctionArgument` and `LocalVariable`,
+that allow us to distinguish between the two
+(for local variables, we also save the type of the declaration,
+to detect assignments to `const` variables).
+We also save `FrameDescriptor.Builder` in a field,
+which will be used to create slots in the function's frame for storing the local variables.
 
 ### Hoisting edge cases
 
@@ -327,24 +358,18 @@ ignoring their initializer expressions:
                     if (this.frameDescriptor == null) {
                         varDecls.add(new GlobalVarDeclStmtNode(variableId, declarationKind));
                     } else {
-                        FrameSlot frameSlot;
-                        try {
-                            frameSlot = this.frameDescriptor.addFrameSlot(variableId, declarationKind, FrameSlotKind.Object);
-                        } catch (IllegalArgumentException e) {
+                        int frameSlot = this.frameDescriptor.addSlot(FrameSlotKind.Object, variableId, declarationKind);
+                        if (this.functionLocals.putIfAbsent(variableId, new LocalVariable(frameSlot, declarationKind)) != null) {
                             throw new EasyScriptException("Identifier '" + variableId + "' has already been declared");
                         }
-                        // a local variable cannot have the same name as a function argument
-                        if (this.functionLocals.put(variableId, frameSlot) != null) {
-                            throw new EasyScriptException("Identifier '" + variableId + "' has already been declared");
-                        }
-                        varDecls.add(new LocalVarDeclStmtNode(frameSlot, declarationKind));
+                        varDecls.add(new LocalVarDeclStmtNode(frameSlot));
                     }
                 }
             }
         }
 ```
 
-Here, we can see the `FrameSlot` being created from the `FrameDescriptor`
+Here, we can see the frame slot being created from the `FrameDescriptor.Builder`
 when we encounter a variable declaration inside a function definition
 (we have to handle errors with duplicate variables too,
 including a local variable having the same name as a function argument,
@@ -366,17 +391,17 @@ or global, variable.
 public final class LocalVarDeclStmtNode extends EasyScriptStmtNode {
     public static final Object DUMMY = new Object();
 
-    private final FrameSlot frameSlot;
+    private final int frameSlot;
 
-    public LocalVarDeclStmtNode(FrameSlot frameSlot) {
+    public LocalVarDeclStmtNode(int frameSlot) {
         this.frameSlot = frameSlot;
     }
 
     @Override
     public Object executeStatement(VirtualFrame frame) {
-        frame.setObject(this.frameSlot, this.frameSlot.getInfo() == DeclarationKind.VAR
+        frame.setObject(this.frameSlot, frame.getFrameDescriptor().getSlotInfo(this.frameSlot) == DeclarationKind.VAR
             ? Undefined.INSTANCE : DUMMY);
-        frame.getFrameDescriptor().setFrameSlotKind(this.frameSlot, FrameSlotKind.Illegal);
+        frame.getFrameDescriptor().setSlotKind(this.frameSlot, FrameSlotKind.Illegal);
         return Undefined.INSTANCE;
     }
 }
@@ -395,46 +420,9 @@ This will be used by specializations in Nodes for local variable assignment and 
 
 #### Global variable declaration
 
-The implementation of `GlobalVarDeclStmtNode` is interesting.
-We need a reference from it to the current Truffle language context,
-to create a new variable in the global scope.
-In the previous parts of the series,
-we got that reference using the `@CachedContext` annotation.
-But that annotation can only be placed on specialization methods,
-and we don't have a child expression anymore in this version of `GlobalVarDeclStmtNode` --
-because of hoisting, we discard the initializer from the declaration.
-
-Fortunately, there's also a different way to get a reference to the current context without having to use specializations.
-It can be accomplished using the `ContextReference` class.
-That class has a `get()` method that returns the context for the given Node.
-To make it easier to access, it's common to store the `ContextReference`
-instance in a `static` field of the context class,
-and add a `static` method that uses it:
-
-```java
-public final class EasyScriptLanguageContext {
-    private static final TruffleLanguage.ContextReference<EasyScriptLanguageContext> REF =
-            TruffleLanguage.ContextReference.create(EasyScriptTruffleLanguage.class);
-
-    public static EasyScriptLanguageContext get(Node node) {
-        return REF.get(node);
-    }
-
-    public final GlobalScopeObject globalScopeObject = new GlobalScopeObject();
-}
-```
-
-Once we have that, we can create a helper method in the base class that all of our Nodes inherit from:
-
-```java
-public abstract class EasyScriptNode extends Node {
-    protected final EasyScriptLanguageContext currentLanguageContext() {
-        return EasyScriptLanguageContext.get(this);
-    }
-}
-```
-
-This way, we can simply call `currentLanguageContext()` in our `GlobalVarDeclStmtNode` to get access to the global scope:
+The implementation of `GlobalVarDeclStmtNode` uses the
+`currentLanguageContext()` method that we've seen already in
+[part 5](/graal-truffle-tutorial-part-5-global-variables#statement-nodes):
 
 ```java
 public final class GlobalVarDeclStmtNode extends EasyScriptStmtNode {
@@ -448,8 +436,7 @@ public final class GlobalVarDeclStmtNode extends EasyScriptStmtNode {
 
     @Override
     public Object executeStatement(VirtualFrame frame) {
-        EasyScriptLanguageContext context = this.currentLanguageContext();
-        if (!context.globalScopeObject.newVariable(this.variableId, this.declarationKind)) {
+        if (!this.currentLanguageContext().globalScopeObject.newVariable(this.variableId, this.declarationKind)) {
             throw new EasyScriptException(this, "Identifier '" + this.variableId + "' has already been declared");
         }
         return Undefined.INSTANCE;
@@ -539,7 +526,7 @@ and turn every variable declaration we encounter into an assignment expression:
                     EasyScriptExprNode assignmentExpr = this.frameDescriptor == null
                             ? GlobalVarAssignmentExprNodeGen.create(initializerExpr, variableId)
                             :  LocalVarAssignmentExprNodeGen.create(initializerExpr,
-                                    this.frameDescriptor.findFrameSlot(variableId));
+                                    ((LocalVariable) this.functionLocals.get(variableId)).variableIndex);
                     exprStmts.add(new ExprStmtNode(assignmentExpr, /* discardExpressionValue */ true));
                 }
             }
@@ -556,34 +543,34 @@ or to a local variable:
 
 ```java
 @NodeChild("initializerExpr")
-@NodeField(name = "frameSlot", type = FrameSlot.class)
+@NodeField(name = "frameSlot", type = int.class)
 @ImportStatic(FrameSlotKind.class)
 public abstract class LocalVarAssignmentExprNode extends EasyScriptExprNode {
-    protected abstract FrameSlot getFrameSlot();
+    protected abstract int getFrameSlot();
 
-    @Specialization(guards = "frame.getFrameDescriptor().getFrameSlotKind(getFrameSlot()) == Illegal || " +
-            "frame.getFrameDescriptor().getFrameSlotKind(getFrameSlot()) == Int")
+    @Specialization(guards = "frame.getFrameDescriptor().getSlotKind(getFrameSlot()) == Illegal || " +
+            "frame.getFrameDescriptor().getSlotKind(getFrameSlot()) == Int")
     protected int intAssignment(VirtualFrame frame, int value) {
-        FrameSlot frameSlot = this.getFrameSlot();
-        frame.getFrameDescriptor().setFrameSlotKind(frameSlot, FrameSlotKind.Int);
+        var frameSlot = this.getFrameSlot();
+        frame.getFrameDescriptor().setSlotKind(frameSlot, FrameSlotKind.Int);
         frame.setInt(frameSlot, value);
         return value;
     }
 
     @Specialization(replaces = "intAssignment",
-            guards = "frame.getFrameDescriptor().getFrameSlotKind(getFrameSlot()) == Illegal || " +
-                    "frame.getFrameDescriptor().getFrameSlotKind(getFrameSlot()) == Double")
+            guards = "frame.getFrameDescriptor().getSlotKind(getFrameSlot()) == Illegal || " +
+                    "frame.getFrameDescriptor().getSlotKind(getFrameSlot()) == Double")
     protected double doubleAssignment(VirtualFrame frame, double value) {
-        FrameSlot frameSlot = this.getFrameSlot();
-        frame.getFrameDescriptor().setFrameSlotKind(frameSlot, FrameSlotKind.Double);
+        var frameSlot = this.getFrameSlot();
+        frame.getFrameDescriptor().setSlotKind(frameSlot, FrameSlotKind.Double);
         frame.setDouble(frameSlot, value);
         return value;
     }
 
     @Specialization(replaces = {"intAssignment", "doubleAssignment"})
     protected Object objectAssignment(VirtualFrame frame, Object value) {
-        FrameSlot frameSlot = this.getFrameSlot();
-        frame.getFrameDescriptor().setFrameSlotKind(frameSlot, FrameSlotKind.Object);
+        var frameSlot = this.getFrameSlot();
+        frame.getFrameDescriptor().setSlotKind(frameSlot, FrameSlotKind.Object);
         frame.setObject(frameSlot, value);
         return value;
     }
@@ -591,7 +578,7 @@ public abstract class LocalVarAssignmentExprNode extends EasyScriptExprNode {
 ```
 
 We use specializations if the local variables happen to have an `int` or `double` type.
-We use the `guards` attribute of `@Specialization` to make sure they are only activated if the `FrameSlot`
+We use the `guards` attribute of `@Specialization` to make sure they are only activated if the frame slot
 has the correct type (or has not yet been initialized).
 If an object is assigned to a given local variable at any time,
 we stop further specializations, and work on the boxed object exclusively.
@@ -631,11 +618,11 @@ including the assignments from the variable declarations.
         List<TerminalNode> funcArgs = funcDeclStmt.args.ID();
         int argumentCount = funcArgs.size();
         for (int i = 0; i < argumentCount; i++) {
-            this.functionLocals.put(funcArgs.get(i).getText(), i);
+            this.functionLocals.put(funcArgs.get(i).getText(), new FunctionArgument(i));
         }
-        this.frameDescriptor = new FrameDescriptor();
+        this.frameDescriptor = FrameDescriptor.newBuilder();
         List<EasyScriptStmtNode> funcStmts = this.parseStmtsList(funcDeclStmt.stmt());
-        FrameDescriptor frameDescriptor = this.frameDescriptor;
+        FrameDescriptor frameDescriptor = this.frameDescriptor.build();
         this.functionLocals.clear();
         this.frameDescriptor = null;
         return new FuncDeclStmtNode(funcDeclStmt.name.getText(),
@@ -663,12 +650,12 @@ Will return `23`, not `1`
 [JavaScript strict mode](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Strict_mode)
 turns duplicate arguments into a syntax error instead).
 
-Then, we create a new `FrameDescriptor` and save it in the `frameDescriptor` field.
+Then, we create a new `FrameDescriptor.Builder` and save it in the `frameDescriptor` field.
 That means, when we call `parseStmtsList()`,
 we will now parse variable declarations as local variables,
 instead of global ones.
 
-Finally, we save the `frameDescriptor` field in a local variable,
+Finally, we save the `FrameDescriptor` created from the `frameDescriptor` field in a local variable,
 reset our fields after parsing the body of the function
 (by setting `frameDescriptor` to `null`,
 and clearing the `functionLocals` map),
@@ -720,7 +707,7 @@ public final class FuncDeclStmtNode extends EasyScriptStmtNode {
     public Object executeStatement(VirtualFrame frame) {
         var truffleLanguage = this.currentTruffleLanguage();
         var funcRootNode = new StmtBlockRootNode(truffleLanguage, this.frameDescriptor, this.funcBody);
-        var func = new FunctionObject(Truffle.getRuntime().createCallTarget(funcRootNode), this.argumentCount);
+        var func = new FunctionObject(funcRootNode.getCallTarget(), this.argumentCount);
         var context = this.currentLanguageContext();
         context.globalScopeObject.newFunction(this.funcName, func);
         return Undefined.INSTANCE;
@@ -764,8 +751,12 @@ It has two constructors, because we also use it as the root Node for the entire 
 (in which case we don't have a `FrameDescriptor`).
 
 Since we need a `TruffleLanguage` instance to create the `RootNode` from `FuncDeclStmtNode`,
-we employ a similar trick to what we did for retrieving the context from a Node above,
-just now with a `LanguageReference` instead of a `ContextReference`.
+we employ a similar trick to what we did for retrieving the context from a Node in
+[part 5](/graal-truffle-tutorial-part-5-global-variables#statement-nodes),
+just now with the
+[`LanguageReference` class](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/TruffleLanguage.LanguageReference.html)
+instead of with
+[`ContextReference`](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/TruffleLanguage.ContextReference.html).
 
 The `newFunction` method in `GlobalScopeObject` is extremely simple:
 
@@ -801,19 +792,19 @@ or global, variable:
 ```java
     private EasyScriptExprNode parseAssignmentExpr(EasyScriptParser.AssignmentExpr1Context assignmentExpr) {
         String variableId = assignmentExpr.ID().getText();
-        Object paramIndexOrFrameSlot = this.functionLocals.get(variableId);
+        FrameMember frameMember = this.functionLocals.get(variableId);
         EasyScriptExprNode initializerExpr = this.parseExpr1(assignmentExpr.expr1());
-        if (paramIndexOrFrameSlot == null) {
+        if (frameMember == null) {
             return GlobalVarAssignmentExprNodeGen.create(initializerExpr, variableId);
         } else {
-            if (paramIndexOrFrameSlot instanceof Integer) {
-                return new WriteFunctionArgExprNode((Integer) paramIndexOrFrameSlot, initializerExpr);
+            if (frameMember instanceof FunctionArgument) {
+                return new WriteFunctionArgExprNode(((FunctionArgument) frameMember).argumentIndex, initializerExpr);
             } else {
-                FrameSlot frameSlot = (FrameSlot) paramIndexOrFrameSlot;
-                if (frameSlot.getInfo() == DeclarationKind.CONST) {
+                var localVariable = (LocalVariable) frameMember;
+                if (localVariable.declarationKind == DeclarationKind.CONST) {
                     throw new EasyScriptException("Assignment to constant variable '" + variableId + "'");
                 }
-                return LocalVarAssignmentExprNodeGen.create(initializerExpr, frameSlot);
+                return LocalVarAssignmentExprNodeGen.create(initializerExpr, localVariable.variableIndex);
             }
         }
     }
@@ -891,13 +882,13 @@ And finally, we need to handle referencing variables:
 
 ```java
     private EasyScriptExprNode parseReference(String variableId) {
-        Object paramIndexOrFrameSlot = this.functionLocals.get(variableId);
-        if (paramIndexOrFrameSlot == null) {
+        FrameMember frameMember = this.functionLocals.get(variableId);
+        if (frameMember == null) {
             return GlobalVarReferenceExprNodeGen.create(variableId);
         } else {
-            return paramIndexOrFrameSlot instanceof Integer
-                    ? new ReadFunctionArgExprNode((Integer) paramIndexOrFrameSlot)
-                    : LocalVarReferenceExprNodeGen.create((FrameSlot) paramIndexOrFrameSlot);
+            return frameMember instanceof FunctionArgument
+                    ? new ReadFunctionArgExprNode(((FunctionArgument) frameMember).argumentIndex)
+                    : LocalVarReferenceExprNodeGen.create(((LocalVariable) frameMember).variableIndex);
         }
     }
 ```
@@ -905,32 +896,34 @@ And finally, we need to handle referencing variables:
 This is where we use the information about the frame slot we saved in `LocalVarDeclStmtNode`:
 
 ```java
-@NodeField(name = "frameSlot", type = FrameSlot.class)
+@NodeField(name = "frameSlot", type = int.class)
 public abstract class LocalVarReferenceExprNode extends EasyScriptExprNode {
-    protected abstract FrameSlot getFrameSlot();
+    protected abstract int getFrameSlot();
 
     @Specialization(guards = "frame.isInt(getFrameSlot())")
     protected int readInt(VirtualFrame frame) {
-        return FrameUtil.getIntSafe(frame, this.getFrameSlot());
+        return frame.getInt(this.getFrameSlot());
     }
 
     @Specialization(guards = "frame.isDouble(getFrameSlot())", replaces = "readInt")
     protected double readDouble(VirtualFrame frame) {
-        return FrameUtil.getDoubleSafe(frame, this.getFrameSlot());
+        return frame.getDouble(this.getFrameSlot());
     }
 
     @Specialization(replaces = {"readInt", "readDouble"})
     protected Object readObject(VirtualFrame frame) {
-        Object ret = FrameUtil.getObjectSafe(frame, this.getFrameSlot());
+        Object ret = frame.getObject(this.getFrameSlot());
         if (ret == LocalVarDeclStmtNode.DUMMY) {
-            throw new EasyScriptException("Cannot access '" + this.getFrameSlot().getIdentifier() + "' before initialization");
+            throw new EasyScriptException("Cannot access '" +
+                    frame.getFrameDescriptor().getSlotName(this.getFrameSlot()) +
+                    "' before initialization");
         }
         return ret;
     }
 }
 ```
 
-We use the `FrameUtil` class that is built into the framework that allows retrieving the value of the given type from the frame.
+We read the value of the given type that is stored in the frame for a given local variable.
 We also make sure the value is not the magical one that `const` and `let`
 variables are initialized with in `LocalVarDeclStmtNode`,
 and if it is, we throw an exception.

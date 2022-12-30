@@ -31,7 +31,7 @@ It can be showed with the following simple test:
                 new IntLiteralNode(Integer.MAX_VALUE),
                 new IntLiteralNode(1));
         var rootNode = new EasyScriptRootNode(exprNode);
-        CallTarget callTarget = Truffle.getRuntime().createCallTarget(rootNode);
+        CallTarget callTarget = rootNode.getCallTarget();
 
         var result = callTarget.call();
 
@@ -478,7 +478,7 @@ We can verify our implementation now handles integer overflow correctly with a u
                 new IntLiteralNode(Integer.MAX_VALUE),
                 new IntLiteralNode(1));
         var rootNode = new EasyScriptRootNode(exprNode);
-        CallTarget callTarget = Truffle.getRuntime().createCallTarget(rootNode);
+        CallTarget callTarget = rootNode.getCallTarget();
 
         var result = callTarget.call();
 

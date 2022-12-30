@@ -226,12 +226,25 @@ The obvious baseline is implementing the same Fibonacci function in Java:
     }
 ```
 
-Another good candidate for a comparative benchmark is using the JavaScript implementation that ships with GraalVM.
-To do that, we have to make sure to pass the `graalvm.locatorDisabled`
-system property as `false` to the forked JVM that executes the benchmark:
+Another good candidate for a comparative benchmark is using the
+[GraalVM JavaScript implementation](https://github.com/oracle/graaljs).
+This interpreter used to be bundled inside GraalVM,
+but starting with version `22`,
+it is now distributed separately,
+so we need to add a dependency to our project on the
+[JAR containing it](https://mvnrepository.com/artifact/org.graalvm.js/js):
+
+```groovy
+dependencies {
+    // ...
+    implementation "org.graalvm.js:js:22.3.0"
+}
+```
+
+And with that, we can execute the same benchmark program,
+but with JavaScript instead of EasyScript:
 
 ```java
-    @Fork(jvmArgsAppend = "-Dgraalvm.locatorDisabled=false")
     @Benchmark
     public int recursive_js_eval() {
         return this.truffleContext.eval("js", FIBONACCI_JS_PROGRAM).asInt();
@@ -239,7 +252,7 @@ system property as `false` to the forked JVM that executes the benchmark:
 ```
 
 And finally, we also introduce one more Truffle language for comparison:
-[SimpleLanguage](https://www.graalvm.org/22.2/graalvm-as-a-platform/implement-language).
+[SimpleLanguage](https://www.graalvm.org/latest/graalvm-as-a-platform/implement-language).
 It's an educational language implementation that is maintained by the Truffle team,
 and its purpose is to be the entrypoint for developers to learn Truffle.
 In my opinion, it's quite difficult to read without knowing a lot about Truffle already
@@ -249,12 +262,13 @@ as, even though it's an educational implementation,
 it has a strong focus on performance.
 
 To use SimpleLanguage,
+similarly like for JavaScript,
 we need to add a dependency to our project in the `build.gradle` file:
 
 ```groovy
 dependencies {
     // ...
-    implementation "org.graalvm.truffle:truffle-sl:21.3.1"
+    implementation "org.graalvm.truffle:truffle-sl:22.3.0"
 }
 ```
 
@@ -292,7 +306,7 @@ FibonacciBenchmark.recursive_sl_eval   avgt    5    55.662 ±   3.395  us/op
 
 This is fascinating -- our EasyScript interpreter is almost 200 times slower than Java!
 But clearly, this is not something intrinsic to Truffle,
-because the built-in JavaScript implementation is very fast --
+because the GraalVM JavaScript implementation is very fast --
 only twice as slow as the Java version.
 More amazingly, SimpleLanguage is even faster than JavaScript,
 being only 1.5 times slower than Java,
@@ -300,7 +314,7 @@ and that small difference can probably be attributed to the GraalVM polyglot API
 (and to the fact that Java is a statically-typed language,
 while SimpleLanguage is dynamically-typed, like JavaScript).
 
-Given the results, we clearly have some work to do in order to move EasyScript closer to SimpleLanguage and the built-in JavaScript implementation performance.
+Given the results, we clearly have some work to do in order to move EasyScript closer to SimpleLanguage and the GraalVM JavaScript implementation performance.
 
 ## Simple changes
 
@@ -614,7 +628,7 @@ public final class FuncDeclStmtNode extends EasyScriptStmtNode {
 
             var truffleLanguage = this.currentTruffleLanguage();
             var funcRootNode = new StmtBlockRootNode(truffleLanguage, this.frameDescriptor, this.funcBody);
-            this.cachedCallTarget = Truffle.getRuntime().createCallTarget(funcRootNode);
+            this.cachedCallTarget = funcRootNode.getCallTarget();
             var context = this.currentLanguageContext();
             this.cachedFunction = context.globalScopeObject.registerFunction(this.funcName, this.cachedCallTarget, this.argumentCount);
         }

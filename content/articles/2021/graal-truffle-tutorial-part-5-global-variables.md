@@ -273,7 +273,7 @@ public final class EasyScriptTruffleLanguage extends
     protected CallTarget parse(ParsingRequest request) throws Exception {
         List<EasyScriptStmtNode> stmts = EasyScriptTruffleParser.parse(request.getSource().getReader());
         var rootNode = new EasyScriptRootNode(this, stmts);
-        return Truffle.getRuntime().createCallTarget(rootNode);
+        return rootNode.getCallTarget();
     }
 
     @Override
@@ -362,7 +362,6 @@ It simply returns the result of executing the expression it wraps.
 The second kind of statement is the variable declaration statement:
 
 ```java
-import com.oracle.truffle.api.dsl.CachedContext;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.NodeField;
 import com.oracle.truffle.api.dsl.Specialization;
@@ -376,12 +375,10 @@ public abstract class GlobalVarDeclStmtNode extends EasyScriptStmtNode {
     public abstract DeclarationKind getDeclarationKind();
 
     @Specialization
-    protected Object createVariable(
-            Object value,
-            @CachedContext(EasyScriptTruffleLanguage.class) EasyScriptLanguageContext context) {
+    protected Object createVariable(Object value) {
         String variableId = this.getName();
         boolean isConst = this.getDeclarationKind() == DeclarationKind.CONST;
-        if (!context.globalScopeObject.newVariable(variableId, value, isConst)) {
+        if (!this.currentLanguageContext().globalScopeObject.newVariable(variableId, value, isConst)) {
             throw new EasyScriptException(this, "Identifier '" + variableId + "' has already been declared");
         }
         // we return 'undefined' for statements that declare variables
@@ -425,13 +422,50 @@ like we do here with `getInitializerExpr()`.
 but we will call these from the `RootNode` -- see below --
 and so we made them `public`)
 
-The second new element of the Truffle DSL used here is the `@CachedContext` annotation,
-which allows us to get a reference to the current `TruffleLanguage` context,
-and, through that context,
-the `GlobalScopeObject` instance in which we store the global variables.
-The Truffle DSL populates this parameter in the generated subclass by calling the
-[`lookupContextReference()` method](https://javadoc.io/static/org.graalvm.truffle/truffle-api/21.2.0/com/oracle/truffle/api/nodes/Node.html#lookupContextReference-java.lang.Class-)
-of the Node superclass.
+The second new element used here is the `currentLanguageContext()` method.
+Traditionally, the way to get a reference to a `TruffleLanguage`
+Context in `@Specialization` methods was the `@CachedContext` annotation.
+However, that annotation was removed in version of `22` of GraalVM.
+Given that, we have to use a different way:
+the [`ContextReference` class](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/TruffleLanguage.ContextReference.html).
+The typical way of using this class is storing it as a `private` `static` field in the Context class,
+and accessing it through a `static` helper method that takes a `Node` as an argument:
+
+```java
+public final class EasyScriptLanguageContext {
+    private static final TruffleLanguage.ContextReference<EasyScriptLanguageContext> REF =
+          TruffleLanguage.ContextReference.create(EasyScriptTruffleLanguage.class);
+
+    public static EasyScriptLanguageContext get(Node node) {
+        return REF.get(node);
+    }
+
+    // ...
+}
+```
+
+With this in place, we can introduce a common ancestor of all EasyScript Nodes,
+and add a helper method to it that calls that `EasyScriptLanguageContext.get()` method:
+
+```java
+public abstract class EasyScriptNode extends Node {
+    protected final EasyScriptLanguageContext currentLanguageContext() {
+        return EasyScriptLanguageContext.get(this);
+    }
+}
+```
+
+And make `EasyScriptStmtNode` extend it, instead of the Truffle `Node`:
+
+```java
+public abstract class EasyScriptStmtNode extends EasyScriptNode {
+    // ...
+}
+```
+
+This allows us to use the `currentLanguageContext()`
+method from any Node that needs access to the Context in its implementation,
+like `GlobalVarDeclStmtNode` above.
 
 ### Expression Nodes
 
@@ -469,11 +503,9 @@ public abstract class GlobalVarAssignmentExprNode extends EasyScriptExprNode {
     protected abstract String getName();
 
     @Specialization
-    protected Object assignVariable(
-            Object value,
-            @CachedContext(EasyScriptTruffleLanguage.class) EasyScriptLanguageContext context) {
+    protected Object assignVariable(Object value) {
         String variableId = this.getName();
-        if (!context.globalScopeObject.updateVariable(variableId, value)) {
+        if (!this.currentLanguageContext().globalScopeObject.updateVariable(variableId, value)) {
             throw new EasyScriptException(this, "'" + variableId + "' is not defined");
         }
         return value;
@@ -492,10 +524,9 @@ public abstract class GlobalVarReferenceExprNode extends EasyScriptExprNode {
     protected abstract String getName();
 
     @Specialization
-    protected Object readVariable(
-            @CachedContext(EasyScriptTruffleLanguage.class) EasyScriptLanguageContext context) {
+    protected Object readVariable() {
         String variableId = this.getName();
-        var value = context.globalScopeObject.getVariable(variableId);
+        var value = this.currentLanguageContext().globalScopeObject.getVariable(variableId);
         if (value == null) {
             throw new EasyScriptException(this, "'" + variableId + "' is not defined");
         }

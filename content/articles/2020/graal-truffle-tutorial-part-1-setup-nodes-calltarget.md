@@ -47,9 +47,9 @@ command using `JAVA_HOME`:
 ```shell
 $ $JAVA_HOME/bin/java -version
 
-openjdk version "11.0.8" 2020-07-14
-OpenJDK Runtime Environment GraalVM CE 20.2.0 (build 11.0.8+10-jvmci-20.2-b03)
-OpenJDK 64-Bit Server VM GraalVM CE 20.2.0 (build 11.0.8+10-jvmci-20.2-b03, mixed mode, sharing)
+openjdk version "17.0.5" 2022-10-18
+OpenJDK Runtime Environment GraalVM CE 22.3.0 (build 17.0.5+8-jvmci-22.3-b08)
+OpenJDK 64-Bit Server VM GraalVM CE 22.3.0 (build 17.0.5+8-jvmci-22.3-b08, mixed mode, sharing)
 ```
 
 ## AST
@@ -300,7 +300,7 @@ and that is the concept of `CallTarget`s.
 
 `CallTarget`s are a layer of indirection that wrap `RootNode`s.
 Unlike nodes,
-this is an interface whose instances are created with static factory methods,
+this is an interface whose instances are created by calling methods on other instances,
 not an abstract class that you're supposed to extend.
 They are used for:
 
@@ -312,11 +312,15 @@ They are used for:
 * and creating the `VirtualFrame` object that is passed to its underlying
   `RootNode`'s `execute` method.
 
-You create `CallTarget`s by calling the `createCallTarget()`
+Historically, `CallTarget`s were created by calling the `createCallTarget()`
 static factory method of the `TruffleRuntime` interface,
-which is a singleton you obtain by calling `getRuntime()`
+which is a singleton you obtained by calling `getRuntime()`
 on the `Truffle` class,
 and passing it a `RootNode` instance.
+However, starting in version `22` of GraalVM,
+this API has been removed,
+and you now get references to `CallTarget`s from `RootNode`s
+by calling their `getCallTarget()` methods.
 
 With this information,
 we are finally ready to write our unit test:
@@ -334,7 +338,7 @@ public class ExecuteNodesTest {
             new IntLiteralNode(12),
             new IntLiteralNode(34));
         var rootNode = new EasyScriptRootNode(exprNode);
-        CallTarget callTarget = Truffle.getRuntime().createCallTarget(rootNode);
+        CallTarget callTarget = rootNode.getCallTarget();
 
         var result = callTarget.call();
 

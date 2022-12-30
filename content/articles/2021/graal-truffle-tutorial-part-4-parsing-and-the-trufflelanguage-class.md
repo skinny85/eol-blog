@@ -168,7 +168,7 @@ public class ParsingTest {
     public void parses_and_executes_EasyScript_code_correctly() {
         EasyScriptNode exprNode = EasyScriptTruffleParser.parse("1 + 2 + 3.0 + 4");
         var rootNode = new EasyScriptRootNode(exprNode);
-        CallTarget callTarget = Truffle.getRuntime().createCallTarget(rootNode);
+        CallTarget callTarget = rootNode.getCallTarget();
 
         var result = callTarget.call();
 
@@ -185,7 +185,12 @@ taking the maxim of "use the best tool for the job" to the extreme.
 The way all of these different languages can communicate with each other is GraalVM's polyglot API.
 
 For example,
-GraalVM ships with a JavaScript implementation by default,
+the Graal team maintains a
+[JavaScript implementation](https://github.com/oracle/graaljs)
+(it used to ship bundled with GraalVM,
+but since version `22`, it's now a
+[separate library](https://mvnrepository.com/artifact/org.graalvm.js/js)
+that you have to depend on in your `build.gradle` or `pom.xml` file),
 and we can write a simple unit test executing a JavaScript program straight from Java:
 
 ```java
@@ -224,7 +229,7 @@ check out the
 ### The `TruffleLanguage` class
 
 We can register EasyScript as an implemented language,
-similarly to the built-in JavaScript implementation,
+similarly to the above JavaScript implementation,
 by writing a class that extends the abstract `TruffleLanguage` class.
 We need to override the `parse(ParsingRequest)`
 method that contains the source code of the program we're called with,
@@ -249,7 +254,7 @@ public final class EasyScriptTruffleLanguage extends TruffleLanguage<Void> {
     protected CallTarget parse(ParsingRequest request) throws Exception {
         EasyScriptNode exprNode = EasyScriptTruffleParser.parse(request.getSource().getReader());
         var rootNode = new EasyScriptRootNode(exprNode);
-        return Truffle.getRuntime().createCallTarget(rootNode);
+        return rootNode.getCallTarget();
     }
 
     @Override

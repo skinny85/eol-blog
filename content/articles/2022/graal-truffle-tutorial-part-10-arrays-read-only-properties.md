@@ -156,7 +156,7 @@ public final class EasyScriptTruffleLanguage extends
                 request.getSource().getReader(), this.arrayShape);
         var programRootNode = new StmtBlockRootNode(this, parsingResult.topLevelFrameDescriptor,
                 parsingResult.programStmtBlock);
-        return Truffle.getRuntime().createCallTarget(programRootNode);
+        return programRootNode.getCallTarget();
     }
 }
 ```
@@ -178,7 +178,7 @@ public final class EasyScriptTruffleParser {
         List<EasyScriptStmtNode> stmts = easyScriptTruffleParser.parseStmtsList(parser.start().stmt());
         return new ParsingResult(
                 new BlockStmtNode(stmts),
-                easyScriptTruffleParser.frameDescriptor);
+                easyScriptTruffleParser.frameDescriptor.build());
     }
 
     private final Shape arrayShape;
@@ -279,8 +279,7 @@ public abstract class ArrayIndexReadExprNode extends EasyScriptExprNode {
     }
 
     @Fallback
-    protected Object readNonArrayOrNonIntIndex(@SuppressWarnings("unused") Object array,
-            @SuppressWarnings("unused") Object index) {
+    protected Object readNonArrayOrNonIntIndex(Object array, Object index) {
         return Undefined.INSTANCE;
     }
 }
@@ -366,8 +365,7 @@ public abstract class ArrayIndexWriteExprNode extends EasyScriptExprNode {
     }
 
     @Fallback
-    protected Object writeNonArrayOrNonIntIndex(@SuppressWarnings("unused") Object array,
-            @SuppressWarnings("unused") Object index, Object rvalue) {
+    protected Object writeNonArrayOrNonIntIndex(Object array, Object index, Object rvalue) {
         return rvalue;
     }
 }
@@ -466,7 +464,7 @@ public abstract class PropertyReadExprNode extends EasyScriptExprNode {
     }
 
     @Fallback
-    protected Object readPropertyOfNonUndefinedWithoutMembers(@SuppressWarnings("unused") Object target) {
+    protected Object readPropertyOfNonUndefinedWithoutMembers(Object target) {
         return Undefined.INSTANCE;
     }
 }
@@ -946,7 +944,7 @@ public abstract class FuncDeclStmtNode extends EasyScriptStmtNode {
 
             var truffleLanguage = this.currentTruffleLanguage();
             var funcRootNode = new StmtBlockRootNode(truffleLanguage, this.getFrameDescriptor(), this.getFuncBody());
-            var callTarget = Truffle.getRuntime().createCallTarget(funcRootNode);
+            var callTarget = funcRootNode.getCallTarget();
 
             this.cachedFunction = new FunctionObject(callTarget, this.getArgumentCount());
         }
@@ -1007,7 +1005,7 @@ FibonacciBenchmark.recursive_sl_eval   avgt    5  52.396 ± 0.964  us/op
 
 Turns out that the simpler code is actually twice as fast as the previous,
 complicated one that used a `HashMap`,
-and our humble example interpreter is now faster than both the JavaScript implementation built into GraalVM,
+and our humble example interpreter is now faster than both the GraalVM JavaScript implementation,
 and SimpleLanguage!
 
 As usual, all of the code from the article is

@@ -547,7 +547,7 @@ public abstract class AbsFunctionBodyExprNode extends EasyScriptExprNode {
     }
 
     @Fallback
-    protected double nonNumberAbs(@SuppressWarnings("unused") Object argument) {
+    protected double nonNumberAbs(Object argument) {
         return Double.NaN;
     }
 }
@@ -581,7 +581,7 @@ public final class EasyScriptTruffleLanguage extends
     protected CallTarget parse(ParsingRequest request) throws Exception {
         List<EasyScriptStmtNode> stmts = EasyScriptTruffleParser.parse(request.getSource().getReader());
         var programRootNode = new ProgramRootNode(this, stmts);
-        return Truffle.getRuntime().createCallTarget(programRootNode);
+        return programRootNode.getCallTarget();
     }
 
     @Override
@@ -589,10 +589,10 @@ public final class EasyScriptTruffleLanguage extends
         var context = new EasyScriptLanguageContext();
 
         // add the built-in functions to the global scope
-        context.globalScopeObject.newConstant(
-            "Math.abs",
-            new FunctionObject(Truffle.getRuntime().createCallTarget(new FunctionRootNode(this,
-                AbsFunctionBodyExprNodeGen.create(new ReadFunctionArgExprNode(0))))));
+        var absFuncRootNode = new FunctionRootNode(this,
+              AbsFunctionBodyExprNodeGen.create(new ReadFunctionArgExprNode(0)));
+        context.globalScopeObject.newConstant("Math.abs",
+              new FunctionObject(absFuncRootNode.getCallTarget()));
 
         return context;
     }
@@ -624,8 +624,8 @@ Let's look at the code that defines the `Math.abs` function in our `TruffleLangu
 ```java
         context.globalScopeObject.newConstant(
             "Math.abs",
-            new FunctionObject(Truffle.getRuntime().createCallTarget(new FunctionRootNode(this,
-                AbsFunctionBodyExprNodeGen.create(new ReadFunctionArgExprNode(0))))));
+            new FunctionObject(new FunctionRootNode(this,
+                AbsFunctionBodyExprNodeGen.create(new ReadFunctionArgExprNode(0))).getCallTarget()));
 ```
 
 That is quite a big expression!
@@ -690,7 +690,7 @@ public abstract class PowFunctionBodyExprNode extends BuiltInFunctionBodyExprNod
     }
 
     @Fallback
-    protected double nonNumberPow(@SuppressWarnings("unused") Object base, @SuppressWarnings("unused") Object exponent) {
+    protected double nonNumberPow(Object base, Object exponent) {
         return Double.NaN;
     }
 }
@@ -724,9 +724,10 @@ public final class EasyScriptTruffleLanguage extends
         ReadFunctionArgExprNode[] functionArguments = IntStream.range(0, nodeFactory.getExecutionSignature().size())
                 .mapToObj(i -> new ReadFunctionArgExprNode(i))
                 .toArray(ReadFunctionArgExprNode[]::new);
+        var builtInFuncRootNode = new FunctionRootNode(this,
+                nodeFactory.createNode((Object) functionArguments));
         context.globalScopeObject.newConstant(name,
-                new FunctionObject(Truffle.getRuntime().createCallTarget(new FunctionRootNode(this,
-                        nodeFactory.createNode((Object) functionArguments)))));
+                new FunctionObject(builtInFuncRootNode.getCallTarget()));
     }
 }
 ```
