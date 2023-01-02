@@ -133,7 +133,7 @@ public final class ParsingResult {
 
 public final class EasyScriptTruffleParser {
     public static ParsingResult parse(Reader program) throws IOException {
-        var lexer = new EasyScriptLexer(new ANTLRInputStream(program));
+        var lexer = new EasyScriptLexer(CharStreams.fromReader(program));
         lexer.removeErrorListeners();
         var parser = new EasyScriptParser(new CommonTokenStream(lexer));
         parser.removeErrorListeners();

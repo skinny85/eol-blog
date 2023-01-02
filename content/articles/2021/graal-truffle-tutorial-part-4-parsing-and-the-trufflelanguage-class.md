@@ -100,11 +100,11 @@ import java.io.Reader;
 
 public final class EasyScriptTruffleParser {
     public static EasyScriptNode parse(String program) {
-        return parse(new ANTLRInputStream(program));
+        return parse(CharStreams.fromString(program));
     }
 
     public static EasyScriptNode parse(Reader program) throws IOException {
-        return parse(new ANTLRInputStream(program));
+        return parse(CharStreams.fromReader(program));
     }
 
     private static EasyScriptNode parse(CharStream inputStream) {

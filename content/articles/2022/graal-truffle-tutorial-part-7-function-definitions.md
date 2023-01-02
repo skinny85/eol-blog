@@ -258,7 +258,7 @@ we'll just assume anything that is not local is global):
 ```java
 public final class EasyScriptTruffleParser {
     public static List<EasyScriptStmtNode> parse(Reader program) throws IOException {
-        var lexer = new EasyScriptLexer(new ANTLRInputStream(program));
+        var lexer = new EasyScriptLexer(CharStreams.fromReader(program));
         // remove the default console error listener
         lexer.removeErrorListeners();
         var parser = new EasyScriptParser(new CommonTokenStream(lexer));

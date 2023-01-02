@@ -166,7 +166,7 @@ We then pass that `Shape` for arrays into the parser:
 ```java
 public final class EasyScriptTruffleParser {
     public static ParsingResult parse(Reader program, Shape arrayShape) throws IOException {
-        var lexer = new EasyScriptLexer(new ANTLRInputStream(program));
+        var lexer = new EasyScriptLexer(CharStreams.fromReader(program));
         // remove the default console error listener
         lexer.removeErrorListeners();
         var parser = new EasyScriptParser(new CommonTokenStream(lexer));
