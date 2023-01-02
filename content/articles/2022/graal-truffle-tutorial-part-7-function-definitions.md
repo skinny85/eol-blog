@@ -798,7 +798,7 @@ or global, variable:
             return GlobalVarAssignmentExprNodeGen.create(initializerExpr, variableId);
         } else {
             if (frameMember instanceof FunctionArgument) {
-                return new WriteFunctionArgExprNode(((FunctionArgument) frameMember).argumentIndex, initializerExpr);
+                return new WriteFunctionArgExprNode(initializerExpr, ((FunctionArgument) frameMember).argumentIndex);
             } else {
                 var localVariable = (LocalVariable) frameMember;
                 if (localVariable.declarationKind == DeclarationKind.CONST) {
@@ -825,7 +825,7 @@ public final class WriteFunctionArgExprNode extends EasyScriptExprNode {
     @Child
     private EasyScriptExprNode initializerExpr;
 
-    public WriteFunctionArgExprNode(int index, EasyScriptExprNode initializerExpr) {
+    public WriteFunctionArgExprNode(EasyScriptExprNode initializerExpr, int index) {
         this.index = index;
         this.initializerExpr = initializerExpr;
     }
