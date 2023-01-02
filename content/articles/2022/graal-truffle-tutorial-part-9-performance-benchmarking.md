@@ -430,8 +430,7 @@ you can add the appropriate JVM arguments in the benchmark configuration:
     }
 ```
 
-After [downloading IGV](https://www.oracle.com/downloads/graalvm-downloads.html)
-(it's under the "Archived Enterprise Releases" tab),
+After [downloading IGV](https://www.oracle.com/downloads/graalvm-downloads.html),
 run it by executing `./idealgraphvisualizer`
 in the `bin` directory of the downloaded and uncompressed program.
 Now, when running the benchmark, you should see in the output:
