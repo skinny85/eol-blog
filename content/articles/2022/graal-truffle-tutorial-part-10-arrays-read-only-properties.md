@@ -21,7 +21,7 @@ that we used for the benchmark in
 But, it's not possible to write a function that operates on a dynamic amount of numbers,
 like [sorting](https://en.wikipedia.org/wiki/Sorting_algorithm) -
 for that, we need to add arrays to the language, and with arrays,
-the code will need to read its `length` property to know how many elements it contains,
+the code will need to read their `length` property to know how many elements they contain,
 which means we will have to add reading properties to EasyScript.
 
 In order to implement these features,
@@ -134,7 +134,7 @@ by Vyacheslav Egorov from the Chrome V8 team
 of the series)
 does a great job explaining what shapes
 (also sometimes called *hidden classes*) are,
-and why are they so crucial in making dynamically-typed languages like JavaScript fast.
+and why they are so crucial in making dynamically-typed languages like JavaScript fast.
 
 But where does the `Shape` instance come from?
 According to the [Truffle docs on the subject](https://www.graalvm.org/latest/graalvm-as-a-platform/language-implementation-framework/DynamicObjectModel#getting-started),
