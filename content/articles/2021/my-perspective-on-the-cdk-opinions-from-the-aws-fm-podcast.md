@@ -188,7 +188,7 @@ But, for the sake of argument, let's say that Ian is right,
 and the higher-level construct he used was indeed bad.
 That's not necessarily a reason to not use the CDK!
 
-Another defining trait of the CK is **layering**:
+Another defining trait of the CDK is **layering**:
 the fact that the CDK is structured as a big stack of abstractions,
 and every layer is built on top of the previous one.
 There is no magic there, just classes being composed from other classes.
