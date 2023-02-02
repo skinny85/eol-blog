@@ -13,7 +13,7 @@ created_at: 2022-12-27
 
 With the features we added to EasyScript in
 [part 8](/graal-truffle-tutorial-part-8-conditionals-loops-control-flow),
-users of our language can write programs that perform calculation on a set amount of numbers,
+users of our language can write programs that perform calculations on a set amount of numbers,
 like [factorials](https://en.wikipedia.org/wiki/Factorial),
 or the [Fibonacci sequence](https://en.wikipedia.org/wiki/Fibonacci_number)
 that we used for the benchmark in
