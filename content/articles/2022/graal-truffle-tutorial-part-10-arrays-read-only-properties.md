@@ -1010,3 +1010,8 @@ and SimpleLanguage!
 
 As usual, all of the code from the article is
 [available on GitHub](https://github.com/skinny85/graalvm-truffle-tutorial/tree/master/part-10).
+
+In the next
+[part of the series](/graal-truffle-tutorial-part-11-strings-static-method-calls),
+we will talk about adding support for strings to our language,
+including calling methods on them.
