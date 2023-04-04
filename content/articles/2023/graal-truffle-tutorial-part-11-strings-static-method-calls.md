@@ -955,7 +955,7 @@ StringLengthBenchmark.count_while_char_at_index_prop_js    avgt    5  112616.532
 ```
 
 We can see that the results for the "direct property access" variant are pretty much identical between
-EasyScript and the GraalVM JavScript implementation, which is great news --
+EasyScript and the GraalVM JavaScript implementation, which is great news --
 that means our implementation is very likely close to optimal.
 
 The results for the "index property access" variant, however, are surprising.
