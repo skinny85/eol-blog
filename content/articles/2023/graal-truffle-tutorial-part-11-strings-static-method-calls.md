@@ -965,6 +965,11 @@ The situation is even worse with the GraalVM JavaScript implementation,
 which is 200 times slower when accessing properties through indexes than directly.
 I assume this is a bug in the implementation.
 
+**Update**: I've [opened an issue](https://github.com/oracle/graaljs/issues/719)
+to the Graal JS project, and I was right --
+the bug has been fixed, and will be released in version `23.1.0`
+of the GraalVM JavaScript implementation.
+
 ### Code variants
 
 I've done a few experiments where I've changed the implementation of `ReadTruffleStringPropertyExprNode`
