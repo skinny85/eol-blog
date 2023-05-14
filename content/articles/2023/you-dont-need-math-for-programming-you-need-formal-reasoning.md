@@ -108,7 +108,7 @@ But take a look at the visual depiction of the algorithm responsible for making 
 
 ![Slack notification decision graph](/img/slack-notifications.png)
 
-_Source_: [ByteByteGo newsletter, episode 3](https://blog.bytebytego.com/p/flowchart-of-how-slack-decides-to-923)
+_Source_: [Slack engineering blog](https://slack.engineering/reducing-slacks-memory-footprint)
 
 The main reason why this functionality has so much complexity is that users can turn off
 ("mute") notifications on multiple levels:
