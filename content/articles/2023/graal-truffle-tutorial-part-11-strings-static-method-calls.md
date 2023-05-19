@@ -650,7 +650,7 @@ in the guard expression, that the target of the property read has not changed:
 ```java
 @ImportStatic(EasyScriptTruffleStrings.class)
 public abstract class ReadTruffleStringPropertyExprNode extends EasyScriptNode {
-    protected static final String LENGTH_PROP = "length";
+    protected static final String CHAR_AT_PROP = "charAt";
 
     // ...
 
