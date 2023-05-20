@@ -401,7 +401,6 @@ public final class LocalVarDeclStmtNode extends EasyScriptStmtNode {
     public Object executeStatement(VirtualFrame frame) {
         frame.setObject(this.frameSlot, frame.getFrameDescriptor().getSlotInfo(this.frameSlot) == DeclarationKind.VAR
             ? Undefined.INSTANCE : DUMMY);
-        frame.getFrameDescriptor().setSlotKind(this.frameSlot, FrameSlotKind.Illegal);
         return Undefined.INSTANCE;
     }
 }
@@ -413,10 +412,6 @@ and a magical "dummy" value for `const` and `let`
 variables that will be treated specially by the expression Node for reading local variables
 (it will cause an error to be thrown),
 which we will see below.
-
-We also set the type of the frame slot as "illegal",
-which is Truffle's name for "uninitialized".
-This will be used by specializations in Nodes for local variable assignment and reference.
 
 #### Global variable declaration
 
