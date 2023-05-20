@@ -870,14 +870,14 @@ public abstract class GlobalVarDeclStmtNode extends EasyScriptStmtNode {
                 ? Undefined.INSTANCE
                 : DUMMY;
         int flags = declarationKind == DeclarationKind.CONST ? 1 : 0;
-        objectLibrary.putConstant(globalScopeObject, variableId, initialValue, flags);
+        objectLibrary.putWithFlags(globalScopeObject, variableId, initialValue, flags);
 
         return Undefined.INSTANCE;
     }
 }
 ```
 
-We use the `flags` argument to `objectLibrary.putConstant()`
+We use the `flags` argument to `objectLibrary.putWithFlags()`
 to save whether a given variable is a `const`
 (and thus cannot be reassigned) -- `1` means it's a constant,
 `0` means it's a `let` or `var`.
