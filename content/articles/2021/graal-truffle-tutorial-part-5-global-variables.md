@@ -767,11 +767,6 @@ public final class Undefined implements TruffleObject {
     private Undefined() {
     }
 
-    @Override
-    public String toString() {
-        return "Undefined";
-    }
-
     @ExportMessage
     boolean isNull() {
         return true;
@@ -779,6 +774,11 @@ public final class Undefined implements TruffleObject {
 
     @ExportMessage
     Object toDisplayString(@SuppressWarnings("unused") boolean allowSideEffects) {
+        return this.toString();
+    }
+
+    @Override
+    public String toString() {
         return "undefined";
     }
 }
