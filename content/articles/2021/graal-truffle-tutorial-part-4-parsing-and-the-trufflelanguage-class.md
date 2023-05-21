@@ -196,8 +196,8 @@ and we can write a simple unit test executing a JavaScript program straight from
 ```java
 import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.Value;
-import org.junit.Test;
-import static org.junit.Assert.assertEquals;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class PolyglotTest {
     @Test
@@ -275,8 +275,8 @@ With this in place, we can evaluate EasyScript code the same way we did JavaScri
 ```java
 import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.Value;
-import org.junit.Test;
-import static org.junit.Assert.assertEquals;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class PolyglotTest {
     @Test
