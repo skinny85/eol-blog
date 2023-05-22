@@ -242,13 +242,15 @@ We could check that manually using something like the `instanceof` operator,
 but function calls are actually one of the most interesting places for Graal to perform optimizations
 (like inlining, turning virtual calls into static calls, etc.);
 for that reason, we want to use specializations for function calls.
-But since we're already implementing `executeGeneric()` ourselves,
-we can't use the Truffle DSL.
+
+However, the Truffle DSL has a limitation --
+you can't use it to write specializations for Nodes that have a variable amount of children,
+like the function call expression Node does.
 Because of this, we'll introduce one more level of indirection.
 We'll create a new node, called the `FunctionDispatchNode`,
 that doesn't have any children itself,
 but that does use the Truffle DSL,
-and we'll delegate the actual function call to that Node:
+and we'll delegate the actual function call to that Node after evaluating the subexpressions:
 
 ```java
 public final class FunctionCallExprNode extends EasyScriptExprNode {
@@ -291,7 +293,7 @@ We've already talked about this annotation in
 but as a quick reminder:
 it tells Graal to apply the [loop unrolling](https://en.wikipedia.org/wiki/Loop_unrolling)
 optimization when JIT-compiling this method.
-That's safe, because every call Node will always have the same number of children representing the function's arguments --
+That's safe, because every function call Node will always have the same number of children representing the function's arguments --
 for example, for an expression like `Math.pow(x, y)`,
 it will always be 2, and that number can't ever change,
 regardless of what are the exact values of `x` and `y`.
