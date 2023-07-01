@@ -447,12 +447,15 @@ public abstract class CharAtMethodBodyExprNode extends BuiltInFunctionBodyExprNo
             : EasyScriptTruffleStrings.substring(self, index, 1, substringNode);
     }
 
-    @Specialization
-    protected TruffleString charAtNonInt(TruffleString self,
+    @Fallback
+    protected TruffleString charAtNonInt(Object self,
             @SuppressWarnings("unused") Object nonIntIndex,
             @Cached @Shared("lengthNode") TruffleString.CodePointLengthNode lengthNode,
             @Cached @Shared("substringNode") TruffleString.SubstringNode substringNode) {
-        return this.charAtInt(self, 0, lengthNode, substringNode);
+        // we know that 'self' is for sure a TruffleString
+        // because of how we implement reading string properties below,
+        // but we need to declare it as Object here because of @Fallback
+        return this.charAtInt((TruffleString) self, 0, lengthNode, substringNode);
     }
 }
 
@@ -741,7 +744,7 @@ for which we should just return `undefined`:
 public abstract class ReadTruffleStringPropertyExprNode extends EasyScriptNode {
     // ...
 
-    @Specialization
+    @Fallback
     protected Undefined readUnknownProperty(
             @SuppressWarnings("unused") TruffleString truffleString,
             @SuppressWarnings("unused") Object property) {
@@ -750,10 +753,9 @@ public abstract class ReadTruffleStringPropertyExprNode extends EasyScriptNode {
 }
 ```
 
-Note that we can't use `@Fallback` for this specialization,
-as it requires all arguments being of type `Object`,
-but our `execute*()` method in `ReadTruffleStringPropertyExprNode`
-takes in a `TruffleString` as its first argument, not `Object`.
+As usual, for a specialization that takes an `Object` as an argument,
+but is still meant to activate other specializations in subsequent executions if needed,
+we have to use the `@Fallback` annotation instead of `@Specialization`.
 
 ## Handling strings in property access
 

@@ -565,6 +565,13 @@ which means it uses the negation of all the other specialization activation cond
 In that specialization, we return `Double.NaN`,
 which is how JavaScript addition behaves when at least one of its constituents is `undefined`.
 
+Note that replacing `@Fallback` with `@Specialization` would not have worked here,
+as a specialization with all `Object` arguments is the most generic one possible.
+Which means, if a Node activates such a specialization, it will never attempt to activate another one after that.
+So, if a given addition in your program was first passed `undefined`
+as one of its operands, it would then always return `NaN`,
+even if later passed an integer or `double`, which is obviously not the correct behavior.
+
 ### `RootNode`
 
 And finally, we have our `RootNode`.
