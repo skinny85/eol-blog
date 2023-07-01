@@ -358,7 +358,7 @@ ignoring their initializer expressions:
                     if (this.frameDescriptor == null) {
                         varDecls.add(new GlobalVarDeclStmtNode(variableId, declarationKind));
                     } else {
-                        int frameSlot = this.frameDescriptor.addSlot(FrameSlotKind.Object, variableId, declarationKind);
+                        int frameSlot = this.frameDescriptor.addSlot(FrameSlotKind.Illegal, variableId, declarationKind);
                         if (this.functionLocals.putIfAbsent(variableId, new LocalVariable(frameSlot, declarationKind)) != null) {
                             throw new EasyScriptException("Identifier '" + variableId + "' has already been declared");
                         }
