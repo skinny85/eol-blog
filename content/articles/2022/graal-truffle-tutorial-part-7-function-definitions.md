@@ -100,37 +100,6 @@ as we can see from the above example.
 Usually, this phase is implemented separately in the compiler,
 but, to keep our interpreter simple, we will do it in the parsing step.
 
-Note that JavaScript's [variable hoisting](https://developer.mozilla.org/en-US/docs/Glossary/Hoisting)
-makes things a little bit more tricky.
-Take the following code:
-
-```js
-const a = 2;
-function f() {
-    var b = a;
-    var a = 1;
-    return b;
-}
-```
-
-At first glance, it might seem that the reference to `a`
-in the definition of `b` is a reference to the global variable `a`;
-however, because of hoisting, that code will actually be rewritten to:
-
-```js
-const a = 2;
-function f() {
-    var b, a;
-    b = a;
-    a = 1;
-    return b;
-}
-```
-
-And so, the reference to `a` in `b = a` is actually the reference to the local variable `a`
-(which shadows the global variable `a` inside the definition of `f()`),
-and so calling `f()` will return `undefined`.
-
 ## Frame descriptors and slots
 
 We mentioned above that local variables are stored in the `VirtualFrame` object,
@@ -284,13 +253,16 @@ public final class EasyScriptTruffleParser {
             this.declarationKind = declarationKind;
         }
     }
-    private final Map<String, FrameMember> functionLocals;
 
+    private final Map<String, FrameMember> functionLocals;
     private FrameDescriptor.Builder frameDescriptor;
 
     private EasyScriptTruffleParser() {
         this.functionLocals = new HashMap<>();
     }
+
+    // ...
+}
 ```
 
 We store the variables local to a function in the `functionLocals` field.
@@ -303,70 +275,74 @@ to detect assignments to `const` variables).
 We also save `FrameDescriptor.Builder` in a field,
 which will be used to create slots in the function's frame for storing the local variables.
 
-### Hoisting edge cases
+### Parsing a block of statements
 
-Parsing statements will have to take hoisting into account. Note that, while we implemented hoisting in the
-[article on global variables](/graal-truffle-tutorial-part-5-global-variables),
-we took a small shortcut while doing it.
-We only hoisted `var` declarations, leaving `const` and `let` where they are.
-However, that's not strictly correct; according to the
-[JS standards](https://developer.mozilla.org/en-US/docs/Glossary/Hoisting#let_and_const_hoisting),
-`const` and `let` are hoisted too,
-just initialized in such a way that throws an exception if they are read before being initialized.
-In a language with only variable declarations,
-where control flow always proceeds linearly, from top to bottom,
-that's equivalent to not hoisting them at all,
-and that's why we made that simplification;
-however, once functions come into play, things get more complicated.
-For example, in this code:
-
-```js
-let v = f();
-function f() {
-    return v;
-}
-```
-
-Suddenly, it *is* possible to access variables before they are initialized,
-and so we need to correctly implement hoisting for all variable declarations,
-not just for `var`.
-
-### Parsing a block of statements -- first loop
-
-To correctly handle variable hoisting,
-we need to iterate through all statements in a block
-(which can be either the entire program,
-or the body of a function) twice.
-
-In the first loop, we only handle function declarations,
-and gather the variable bindings,
-ignoring their initializer expressions:
+In JavaScript, like in many other languages,
+it's legal to call a function before it's defined.
+In order to support that in EasyScript,
+we need to do two loops through the list of statements on the top level.
+In the first loop, we only handle function declarations;
+in the second one, we handle the remaining statement types:
 
 ```java
+public final class EasyScriptTruffleParser {
+    // ...
+
     private List<EasyScriptStmtNode> parseStmtsList(List<EasyScriptParser.StmtContext> stmts) {
         var funcDecls = new ArrayList<FuncDeclStmtNode>();
-        var varDecls = new ArrayList<EasyScriptStmtNode>();
         for (EasyScriptParser.StmtContext stmt : stmts) {
             if (stmt instanceof EasyScriptParser.FuncDeclStmtContext) {
                 funcDecls.add(this.parseFuncDeclStmt((EasyScriptParser.FuncDeclStmtContext) stmt));
+            }
+        }
+
+        var nonFuncDeclStmts = new ArrayList<EasyScriptStmtNode>();
+        for (EasyScriptParser.StmtContext stmt : stmts) {
+            if (stmt instanceof EasyScriptParser.ExprStmtContext) {
+                nonFuncDeclStmts.add(this.parseExprStmt((EasyScriptParser.ExprStmtContext) stmt));
             } else if (stmt instanceof EasyScriptParser.VarDeclStmtContext) {
                 EasyScriptParser.VarDeclStmtContext varDeclStmt = (EasyScriptParser.VarDeclStmtContext) stmt;
-                List<EasyScriptParser.BindingContext> varDeclBindings = varDeclStmt.binding();
                 DeclarationKind declarationKind = DeclarationKind.fromToken(varDeclStmt.kind.getText());
+                List<EasyScriptParser.BindingContext> varDeclBindings = varDeclStmt.binding();
                 for (EasyScriptParser.BindingContext varBinding : varDeclBindings) {
                     String variableId = varBinding.ID().getText();
-                    if (this.frameDescriptor == null) {
-                        varDecls.add(new GlobalVarDeclStmtNode(variableId, declarationKind));
+                    var bindingExpr = varBinding.expr1();
+                    EasyScriptExprNode initializerExpr;
+                    if (bindingExpr == null) {
+                        if (declarationKind == DeclarationKind.CONST) {
+                            throw new EasyScriptException("Missing initializer in const declaration '" + variableId + "'");
+                        }
+                        // if a 'let' or 'var' declaration is missing an initializer,
+                        // it means it will be initialized with 'undefined'
+                        initializerExpr = new UndefinedLiteralExprNode();
                     } else {
+                        initializerExpr = this.parseExpr1(bindingExpr);
+                    }
+
+                    if (this.frameDescriptor == null) {
+                        // this is a global variable
+                        nonFuncDeclStmts.add(GlobalVarDeclStmtNodeGen.create(initializerExpr, variableId, declarationKind));
+                    } else {
+                        // this is a function-local variable,
+                        // which we turn into an assignment expression
                         int frameSlot = this.frameDescriptor.addSlot(FrameSlotKind.Illegal, variableId, declarationKind);
                         if (this.functionLocals.putIfAbsent(variableId, new LocalVariable(frameSlot, declarationKind)) != null) {
                             throw new EasyScriptException("Identifier '" + variableId + "' has already been declared");
                         }
-                        varDecls.add(new LocalVarDeclStmtNode(frameSlot));
+                        LocalVarAssignmentExprNode assignmentExpr = LocalVarAssignmentExprNodeGen.create(initializerExpr, frameSlot);
+                        nonFuncDeclStmts.add(new ExprStmtNode(assignmentExpr, /* discardExpressionValue */ true));
                     }
                 }
             }
         }
+
+        // return the function declarations first, and then the remaining statements
+        var result = new ArrayList<EasyScriptStmtNode>(funcDecls.size() + nonFuncDeclStmts.size());
+        result.addAll(funcDecls);
+        result.addAll(nonFuncDeclStmts);
+        return result;
+    }
+}
 ```
 
 Here, we can see the frame slot being created from the `FrameDescriptor.Builder`
@@ -383,158 +359,11 @@ We also save the name of the local variable in the `functionLocals` map,
 which we will use below to determine whether a given reference is to a local,
 or global, variable.
 
-#### Local variable declaration
-
-`LocalVarDeclStmtNode` looks as follows:
-
-```java
-public final class LocalVarDeclStmtNode extends EasyScriptStmtNode {
-    public static final Object DUMMY = new Object();
-
-    private final int frameSlot;
-
-    public LocalVarDeclStmtNode(int frameSlot) {
-        this.frameSlot = frameSlot;
-    }
-
-    @Override
-    public Object executeStatement(VirtualFrame frame) {
-        frame.setObject(this.frameSlot, frame.getFrameDescriptor().getSlotInfo(this.frameSlot) == DeclarationKind.VAR
-            ? Undefined.INSTANCE : DUMMY);
-        return Undefined.INSTANCE;
-    }
-}
-```
-
-The initial value for local variables is saved in the `VirtualFrame` object under the correct  `frameSlot`.
-The value is `undefined` for `var` variables,
-and a magical "dummy" value for `const` and `let`
-variables that will be treated specially by the expression Node for reading local variables
-(it will cause an error to be thrown),
-which we will see below.
-
-#### Global variable declaration
-
-The implementation of `GlobalVarDeclStmtNode` uses the
-`currentLanguageContext()` method that we've seen already in
-[part 5](/graal-truffle-tutorial-part-5-global-variables#statement-nodes):
-
-```java
-public final class GlobalVarDeclStmtNode extends EasyScriptStmtNode {
-    private final String variableId;
-    private final DeclarationKind declarationKind;
-
-    public GlobalVarDeclStmtNode(String variableId, DeclarationKind declarationKind) {
-        this.variableId = variableId;
-        this.declarationKind = declarationKind;
-    }
-
-    @Override
-    public Object executeStatement(VirtualFrame frame) {
-        if (!this.currentLanguageContext().globalScopeObject.newVariable(this.variableId, this.declarationKind)) {
-            throw new EasyScriptException(this, "Identifier '" + this.variableId + "' has already been declared");
-        }
-        return Undefined.INSTANCE;
-    }
-}
-```
-
-`GlobalScopeObject` is very similar to what it was in the previous parts of the series,
-the only difference is that it needs to initialize `const` and `let`
-variables with a special value,
-similarly to what happens in `LocalVarDeclStmtNode`:
-
-```java
-@ExportLibrary(InteropLibrary.class)
-public final class GlobalScopeObject implements TruffleObject {
-    private static final Object DUMMY = new Object();
-
-    private final Map<String, Object> variables = new HashMap<>();
-    private final Set<String> constants = new HashSet<>();
-
-    public boolean newVariable(String name, DeclarationKind declarationKind) {
-        Object existingValue = this.variables.put(name, declarationKind == DeclarationKind.VAR
-                ? Undefined.INSTANCE : DUMMY);
-        if (declarationKind == DeclarationKind.CONST) {
-            this.constants.add(name);
-        }
-        return existingValue == null;
-    }
-
-    public boolean updateVariable(String name, Object value) {
-        Object existingValue = this.variables.put(name, value);
-        if (existingValue == DUMMY) {
-            // the first assignment to a constant is fine
-            return true;
-        }
-        if (this.constants.contains(name)) {
-            throw new EasyScriptException("Assignment to constant variable '" + name + "'");
-        }
-        return existingValue != null;
-    }
-
-    public Object getVariable(String name) {
-        Object ret = this.variables.get(name);
-        if (ret == DUMMY) {
-            throw new EasyScriptException("Cannot access '" + name + "' before initialization");
-        }
-        return ret;
-    }
-```
-
-When writing to a global variable,
-we check whether its previous value was the dummy --
-if so, we allow it even for `const` variables,
-which normally shouldn't be re-assigned
-(but if their previous value was the dummy,
-we know this is the first assignment that is the result of splitting the `const`
-variable statement into declaration and assignment, to implement hoisting).
-
-### Parsing a block of statements -- second loop
-
-Finally, we can get back to our parser.
-In the second loop through all of the statements in a given block,
-we gather all expression statements,
-and turn every variable declaration we encounter into an assignment expression:
-
-```java
-        var exprStmts = new ArrayList<ExprStmtNode>();
-        for (EasyScriptParser.StmtContext stmt : stmts) {
-            if (stmt instanceof EasyScriptParser.ExprStmtContext) {
-                exprStmts.add(this.parseExprStmt((EasyScriptParser.ExprStmtContext) stmt));
-            } else if (stmt instanceof EasyScriptParser.VarDeclStmtContext) {
-                EasyScriptParser.VarDeclStmtContext varDeclStmt = (EasyScriptParser.VarDeclStmtContext) stmt;
-                List<EasyScriptParser.BindingContext> varDeclBindings = varDeclStmt.binding();
-                DeclarationKind declarationKind = DeclarationKind.fromToken(varDeclStmt.kind.getText());
-                for (EasyScriptParser.BindingContext varBinding : varDeclBindings) {
-                    String variableId = varBinding.ID().getText();
-                    var bindingExpr = varBinding.expr1();
-                    EasyScriptExprNode initializerExpr;
-                    if (bindingExpr == null) {
-                        if (declarationKind == DeclarationKind.CONST) {
-                            throw new EasyScriptException("Missing initializer in const declaration '" + variableId + "'");
-                        }
-                        initializerExpr = new UndefinedLiteralExprNode();
-                    } else {
-                        initializerExpr = this.parseExpr1(bindingExpr);
-                    }
-                    EasyScriptExprNode assignmentExpr = this.frameDescriptor == null
-                            ? GlobalVarAssignmentExprNodeGen.create(initializerExpr, variableId)
-                            :  LocalVarAssignmentExprNodeGen.create(initializerExpr,
-                                    ((LocalVariable) this.functionLocals.get(variableId)).variableIndex);
-                    exprStmts.add(new ExprStmtNode(assignmentExpr, /* discardExpressionValue */ true));
-                }
-            }
-        }
-```
-
-Depending on whether we're parsing the program itself,
-or a function definition,
-the assignment is either to a global variable represented by `GlobalVarAssignmentExprNode`
-(which is unchanged from when it was introduced in a
-[previous part](/graal-truffle-tutorial-part-5-global-variables#expression-nodes)
-of the series),
-or to a local variable:
+Since a frame slot is created at parse time, not at runtime,
+we don't need a local equivalent of `GlobalVarDeclStmtNode`
+(which is unchanged from when it was first introduced in
+[part 5](/graal-truffle-tutorial-part-5-global-variables#statement-nodes)) --
+so, we transform a local variable declaration into a local variable assignment:
 
 ```java
 @NodeChild("initializerExpr")
@@ -574,7 +403,10 @@ public abstract class LocalVarAssignmentExprNode extends EasyScriptExprNode {
 
 We use specializations if the local variables happen to have an `int` or `double` type.
 We use the `guards` attribute of `@Specialization` to make sure they are only activated if the frame slot
-has the correct type (or has not yet been initialized).
+has the correct type (or has not yet been initialized,
+which is represented by the `Illegal` frame slot kind --
+that's why each specialization sets the approproate kind,
+even though it might be redundant).
 If an object is assigned to a given local variable at any time,
 we stop further specializations, and work on the boxed object exclusively.
 
@@ -582,30 +414,44 @@ Note that in order to write that `guards` expression,
 we have to statically import the constants from the `FrameSlotKind` Truffle enum.
 We do that with the `@ImportStatic` annotation.
 
-We also save the type in the frame descriptor before we write the value in the frame --
-we will use that information in the Node for reading a local variable, below.
-
-Finally, we return a list of statement Nodes that is the result of parsing a statement block:
+There's a small edge case here --
+a declaration of a local variable should return `undefined` when executed,
+while an assignment should return the value assigned.
+To distinguish a regular assignment from an assignment created from a declaration,
+we add a second constructor parameter to `ExprStmtNode`
+that allows discarding the value of the expression,
+and returning `undefined` always:
 
 ```java
-        var result = new ArrayList<EasyScriptStmtNode>(funcDecls.size() + varDecls.size() + exprStmts.size());
-        result.addAll(funcDecls);
-        result.addAll(varDecls);
-        result.addAll(exprStmts);
-        return result;
+public final class ExprStmtNode extends EasyScriptStmtNode {
+    @SuppressWarnings("FieldMayBeFinal")
+    @Child
+    private EasyScriptExprNode expr;
+    private final boolean discardExpressionValue;
+
+    public ExprStmtNode(EasyScriptExprNode expr) {
+        this(expr, false);
     }
+
+    public ExprStmtNode(EasyScriptExprNode expr, boolean discardExpressionValue) {
+        this.expr = expr;
+        this.discardExpressionValue = discardExpressionValue;
+    }
+
+    @Override
+    public Object executeStatement(VirtualFrame frame) {
+        Object exprResult = this.expr.executeGeneric(frame);
+        return this.discardExpressionValue ? Undefined.INSTANCE : exprResult;
+    }
+}
 ```
-    
-As you can see, we change the order, to correctly implement hoisting:
-first are the function declarations
-(it's legal in JavaScript to call a function before it was declared),
-then the variable declarations (without initializers),
-and then finally all of the remaining statements,
-including the assignments from the variable declarations.
 
 ### Parsing a function declaration
 
 ```java
+public final class EasyScriptTruffleParser {
+    // ...
+
     private FuncDeclStmtNode parseFuncDeclStmt(EasyScriptParser.FuncDeclStmtContext funcDeclStmt) {
         if (this.frameDescriptor != null) {
             throw new EasyScriptException("nested functions are not supported in EasyScript yet");
@@ -623,6 +469,7 @@ including the assignments from the variable declarations.
         return new FuncDeclStmtNode(funcDeclStmt.name.getText(),
                 frameDescriptor, new BlockStmtNode(funcStmts), argumentCount);
     }
+}
 ```
 
 First, like I mentioned above, we check whether this is a function inside a function,
@@ -785,6 +632,9 @@ we have to check whether it's a local (including function arguments),
 or global, variable:
 
 ```java
+public final class EasyScriptTruffleParser {
+    // ...
+
     private EasyScriptExprNode parseAssignmentExpr(EasyScriptParser.AssignmentExpr1Context assignmentExpr) {
         String variableId = assignmentExpr.ID().getText();
         FrameMember frameMember = this.functionLocals.get(variableId);
@@ -803,12 +653,15 @@ or global, variable:
             }
         }
     }
+}
 ```
 
 If the assignment is to a global or local variable,
-we use the `GlobalVarAssignmentExprNode`
-and `LocalVarAssignmentExprNode` classes that we've seen above,
-respectively.
+we use either `GlobalVarAssignmentExprNode`
+(which is unchanged from when it was introduced in a
+[previous part](/graal-truffle-tutorial-part-5-global-variables#expression-nodes)
+of the series),
+or `LocalVarAssignmentExprNode` that we've seen above, respectively.
 But if the assignment is to a function argument,
 we use the `WriteFunctionArgExprNode` class:
 
@@ -876,6 +729,9 @@ public abstract class FunctionDispatchNode extends Node {
 And finally, we need to handle referencing variables:
 
 ```java
+public final class EasyScriptTruffleParser {
+    // ...
+
     private EasyScriptExprNode parseReference(String variableId) {
         FrameMember frameMember = this.functionLocals.get(variableId);
         if (frameMember == null) {
@@ -886,9 +742,10 @@ And finally, we need to handle referencing variables:
                     : LocalVarReferenceExprNodeGen.create(((LocalVariable) frameMember).variableIndex);
         }
     }
+}
 ```
 
-This is where we use the information about the frame slot we saved in `LocalVarDeclStmtNode`:
+This is where we use the information about the frame slot we saved in `LocalVarAssignmentExprNode`:
 
 ```java
 @NodeField(name = "frameSlot", type = int.class)
@@ -907,21 +764,10 @@ public abstract class LocalVarReferenceExprNode extends EasyScriptExprNode {
 
     @Specialization(replaces = {"readInt", "readDouble"})
     protected Object readObject(VirtualFrame frame) {
-        Object ret = frame.getObject(this.getFrameSlot());
-        if (ret == LocalVarDeclStmtNode.DUMMY) {
-            throw new EasyScriptException("Cannot access '" +
-                    frame.getFrameDescriptor().getSlotName(this.getFrameSlot()) +
-                    "' before initialization");
-        }
-        return ret;
+        return frame.getObject(this.getFrameSlot());
     }
 }
 ```
-
-We read the value of the given type that is stored in the frame for a given local variable.
-We also make sure the value is not the magical one that `const` and `let`
-variables are initialized with in `LocalVarDeclStmtNode`,
-and if it is, we throw an exception.
 
 ## Summary
 

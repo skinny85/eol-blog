@@ -840,21 +840,20 @@ For example, here's how that looks in the global variable declaration statement:
 
 ```java
 @NodeChild(value = "globalScopeObjectExpr", type = GlobalScopeObjectExprNode.class)
-@NodeField(name = "variableId", type = String.class)
+@NodeChild(value = "initializerExpr", type = EasyScriptExprNode.class)
+@NodeField(name = "name", type = String.class)
 @NodeField(name = "declarationKind", type = DeclarationKind.class)
 public abstract class GlobalVarDeclStmtNode extends EasyScriptStmtNode {
-    public static final Object DUMMY = new TruffleObject() {};
-
-    protected abstract String getVariableId();
+    protected abstract String getName();
     protected abstract DeclarationKind getDeclarationKind();
 
     @CompilationFinal
     private boolean checkVariableExists = true;
 
     @Specialization(limit = "1")
-    protected Object declareVariable(DynamicObject globalScopeObject,
+    protected Object createVariable(DynamicObject globalScopeObject, Object value,
             @CachedLibrary("globalScopeObject") DynamicObjectLibrary objectLibrary) {
-        var variableId = this.getVariableId();
+        var variableId = this.getName();
 
         if (this.checkVariableExists) {
             CompilerDirectives.transferToInterpreterAndInvalidate();
@@ -865,12 +864,8 @@ public abstract class GlobalVarDeclStmtNode extends EasyScriptStmtNode {
             }
         }
 
-        var declarationKind = this.getDeclarationKind();
-        Object initialValue = declarationKind == DeclarationKind.VAR
-                ? Undefined.INSTANCE
-                : DUMMY;
-        int flags = declarationKind == DeclarationKind.CONST ? 1 : 0;
-        objectLibrary.putWithFlags(globalScopeObject, variableId, initialValue, flags);
+        int flags = this.getDeclarationKind() == DeclarationKind.CONST ? 1 : 0;
+        objectLibrary.putWithFlags(globalScopeObject, variableId, value, flags);
 
         return Undefined.INSTANCE;
     }
@@ -900,10 +895,7 @@ public abstract class GlobalVarAssignmentExprNode extends EasyScriptExprNode {
             throw new EasyScriptException(this, "'" + variableId + "' is not defined");
         }
         if (property.getFlags() == 1) {
-            Object existingValue = property.get(globalScopeObject, true);
-            if (existingValue != GlobalVarDeclStmtNode.DUMMY) {
-                throw new EasyScriptException("Assignment to constant variable '" + variableId + "'");
-            }
+            throw new EasyScriptException("Assignment to constant variable '" + variableId + "'");
         }
         objectLibrary.put(globalScopeObject, variableId, value);
         return value;
@@ -911,10 +903,7 @@ public abstract class GlobalVarAssignmentExprNode extends EasyScriptExprNode {
 }
 ```
 
-An assignment to a constant (beyond the first one that is used for
-[variable hoisting](https://developer.mozilla.org/en-US/docs/Glossary/Hoisting),
-which uses the special dummy value)
-is an error.
+An assignment to a constant is an error.
 
 With global scope now being a dynamic object,
 we can roll back the changes that we made in the
@@ -972,8 +961,6 @@ public abstract class GlobalVarReferenceExprNode extends EasyScriptExprNode {
         var value = objectLibrary.getOrDefault(globalScopeObject, variableId, null);
         if (value == null) {
             throw new EasyScriptException(this, "'" + variableId + "' is not defined");
-        } else if (value == GlobalVarDeclStmtNode.DUMMY) {
-            throw new EasyScriptException("Cannot access '" + variableId + "' before initialization");
         } else {
             return value;
         }

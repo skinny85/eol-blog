@@ -38,6 +38,21 @@ we will learn about implementing values used in GraalVM polyglot bindings,
 and add support for the JavaScript `undefined` concept to EasyScript.
 Let's dive right in, because there's a lot to do!
 
+**Note**: JavaScript supports a concept called
+[hoisting](https://developer.mozilla.org/en-US/docs/Glossary/Hoisting),
+which means it's legal to use a variable before it's defined,
+in code like:
+
+```js
+var a = b;
+var b = 3;
+```
+
+However, this feature is confusing, and considered more of a historical accident than anything else;
+given it complicates the implementation considerably,
+and I can't imagine anyone wanting to create a new language that includes it,
+we will skip supporting it in EasyScript.
+
 ## Grammar
 
 Our language's grammar will need a few more elements --
@@ -221,7 +236,7 @@ public final class GlobalScopeObject {
     private final Set<String> constants = new HashSet<>();
 
     public boolean newVariable(String name, Object value, boolean isConst) {
-        Object existingValue = this.variables.putIfAbsent(name, value);
+        Object existingValue = this.variables.put(name, value);
         if (isConst) {
             this.constants.add(name);
         }
@@ -370,9 +385,8 @@ import com.oracle.truffle.api.dsl.Specialization;
 @NodeField(name = "name", type = String.class)
 @NodeField(name = "declarationKind", type = DeclarationKind.class)
 public abstract class GlobalVarDeclStmtNode extends EasyScriptStmtNode {
-    public abstract EasyScriptExprNode getInitializerExpr();
-    public abstract String getName();
-    public abstract DeclarationKind getDeclarationKind();
+    protected abstract String getName();
+    protected abstract DeclarationKind getDeclarationKind();
 
     @Specialization
     protected Object createVariable(Object value) {
@@ -415,12 +429,8 @@ To use the field in the abstract superclass of the generated class,
 we declare an abstract getter for it,
 like we do here with `getName()` and `getDeclarationKind()`.
 The DSL will implement these methods in the generated subclass.
-In fact, the same 'getter' trick works for `@NodeChild` fields as well,
-like we do here with `getInitializerExpr()`.
-
-(We could have made the getters `protected` if we wanted to,
-but we will call these from the `RootNode` -- see below --
-and so we made them `public`)
+In fact, the same 'getter' trick works for `@NodeChild` fields as well --
+we could use it here if we declared an abstract `getInitializerExpr()` method.
 
 The second new element used here is the `currentLanguageContext()` method.
 Traditionally, the way to get a reference to a `TruffleLanguage`
@@ -579,75 +589,7 @@ It takes an instance of `TruffleLanguage` and a list of statements in its constr
 It passes the `TruffleLanguage` to its `RootNode` superclass with a `super()` call.
 In the `execute()` method,
 it evaluates all of the statements,
-and returns the result of executing the last one.
-It also has another very important responsibility --
-it implements [variable hoisting](https://developer.mozilla.org/en-US/docs/Glossary/Hoisting).
-
-In JavaScript, `var` declarations are always moved to the beginning of the block they belong to.
-They are initialized with the `undefined` value.
-This means code like this:
-
-```js
-const a = b;
-var b = 1;
-```
-
-is actually valid in JavaScript,
-and gets transformed to:
-
-```js
-var b = undefined;
-const a = b;
-b = 1;
-```
-
-The `EasyScriptRootNode` implements these semantics by transforming the list of statements it receives.
-It gathers them into two groups,
-with all `var` declarations being split into a declaration that goes into the first group,
-and an assignment expression that goes into the second group.
-All non-`var` statements go into the second group.
-The final list of statements consists of the entire first group,
-followed by the second group.
-
-There is also another interesting edge case that hoisting surfaces.
-Usually, the result of executing a statement consisting of an assignment expression is the value assigned to the variable --
-so, evaluating `let a; a = 3;` returns `3`.
-However, when that assignment expression is created because of splitting a hoisted declaration into the variable creation and assignment,
-that assignment should return `undefined` instead.
-In other words, the code `var b = 3;`,
-even though it executes as `var b = undefined; b = 3;`,
-should return `undefined`, not `3`.
-
-To make that possible, we add an option to the `ExprStmtNode`
-to disregard the value of the expression that its child evaluates to,
-and always return `undefined` instead:
-
-```java
-public final class ExprStmtNode extends EasyScriptStmtNode {
-    @SuppressWarnings("FieldMayBeFinal")
-    @Child
-    private EasyScriptExprNode expr;
-    private final boolean discardExpressionValue;
-
-    public ExprStmtNode(EasyScriptExprNode expr) {
-        this(expr, false);
-    }
-
-    public ExprStmtNode(EasyScriptExprNode expr, boolean discardExpressionValue) {
-        this.expr = expr;
-        this.discardExpressionValue = discardExpressionValue;
-    }
-
-    @Override
-    public Object executeStatement(VirtualFrame frame) {
-        Object exprResult = this.expr.executeGeneric(frame);
-        return this.discardExpressionValue ? Undefined.INSTANCE : exprResult;
-    }
-}
-```
-
-Our `RootNode` uses this functionality by passing `true` to the second argument of the `ExprStmtNode`
-constructor for assignments created as a result of splitting a hoisted declaration:
+and returns the result of executing the last one:
 
 ```java
 public final class EasyScriptRootNode extends RootNode {
@@ -658,30 +600,7 @@ public final class EasyScriptRootNode extends RootNode {
             List<EasyScriptStmtNode> stmtNodes) {
         super(truffleLanguage);
 
-        List<GlobalVarDeclStmtNode> varDeclarations = new ArrayList<>();
-        List<EasyScriptStmtNode> remainingStmts = new ArrayList<>();
-        for (EasyScriptStmtNode stmtNode : stmtNodes) {
-            if (stmtNode instanceof GlobalVarDeclStmtNode) {
-                var varDeclaration = (GlobalVarDeclStmtNode) stmtNode;
-                if (varDeclaration.getDeclarationKind() == DeclarationKind.VAR) {
-                    varDeclarations.add(GlobalVarDeclStmtNodeGen.create(
-                            new UndefinedLiteralExprNode(), varDeclaration.getName(), DeclarationKind.VAR));
-
-                    remainingStmts.add(new ExprStmtNode(
-                            GlobalVarAssignmentExprNodeGen.create(
-                                    varDeclaration.getInitializerExpr(), varDeclaration.getName()),
-                            true));
-
-                    continue;
-                }
-            }
-            remainingStmts.add(stmtNode);
-        }
-
-        this.stmtNodes = Stream.concat(
-                varDeclarations.stream(),
-                remainingStmts.stream()
-        ).toArray(EasyScriptStmtNode[]::new);
+        this.stmtNodes = stmtNodes.toArray(new EasyScriptStmtNode[]{});
     }
 
     @Override
