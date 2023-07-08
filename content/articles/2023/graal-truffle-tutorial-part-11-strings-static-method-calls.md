@@ -692,7 +692,7 @@ We need the `same()` helper in `EasyScriptTruffleStrings`,
 as the Truffle DSL won't allow comparing two objects of different classes for identity otherwise.
 We use the `@ImportStatic` annotation,
 which we've already seen in
-[previous parts](/graal-truffle-tutorial-part-7-function-definitions#parsing-a-block-of-statements-second-loop)
+[previous parts](/graal-truffle-tutorial-part-7-function-definitions#parsing-a-block-of-statements)
 of the series,
 to get a reference to `same()` in the scope of the guard expressions.
 

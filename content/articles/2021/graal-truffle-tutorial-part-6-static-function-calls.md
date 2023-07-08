@@ -571,7 +571,7 @@ as it will throw `ArithmeticException` when negating `Integer.MIN_VALUE`.
 
 And finally, in order for our variable resolution to find the `Math.abs` function from above,
 we need to add a variable with the name `"Math.abs"` to our global scope that we created in the
-[previous article](/graal-truffle-tutorial-part-5-global-variables),
+[previous article](/graal-truffle-tutorial-part-5-global-variables#trufflelanguage),
 and point it to the correct `FunctionObject`.
 We do that in the `createContext()` method of our `TruffleLanguage` implementation:
 
