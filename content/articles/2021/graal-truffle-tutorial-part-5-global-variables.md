@@ -922,7 +922,7 @@ we can write the following unit test retrieving EasyScript's global bindings:
 
 ## Summary
 
-Phew! Something seemingly so simple as global variables turned out to be a lot of work,
+Phew! Something seemingly as simple as global variables turned out to be a lot of work,
 but we finally managed to power through it.
 
 As usual, the full working code from the article
