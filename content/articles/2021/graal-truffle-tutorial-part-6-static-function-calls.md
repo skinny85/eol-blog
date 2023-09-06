@@ -244,8 +244,9 @@ but function calls are actually one of the most interesting places for Graal to 
 for that reason, we want to use specializations for function calls.
 
 However, the Truffle DSL has a limitation --
-you can't use it to write specializations for Nodes that have a variable amount of children,
-like the function call expression Node does.
+you can't use it to write specializations that take a collection of values as an argument
+that are the result of evaluating a variable amount of child Nodes,
+like the function call expression Node has.
 Because of this, we'll introduce one more level of indirection.
 We'll create a new node, called the `FunctionDispatchNode`,
 that doesn't have any children itself,
