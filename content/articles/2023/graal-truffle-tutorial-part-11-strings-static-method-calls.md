@@ -698,9 +698,10 @@ to get a reference to `same()` in the scope of the guard expressions.
 
 Like we [mentioned in part 6](/graal-truffle-tutorial-part-6-static-function-calls#functiondispatchnode),
 specializations have a default limit of 3 instantiations.
-In our case, this means we can encounter at most 3 string instances for which we cache their `FunctionObject`.
-If the given property access sees more than 3 string targets,
-then we need to switch to a specialization that doesn't use caching:
+In our case, that means we can encounter at most 3 different string instances at runtime for which we cache the `FunctionObject`
+corresponding to their `charAt` property.
+If a given AST node for accessing the `charAt` property encounters more than 3 string targets at runtime,
+we need to switch to a specialization that doesn't use caching:
 
 ```java
 public abstract class ReadTruffleStringPropertyNode extends EasyScriptNode {
