@@ -83,7 +83,7 @@ Since we know that `ArrayObject` will have a `length` property
 (we implement it below),
 we make it not only a `TruffleObject`,
 but we use a dedicated class for that purpose from Truffle,
-[`DynamicObject`, which implements `TruffleObject`](https://www.graalvm.org/latest/graalvm-as-a-platform/language-implementation-framework/DynamicObjectModel):
+[`DynamicObject`, which implements `TruffleObject`](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/object/DynamicObject.html):
 
 ```java
 @ExportLibrary(InteropLibrary.class)
@@ -263,7 +263,7 @@ messages for dealing with array-like structures:
 @NodeChild("indexExpr")
 public abstract class ArrayIndexReadExprNode extends EasyScriptExprNode {
     @Specialization(guards = "arrayInteropLibrary.isArrayElementReadable(array, index)", limit = "1")
-    protected Object readIntIndex(Object array, int index,
+    protected Object readIntIndexOfArray(Object array, int index,
             @CachedLibrary("array") InteropLibrary arrayInteropLibrary) {
         try {
             return arrayInteropLibrary.readArrayElement(array, index);
@@ -374,7 +374,7 @@ public abstract class ArrayIndexWriteExprNode extends EasyScriptExprNode {
 The interesting part is the `ArrayObject` implementation,
 because in JavaScript, unlike in virtually any other language,
 it's possible to write beyond the current array's size --
-the effect of that assignment is that all of the indexes between the old and new last index are filled with `undefined`:
+the effect of that assignment is that all indexes between the old and new last index are filled with `undefined`:
 
 ```java
 @ExportLibrary(InteropLibrary.class)
@@ -470,14 +470,16 @@ public abstract class PropertyReadExprNode extends EasyScriptExprNode {
 }
 ```
 
-The way we implement reading and writing the `length` property in `ArraObject` is
+The way we implement reading and writing the `length` property in `ArrayObject` is
 [with the `DynamicObjectLibrary`](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/object/DynamicObjectLibrary.html)
-that is designed, as its name suggests, to operate on `DynamicObject`s.
+that is designed, as its name suggests, to operate on `DynamicObject`s
+(which `ArrayObject` is, since it's a subclass of `DynamicObject`).
 We take advantage of the fact that the `@CachedLibrary`
 annotation can be placed not only on `@Specialization` methods,
 but also on `@ExportMessage` ones,
-while using the static `getUnchached()` method of `DynamicObjectLibrary`
-in the constructor to get an instance of it not attached to a specific object:
+so that we can use `DynamicObjectLibrary` inside the implementation of the interop library messages
+(we use the static `getUnchached()` method of `DynamicObjectLibrary`
+in the constructor of `ArrayObject` to first initialize the `length` property to an initial value):
 
 ```java
 @ExportLibrary(InteropLibrary.class)
@@ -552,7 +554,7 @@ public final class EasyScriptTruffleLanguage extends
 ```
 
 `MemberNamesObject` is just a simple `TruffleObject`
-that contains all of the names of the members of a given object.
+that contains all names of the members of a given object.
 We'll re-use it for a few different `TruffleObject`s later:
 
 ```java
@@ -602,7 +604,7 @@ we can take advantage of the fact that we know the exact properties it contains,
 and use Truffle's mirror of `DynamicObject`,
 [the `StaticObject`](https://www.graalvm.org/latest/graalvm-as-a-platform/language-implementation-framework/StaticObjectModel).
 
-Using static objects looks very different than dynamic objects.
+Using static objects looks very different from dynamic objects.
 You don't declare a class that extends a particular superclass;
 instead, you first create a static shape builder,
 passing it a reference to a `TruffleLanguage`.

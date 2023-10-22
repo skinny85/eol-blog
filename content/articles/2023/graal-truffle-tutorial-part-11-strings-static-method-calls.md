@@ -763,27 +763,25 @@ we have to use the `@Fallback` annotation instead of `@Specialization`.
 Now that we have the new Node for reading `TruffleString` properties,
 we can use it in our existing Nodes that implement property access.
 
-The first place is in the direct property access expression Node,
-which handles code like `a.propName`:
+With the introduction of strings to our language,
+the same property of an object can be accessed in two different ways:
+with a "direct" access, in code like `a.propName`;
+and with indexed access, in code like `a['propName']`.
+To eliminate duplication between these two methods of accessing properties,
+we introduce a helper Node, called `ObjectPropertyReadNode`,
+that, similarly to `ReadTruffleStringPropertyNode`,
+is outside the EayScript expression Node hierarchy,
+and that contains the shared logic for reading a property of an object:
 
 ```java
-@NodeChild("target")
-@NodeField(name = "propertyName", type = String.class)
-public abstract class PropertyReadExprNode extends EasyScriptExprNode {
-    protected abstract String getPropertyName();
-
-    @Specialization
-    protected Object readPropertyOfString(TruffleString target,
-            @Cached ReadTruffleStringPropertyNode readStringPropertyNode) {
-        return readStringPropertyNode.executeReadTruffleStringProperty(
-                target, this.getPropertyName());
-    }
+public abstract class ObjectPropertyReadNode extends Node {
+    public abstract Object executePropertyRead(Object target, Object property);
 
     // ...
 }
 ```
 
-We add a specialization for when the target of the property read is a `TruffleString` --
+The first specialization is used when the target of the property read is a `TruffleString` --
 we delegate to our newly created `ReadTruffleStringPropertyNode`,
 whose instance we get through the `@Cached` annotation
 (you might be curious why that works,
@@ -791,73 +789,37 @@ since we never defined a `create()`
 static factory method in `ReadTruffleStringPropertyNode`,
 which `@Cached` uses by default --
 but, the Truffle DSL did, in the `ReadTruffleStringPropertyNodeGen` class it generated,
-and `@Cached` is clever enough to find it).
-
-The second place we need to change is the array index read expression,
-used to implement code such as `a['propName']`,
-since in JavaScript, that is equivalent to `a.propName`:
+and `@Cached` is clever enough to find it):
 
 ```java
-@NodeChild("arrayExpr")
-@NodeChild("indexExpr")
-public abstract class ArrayIndexReadExprNode extends EasyScriptExprNode {
-    @Specialization(limit = "1", guards = "indexInteropLibrary.isString(index)")
-    protected Object readStringPropertyOfString(TruffleString target,
-            Object index,
-            @CachedLibrary("index") InteropLibrary indexInteropLibrary,
-            @Cached ReadTruffleStringPropertyNode readStringPropertyNode) {
-        try {
-            return readStringPropertyNode.executeReadTruffleStringProperty(target,
-                    indexInteropLibrary.asString(index));
-        } catch (UnsupportedMessageException e) {
-            throw new EasyScriptException(this, e.getMessage());
-        }
-    }
+public abstract class ObjectPropertyReadNode extends Node {
+    // ...
 
     @Specialization
-    protected Object readPropertyOfString(TruffleString target, Object index,
+    protected Object readPropertyOfString(TruffleString target, Object property,
             @Cached ReadTruffleStringPropertyNode readStringPropertyNode) {
-        return readStringPropertyNode.executeReadTruffleStringProperty(target,
-                index);
+        return readStringPropertyNode.executeReadTruffleStringProperty(
+                target, property);
     }
 
     // ...
 }
 ```
 
-We add two specializations for the target of the index expression being a `TruffleString`.
-The first one covers the situation when the index is a string itself;
-we use the `InteropLibrary.isString()` message to check for that,
-which allows us to support indexing not only with `TruffleString`s,
-but also with Java strings being passed through GraalVM interop
-(even though `TruffleString` is not a `TruffleObject`,
-`InteropLibrary.isString()` returns `true` for it).
-We convert the property into a Java string, which is what `ReadTruffleStringPropertyNode` expects.
-The second specialization is for other, non-string indexes, like integers
-(in code like `"abc"[2]`).
-In that case, we just call `executeReadTruffleStringProperty()` directly --
-we don't have to do any conversions.
-
-And finally, we need to add one more specialization to `ArrayIndexReadExprNode`,
-and that is for reading properties of non-`TruffleString` objects,
-in code like `[1, 2, 3]['length']`:
+The remaining three specializations (for reading a string property with the interop library,
+for attempting to read a property of `undefined`, and for reading either a non-string property,
+or for attempting to read from a type that doesn't have any properties) are moved from the existing `PropertyReadExprNode` from
+[part 10](/graal-truffle-tutorial-part-10-arrays-read-only-properties#adding-the-length-property):
 
 ```java
-@NodeChild("arrayExpr")
-@NodeChild("indexExpr")
-public abstract class ArrayIndexReadExprNode extends EasyScriptExprNode {
+public abstract class ObjectPropertyReadNode extends Node {
     // ...
 
-    @Specialization(guards = {
-            "targetInteropLibrary.hasMembers(target)",
-            "propertyNameInteropLibrary.isString(propertyName)"
-    }, limit = "1")
-    protected Object readProperty(Object target, Object propertyName,
-            @CachedLibrary("target") InteropLibrary targetInteropLibrary,
-            @CachedLibrary("propertyName") InteropLibrary propertyNameInteropLibrary) {
+    @Specialization(guards = "interopLibrary.hasMembers(target)", limit = "1")
+    protected Object readProperty(Object target, String propertyName,
+            @CachedLibrary("target") InteropLibrary interopLibrary) {
         try {
-            return targetInteropLibrary.readMember(target,
-                    propertyNameInteropLibrary.asString(propertyName));
+            return interopLibrary.readMember(target, propertyName);
         } catch (UnknownIdentifierException e) {
             return Undefined.INSTANCE;
         } catch (UnsupportedMessageException e) {
@@ -865,16 +827,86 @@ public abstract class ArrayIndexReadExprNode extends EasyScriptExprNode {
         }
     }
 
-    // ...
+    @Specialization(guards = "interopLibrary.isNull(target)", limit = "1")
+    protected Object readPropertyOfUndefined(@SuppressWarnings("unused") Object target, Object property,
+            @CachedLibrary("target") @SuppressWarnings("unused") InteropLibrary interopLibrary) {
+        throw new EasyScriptException("Cannot read properties of undefined (reading '" + property + "')");
+    }
+
+    @Fallback
+    protected Object readPropertyOfNonUndefinedWithoutMembers(@SuppressWarnings("unused") Object target,
+            @SuppressWarnings("unused") Object property) {
+        return Undefined.INSTANCE;
+    }
 }
 ```
 
-Similarly to what we did in the specializations for `TruffleString`s,
-we convert the property name into a Java string,
-but then, instead  of delegating to the new `ReadTruffleStringPropertyNode`,
-we use the `readMember()` message from the `InteropLibrary`,
-like we did in the [previous part](/graal-truffle-tutorial-part-10-arrays-read-only-properties#adding-the-length-property)
-of the series.
+With that in place, we change `PropertyReadExprNode` to delegate to this new `ObjectPropertyReadNode` class:
+
+```java
+@NodeChild("target")
+@NodeField(name = "propertyName", type = String.class)
+public abstract class PropertyReadExprNode extends EasyScriptExprNode {
+   protected abstract String getPropertyName();
+
+   @Specialization
+   protected Object readProperty(Object target,
+           @Cached ObjectPropertyReadNode objectPropertyReadNode) {
+      return objectPropertyReadNode.executePropertyRead(target, this.getPropertyName());
+   }
+}
+```
+
+Indexed property access,
+implemented by the `ArrayIndexReadExprNode` class,
+also uses the new `ObjectPropertyReadNode` class
+(in addition to handling integer array indexes),
+but with one small twist: it needs to convert `TruffleString`s,
+which the index expression can resolve to in code like `a['propName']`,
+into a Java `String`, which is what `ObjectPropertyReadNode` expects.
+We also use the interop library for that; more specifically, its
+[`isString()`](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/interop/InteropLibrary.html#isString-java.lang.Object-) and
+[`asString()`](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/interop/InteropLibrary.html#asString-java.lang.Object-) messages:
+
+```java
+@NodeChild("arrayExpr")
+@NodeChild("indexExpr")
+public abstract class ArrayIndexReadExprNode extends EasyScriptExprNode {
+    @Specialization(guards = "arrayInteropLibrary.isArrayElementReadable(array, index)", limit = "1")
+    protected Object readIntIndexOfArray(Object array, int index,
+            @CachedLibrary("array") InteropLibrary arrayInteropLibrary) {
+        try {
+            return arrayInteropLibrary.readArrayElement(array, index);
+        } catch (UnsupportedMessageException | InvalidArrayIndexException e) {
+            throw new EasyScriptException(this, e.getMessage());
+        }
+    }
+
+    @Specialization(guards = "propertyNameInteropLibrary.isString(propertyName)", limit = "1")
+    protected Object readStringPropertyOfObject(Object target, Object propertyName,
+            @CachedLibrary("propertyName") InteropLibrary propertyNameInteropLibrary,
+            @Cached ObjectPropertyReadNode objectPropertyReadNode) {
+        try {
+            return objectPropertyReadNode.executePropertyRead(target,
+                    propertyNameInteropLibrary.asString(propertyName));
+        } catch (UnsupportedMessageException e) {
+            throw new EasyScriptException(this, e.getMessage());
+        }
+    }
+
+    @Fallback
+    protected Object readNonStringPropertyOfObject(Object target, Object index,
+            @Cached ObjectPropertyReadNode objectPropertyReadNode) {
+        return objectPropertyReadNode.executePropertyRead(target, index);
+    }
+}
+```
+
+That last specialization is needed,
+because we want to pass all non-string properties,
+like integers, directly to `ObjectPropertyReadNode` --
+to make sure all operations (for example, indexing `TruffleString`s with integers)
+are handled correctly.
 
 ## Benchmark
 
@@ -988,7 +1020,7 @@ as often happens, making code faster also makes it uglier.
 
 I've also tried switching completely to `TruffleString`s for property access,
 instead of Java strings.
-That gets rid of the duplication in the implementation,
+That gets rid of the duplication problem from above,
 and results in both variants reporting identical performance, which is good --
 unfortunately, that performance is the same as the "index property access"
 variant with the `TruffleString`s handling changes from above,
