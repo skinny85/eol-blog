@@ -844,7 +844,7 @@ public abstract class ObjectPropertyReadNode extends Node {
 With that in place, we change `PropertyReadExprNode` to delegate to this new `ObjectPropertyReadNode` class:
 
 ```java
-@NodeChild("target")
+@NodeChild("targetExpr")
 @NodeField(name = "propertyName", type = String.class)
 public abstract class PropertyReadExprNode extends EasyScriptExprNode {
    protected abstract String getPropertyName();

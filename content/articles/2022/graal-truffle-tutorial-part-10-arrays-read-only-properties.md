@@ -440,7 +440,7 @@ expr5 : expr5 '.' ID          #PropertyReadExpr5
 Its implementation will again use the interop library:
 
 ```java
-@NodeChild("target")
+@NodeChild("targetExpr")
 @NodeField(name = "propertyName", type = String.class)
 public abstract class PropertyReadExprNode extends EasyScriptExprNode {
     protected abstract String getPropertyName();
