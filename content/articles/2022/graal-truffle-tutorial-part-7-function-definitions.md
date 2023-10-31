@@ -106,13 +106,14 @@ We mentioned above that local variables are stored in the `VirtualFrame` object,
 but not in the same place as the function's arguments.
 If not there, then where?
 
-They are stored in something called _auxiliary slots_;
-basically a map inside the `VirtualFrame`.
+They are stored in something called _indexed slots_;
+basically [a map](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/Map.html)
+inside the `VirtualFrame`.
 The keys of that map historically were instances of a class called `FrameSlot`.
 However, that class has been removed in GraalVM version `22`,
-and now the map is indexed by integers,
+and now the map is keyed by integers,
 the same way function arguments are.
-These integer indexes are related to another important class, `FrameDescriptor`.
+These integer keys are related to another important class, `FrameDescriptor`.
 
 The frame descriptor can be thought of as containing the static analysis information about a frame.
 For example, in the following JavaScript function:
@@ -136,7 +137,7 @@ they could be either integers, or `double`s.
 We will use specializations to allow Graal and Truffle to speculate on their types in order to squeeze out the maximum performance out of this code,
 like [we do for expressions](/graal-truffle-tutorial-part-2-introduction-to-specializations).
 
-To create these auxiliary slots in the frame,
+To create these indexed slots in the frame,
 we will use a [Builder class](https://en.wikipedia.org/wiki/Builder_pattern)
 for `FrameDescriptor`s, the
 [`FrameDescriptor.Builder` class](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/frame/FrameDescriptor.Builder.html).
@@ -146,7 +147,7 @@ of `FrameDescriptor`.
 
 You create slots in the frame descriptor by calling the
 [`addSlot()` method of `FrameDescriptor.Builder`](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/frame/FrameDescriptor.Builder.html#addSlot-com.oracle.truffle.api.frame.FrameSlotKind-java.lang.Object-java.lang.Object-),
-and you get back the integer index reserved for that slot.
+and you get back the integer number reserved for that slot.
 The important thing to know is that while retrieving and storing values inside the `VirtualFrame`
 is a fast operation that gets JIT-compiled into efficient machine code,
 actually creating and finding the slots in the descriptor builder is slow code that never gets JIT compiled.
