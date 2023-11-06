@@ -204,7 +204,7 @@ For example, here's a CloudFormation template that defines an
 [SQS queue](https://aws.amazon.com/sqs):
 
 ```yaml
-AWSTemplateFormatVersion : 2010-09-09
+AWSTemplateFormatVersion: 2010-09-09
 Resources:
   LambdaFunction:
     Type: AWS::Lambda::Function
