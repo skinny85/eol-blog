@@ -75,7 +75,7 @@ public final class EasyScriptTruffleParser {
         var classPrototype = new ClassPrototypeObject(this.objectShape, className);
         List<FuncDeclStmtNode> classMethods = new ArrayList<>();
         for (var classMember : classDeclStmt.class_member()) {
-            classMethods.add(this.parseSubroutineDeclStmt(classMember.subroutine_decl(),
+            classMethods.add(this.parseSubroutineDecl(classMember.subroutine_decl(),
                     new DynamicObjectReferenceExprNode(classPrototype)));
         }
         return GlobalVarDeclStmtNodeGen.create(
@@ -85,7 +85,7 @@ public final class EasyScriptTruffleParser {
     }
 
     private FuncDeclStmtNode parseFuncDeclStmt(EasyScriptParser.FuncDeclStmtContext funcDeclStmt) {
-        return this.parseSubroutineDeclStmt(funcDeclStmt.subroutine_decl(),
+        return this.parseSubroutineDecl(funcDeclStmt.subroutine_decl(),
                 GlobalScopeObjectExprNodeGen.create());
     }
 
