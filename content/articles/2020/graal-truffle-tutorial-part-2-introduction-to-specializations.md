@@ -53,11 +53,11 @@ it would not be optimal from a performance perspective.
 
 Operations like addition, multiplication, division, etc.
 on floating-point numbers like `double`
-are more expensive in terms of CPU cycles than the equivalent operations for integers.
+are more expensive in terms of CPU cycles than the equivalent operations on integers.
 We know that JavaScript code uses integers frequently:
 in loops like `for (let i = 0; i < n; i++)`,
-for array indexes, etc.
-If we used `double`s for all those cases,
+for array indexes, for string lengths, etc.
+If we used `double`s in all those cases,
 our implementation would be simpler,
 but we would be making the language unnecessarily slower.
 

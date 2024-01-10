@@ -716,7 +716,7 @@ Benchmark                              Mode  Cnt    Score   Error  Units
 FibonacciBenchmark.recursive_ezs_eval  avgt    5  102.190 ± 1.099  us/op
 ```
 
-So, we went from 6000 microseconds per invocation to 100,
+So, we went from 6 000 microseconds per invocation to 100,
 with just a few minor code changes!
 
 If we check the graph produced by the `recursive_ezs_eval`
