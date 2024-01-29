@@ -145,7 +145,7 @@ public class WrapperBuilder<T> {
 }
 ```
 
-Interestingly, this issue surfaced an interesting bug in
+Interestingly, this issue also surfaced a bug in
 [JavaPoet](https://github.com/square/javapoet),
 a library Jilt depends on for code generation.
 When generating a Staged Builder for a class with type parameters,
