@@ -864,9 +864,8 @@ also uses the new `ObjectPropertyReadNode` class
 but with one small twist: it needs to convert `TruffleString`s,
 which the index expression can resolve to in code like `a['propName']`,
 into a Java `String`, which is what `ObjectPropertyReadNode` expects.
-We also use the interop library for that; more specifically, its
-[`isString()`](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/interop/InteropLibrary.html#isString-java.lang.Object-) and
-[`asString()`](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/interop/InteropLibrary.html#asString-java.lang.Object-) messages:
+We use the [`TruffleString.ToJavaStringNode` class](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/strings/TruffleString.ToJavaStringNode.html)
+for that purpose:
 
 ```java
 @NodeChild("arrayExpr")
@@ -882,20 +881,16 @@ public abstract class ArrayIndexReadExprNode extends EasyScriptExprNode {
         }
     }
 
-    @Specialization(guards = "propertyNameInteropLibrary.isString(propertyName)", limit = "2")
-    protected Object readStringPropertyOfObject(Object target, Object propertyName,
-            @CachedLibrary("propertyName") InteropLibrary propertyNameInteropLibrary,
+    @Specialization
+    protected Object readTruffleStringPropertyOfObject(Object target, TruffleString propertyName,
+            @Cached TruffleString.ToJavaStringNode toJavaStringNode,
             @Cached ObjectPropertyReadNode objectPropertyReadNode) {
-        try {
-            return objectPropertyReadNode.executePropertyRead(target,
-                    propertyNameInteropLibrary.asString(propertyName));
-        } catch (UnsupportedMessageException e) {
-            throw new EasyScriptException(this, e.getMessage());
-        }
+        return objectPropertyReadNode.executePropertyRead(target,
+                toJavaStringNode.execute(propertyName));
     }
 
     @Fallback
-    protected Object readNonStringPropertyOfObject(Object target, Object index,
+    protected Object readNonTruffleStringPropertyOfObject(Object target, Object index,
             @Cached ObjectPropertyReadNode objectPropertyReadNode) {
         return objectPropertyReadNode.executePropertyRead(target, index);
     }
