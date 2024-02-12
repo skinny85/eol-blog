@@ -262,7 +262,7 @@ messages for dealing with array-like structures:
 @NodeChild("arrayExpr")
 @NodeChild("indexExpr")
 public abstract class ArrayIndexReadExprNode extends EasyScriptExprNode {
-    @Specialization(guards = "arrayInteropLibrary.isArrayElementReadable(array, index)", limit = "1")
+    @Specialization(guards = "arrayInteropLibrary.isArrayElementReadable(array, index)", limit = "2")
     protected Object readIntIndexOfArray(Object array, int index,
             @CachedLibrary("array") InteropLibrary arrayInteropLibrary) {
         try {
@@ -272,7 +272,7 @@ public abstract class ArrayIndexReadExprNode extends EasyScriptExprNode {
         }
     }
 
-    @Specialization(guards = "interopLibrary.isNull(target)", limit = "1")
+    @Specialization(guards = "interopLibrary.isNull(target)", limit = "2")
     protected Object indexUndefined(Object target, Object index,
             @CachedLibrary("target") InteropLibrary interopLibrary) {
         throw new EasyScriptException("Cannot read properties of undefined (reading '" + index + "')");
@@ -293,6 +293,12 @@ we use the `@CachedLibrary` annotation.
 Using it requires us to place a limit on the number of times a specialization can be instantiated,
 in order to not leak memory with too many cached objects
 (libraries are relatively heavyweight objects).
+It's a good practice to always set that limit to `2`,
+as setting it to `1` sometimes has an adverse impact on performance,
+for reasons that I don't fully understand
+(hopefully, this serves as even more proof that you should always benchmark your interpreter's performance --
+compilers are often black boxes, and it's hard to know why they behave the way they do,
+and Graal is no different in that regard).
 
 The `@Fallback` method is needed because, in JavaScript,
 it's legal to take an index of any type,
@@ -347,7 +353,7 @@ but of course using different messages from the interop library:
 @NodeChild("indexExpr")
 @NodeChild("rvalueExpr")
 public abstract class ArrayIndexWriteExprNode extends EasyScriptExprNode {
-    @Specialization(guards = "arrayInteropLibrary.isArrayElementWritable(array, index)", limit = "1")
+    @Specialization(guards = "arrayInteropLibrary.isArrayElementWritable(array, index)", limit = "2")
     protected Object writeIntIndex(Object array, int index, Object rvalue,
             @CachedLibrary("array") InteropLibrary arrayInteropLibrary) {
         try {
@@ -358,7 +364,7 @@ public abstract class ArrayIndexWriteExprNode extends EasyScriptExprNode {
         return rvalue;
     }
 
-    @Specialization(guards = "interopLibrary.isNull(target)", limit = "1")
+    @Specialization(guards = "interopLibrary.isNull(target)", limit = "2")
     protected Object indexUndefined(Object target, Object index, Object rvalue,
             @CachedLibrary("target") InteropLibrary interopLibrary) {
         throw new EasyScriptException("Cannot set properties of undefined (setting '" + index + "')");
@@ -445,7 +451,7 @@ Its implementation will again use the interop library:
 public abstract class PropertyReadExprNode extends EasyScriptExprNode {
     protected abstract String getPropertyName();
 
-    @Specialization(guards = "interopLibrary.hasMembers(target)", limit = "1")
+    @Specialization(guards = "interopLibrary.hasMembers(target)", limit = "2")
     protected Object readProperty(Object target,
             @CachedLibrary("target") InteropLibrary interopLibrary) {
         try {
@@ -457,7 +463,7 @@ public abstract class PropertyReadExprNode extends EasyScriptExprNode {
         }
     }
 
-    @Specialization(guards = "interopLibrary.isNull(target)", limit = "1")
+    @Specialization(guards = "interopLibrary.isNull(target)", limit = "2")
     protected Object readPropertyOfUndefined(Object target,
             @CachedLibrary("target") InteropLibrary interopLibrary) {
         throw new EasyScriptException("Cannot read properties of undefined (reading '" + this.getPropertyName() + "')");
@@ -852,7 +858,7 @@ public abstract class GlobalVarDeclStmtNode extends EasyScriptStmtNode {
     @CompilationFinal
     private boolean checkVariableExists = true;
 
-    @Specialization(limit = "1")
+    @Specialization(limit = "2")
     protected Object createVariable(DynamicObject globalScopeObject, Object value,
             @CachedLibrary("globalScopeObject") DynamicObjectLibrary objectLibrary) {
         var variableId = this.getName();
@@ -888,7 +894,7 @@ We check the value of that flag in the global variable assignment Node:
 public abstract class GlobalVarAssignmentExprNode extends EasyScriptExprNode {
     protected abstract String getName();
 
-    @Specialization(limit = "1")
+    @Specialization(limit = "2")
     protected Object assignVariable(DynamicObject globalScopeObject, Object value,
             @CachedLibrary("globalScopeObject") DynamicObjectLibrary objectLibrary) {
         String variableId = this.getName();
@@ -927,7 +933,7 @@ public abstract class FuncDeclStmtNode extends EasyScriptStmtNode {
     @CompilationFinal
     private FunctionObject cachedFunction;
 
-    @Specialization(limit = "1")
+    @Specialization(limit = "2")
     protected Object declareFunction(DynamicObject globalScopeObject,
             @CachedLibrary("globalScopeObject") DynamicObjectLibrary objectLibrary) {
         if (this.cachedFunction == null) {
@@ -956,7 +962,7 @@ And we can remove the caching of resolved functions when referencing a global va
 public abstract class GlobalVarReferenceExprNode extends EasyScriptExprNode {
     protected abstract String getName();
 
-    @Specialization(limit = "1")
+    @Specialization(limit = "2")
     protected Object readVariable(DynamicObject globalScopeObject,
             @CachedLibrary("globalScopeObject") DynamicObjectLibrary objectLibrary) {
         String variableId = this.getName();

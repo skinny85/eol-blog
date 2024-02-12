@@ -815,7 +815,7 @@ or for attempting to read from a type that doesn't have any properties) are move
 public abstract class ObjectPropertyReadNode extends Node {
     // ...
 
-    @Specialization(guards = "interopLibrary.hasMembers(target)", limit = "1")
+    @Specialization(guards = "interopLibrary.hasMembers(target)", limit = "2")
     protected Object readProperty(Object target, String propertyName,
             @CachedLibrary("target") InteropLibrary interopLibrary) {
         try {
@@ -827,7 +827,7 @@ public abstract class ObjectPropertyReadNode extends Node {
         }
     }
 
-    @Specialization(guards = "interopLibrary.isNull(target)", limit = "1")
+    @Specialization(guards = "interopLibrary.isNull(target)", limit = "2")
     protected Object readPropertyOfUndefined(@SuppressWarnings("unused") Object target, Object property,
             @CachedLibrary("target") @SuppressWarnings("unused") InteropLibrary interopLibrary) {
         throw new EasyScriptException("Cannot read properties of undefined (reading '" + property + "')");
@@ -872,7 +872,7 @@ We also use the interop library for that; more specifically, its
 @NodeChild("arrayExpr")
 @NodeChild("indexExpr")
 public abstract class ArrayIndexReadExprNode extends EasyScriptExprNode {
-    @Specialization(guards = "arrayInteropLibrary.isArrayElementReadable(array, index)", limit = "1")
+    @Specialization(guards = "arrayInteropLibrary.isArrayElementReadable(array, index)", limit = "2")
     protected Object readIntIndexOfArray(Object array, int index,
             @CachedLibrary("array") InteropLibrary arrayInteropLibrary) {
         try {
@@ -882,7 +882,7 @@ public abstract class ArrayIndexReadExprNode extends EasyScriptExprNode {
         }
     }
 
-    @Specialization(guards = "propertyNameInteropLibrary.isString(propertyName)", limit = "1")
+    @Specialization(guards = "propertyNameInteropLibrary.isString(propertyName)", limit = "2")
     protected Object readStringPropertyOfObject(Object target, Object propertyName,
             @CachedLibrary("propertyName") InteropLibrary propertyNameInteropLibrary,
             @Cached ObjectPropertyReadNode objectPropertyReadNode) {
