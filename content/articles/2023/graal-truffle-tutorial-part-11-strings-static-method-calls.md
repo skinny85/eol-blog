@@ -992,7 +992,7 @@ The results for the "index property access" variant, however, are surprising.
 Apparently, converting from `TruffleString`s to Java strings in `ArrayIndexReadExprNode`
 is incurring a 20x performance degradation.
 The situation is even worse with the GraalVM JavaScript implementation,
-which is 200 times slower when accessing properties through indexes than directly.
+which is over 200 (!) times slower when accessing properties through indexes than directly.
 I assume this is a bug in the implementation.
 
 **Update**: I've [opened an issue](https://github.com/oracle/graaljs/issues/719)
@@ -1000,29 +1000,85 @@ to the Graal JS project, and I was right --
 the bug has been fixed, and will be released in version `23.1.0`
 of the GraalVM JavaScript implementation.
 
-### Code variants
+### Caching in `ArrayIndexReadExprNode`
 
-I've done a few experiments where I've changed the implementation of `ReadTruffleStringPropertyNode`
-to directly handle property names as `TruffleString`s,
-without having to convert them to Java strings first.
-That increases the amount of code significantly,
-as the specializations for each property name have to basically be written twice --
-once expecting a Java string, and once a `TruffleString`.
-However, that duplication offers a 10x speedup in the "index property access" variant of the benchmark,
-making it only 2x slower than the "direct property access" variant.
-If you can live with the duplication, that's one way to improve performance --
-as often happens, making code faster also makes it uglier.
+Whenever it turns out that some operation is more expensive than expected in Truffle,
+like what we measured with the conversion from `TruffleString` to Java `String` in `ArrayIndexReadExprNode`,
+there is always one technique we should reach for first: caching.
+While it would not cover all cases in `ArrayIndexReadExprNode` --
+for example, in code like `o[prop]`, where `prop` is an argument to a function --
+when the index is a constant string
+(like in our benchmark, where it's always `'charAt'`),
+it should improve performance considerably.
 
-I've also tried switching completely to `TruffleString`s for property access,
-instead of Java strings.
-That gets rid of the duplication problem from above,
-and results in both variants reporting identical performance, which is good --
-unfortunately, that performance is the same as the "index property access"
-variant with the `TruffleString`s handling changes from above,
-so 2x slower than the "direct property access" implementation shown here.
+The way we implement caching in `ArrayIndexReadExprNode`
+is very similar to how we did it in `ReadTruffleStringPropertyNode`.
+We have to make sure the `TruffleString` that represents the property being read is the same as the cached one,
+and then we cache the Java `String` created from the `TruffleString`:
 
-As often happens, different implementation decisions lead to different performance tradeoffs --
-hopefully, this gives you enough information to make an informed decision when implementing your own language.
+```java
+@NodeChild("arrayExpr")
+@NodeChild("indexExpr")
+@ImportStatic(EasyScriptTruffleStrings.class)
+public abstract class ArrayIndexReadExprNode extends EasyScriptExprNode {
+    // ...
+
+    @Specialization(guards = "equals(propertyName, cachedPropertyName, equalNode)", limit = "2")
+    protected Object readTruffleStringPropertyOfObjectCached(
+            Object target, TruffleString propertyName,
+            @Cached TruffleString.EqualNode equalNode,
+            @Cached("propertyName") TruffleString cachedPropertyName,
+            @Cached TruffleString.ToJavaStringNode toJavaStringNode,
+            @Cached("toJavaStringNode.execute(cachedPropertyName)") String javaStringPropertyName,
+            @Cached ObjectPropertyReadNode objectPropertyReadNode) {
+        return objectPropertyReadNode.executePropertyRead(target, javaStringPropertyName);
+    }
+
+    // ...
+}
+```
+
+We set a limit of `2` on the cached specialization,
+so we'll save at most two different keys for a given property access.
+If we see more names than that, then we'll switch to the uncached variant:
+
+```java
+@NodeChild("arrayExpr")
+@NodeChild("indexExpr")
+@ImportStatic(EasyScriptTruffleStrings.class)
+public abstract class ArrayIndexReadExprNode extends EasyScriptExprNode {
+    // ...
+
+    @Specialization(replaces = "readTruffleStringPropertyOfObjectCached")
+    protected Object readTruffleStringPropertyOfObjectUncached(
+            Object target, TruffleString propertyName,
+            @Cached TruffleString.ToJavaStringNode toJavaStringNode,
+            @Cached ObjectPropertyReadNode objectPropertyReadNode) {
+        return objectPropertyReadNode.executePropertyRead(target,
+                toJavaStringNode.execute(propertyName));
+    }
+
+    // ...
+}
+```
+
+Which is pretty much identical to the original version,
+only with the `replaces` attribute set to exclude the cached variant,
+and with a slightly updated name to emphasize the fact that it is the uncached specialization.
+
+Re-running the benchmark with these changes yields:
+
+```shell-session
+Benchmark                                                  Mode  Cnt       Score      Error  Units
+StringLengthBenchmark.count_while_char_at_direct_prop_ezs  avgt    5     577.467 ±   11.463  us/op
+StringLengthBenchmark.count_while_char_at_direct_prop_js   avgt    5     582.202 ±   22.043  us/op
+StringLengthBenchmark.count_while_char_at_index_prop_ezs   avgt    5     575.608 ±   13.571  us/op
+StringLengthBenchmark.count_while_char_at_index_prop_js    avgt    5  126432.537 ± 5631.640  us/op
+```
+
+So, using caching, we've managed to make the performance of the indexed property access benchmark identical to the direct property access one --
+meaning, there's no difference in performance between `str.charAt(n)`,
+and `str['charAt'](n)`, in EasyScript.
 
 ## Summary
 
