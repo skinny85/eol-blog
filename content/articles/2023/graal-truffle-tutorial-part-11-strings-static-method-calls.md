@@ -768,14 +768,14 @@ the same property of an object can be accessed in two different ways:
 with a "direct" access, in code like `a.propName`;
 and with indexed access, in code like `a['propName']`.
 To eliminate duplication between these two methods of accessing properties,
-we introduce a helper Node, called `ObjectPropertyReadNode`,
+we introduce a helper Node, called `CommonReadPropertyNode`,
 that, similarly to `ReadTruffleStringPropertyNode`,
 is outside the EayScript expression Node hierarchy,
 and that contains the shared logic for reading a property of an object:
 
 ```java
-public abstract class ObjectPropertyReadNode extends Node {
-    public abstract Object executePropertyRead(Object target, Object property);
+public abstract class CommonReadPropertyNode extends Node {
+    public abstract Object executeReadProperty(Object target, Object property);
 
     // ...
 }
@@ -792,7 +792,7 @@ but, the Truffle DSL did, in the `ReadTruffleStringPropertyNodeGen` class it gen
 and `@Cached` is clever enough to find it):
 
 ```java
-public abstract class ObjectPropertyReadNode extends Node {
+public abstract class CommonReadPropertyNode extends Node {
     // ...
 
     @Specialization
@@ -812,7 +812,7 @@ or for attempting to read from a type that doesn't have any properties) are move
 [part 10](/graal-truffle-tutorial-part-10-arrays-read-only-properties#adding-the-length-property):
 
 ```java
-public abstract class ObjectPropertyReadNode extends Node {
+public abstract class CommonReadPropertyNode extends Node {
     // ...
 
     @Specialization(guards = "interopLibrary.hasMembers(target)", limit = "2")
@@ -841,29 +841,29 @@ public abstract class ObjectPropertyReadNode extends Node {
 }
 ```
 
-With that in place, we change `PropertyReadExprNode` to delegate to this new `ObjectPropertyReadNode` class:
+With that in place, we change `PropertyReadExprNode` to delegate to this new `CommonReadPropertyNode` class:
 
 ```java
 @NodeChild("targetExpr")
 @NodeField(name = "propertyName", type = String.class)
 public abstract class PropertyReadExprNode extends EasyScriptExprNode {
-   protected abstract String getPropertyName();
+    protected abstract String getPropertyName();
 
-   @Specialization
-   protected Object readProperty(Object target,
-           @Cached ObjectPropertyReadNode objectPropertyReadNode) {
-      return objectPropertyReadNode.executePropertyRead(target, this.getPropertyName());
-   }
+    @Specialization
+    protected Object readProperty(Object target,
+            @Cached CommonReadPropertyNode commonReadPropertyNode) {
+        return commonReadPropertyNode.executeReadProperty(target, this.getPropertyName());
+    }
 }
 ```
 
 Indexed property access,
 implemented by the `ArrayIndexReadExprNode` class,
-also uses the new `ObjectPropertyReadNode` class
+also uses the new `CommonReadPropertyNode` class
 (in addition to handling integer array indexes),
 but with one small twist: it needs to convert `TruffleString`s,
 which the index expression can resolve to in code like `a['propName']`,
-into a Java `String`, which is what `ObjectPropertyReadNode` expects.
+into a Java `String`, which is what `CommonReadPropertyNode` expects.
 We use the [`TruffleString.ToJavaStringNode` class](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/strings/TruffleString.ToJavaStringNode.html)
 for that purpose:
 
@@ -884,22 +884,22 @@ public abstract class ArrayIndexReadExprNode extends EasyScriptExprNode {
     @Specialization
     protected Object readTruffleStringPropertyOfObject(Object target, TruffleString propertyName,
             @Cached TruffleString.ToJavaStringNode toJavaStringNode,
-            @Cached ObjectPropertyReadNode objectPropertyReadNode) {
-        return objectPropertyReadNode.executePropertyRead(target,
+            @Cached CommonReadPropertyNode commonReadPropertyNode) {
+        return commonReadPropertyNode.executeReadProperty(target,
                 toJavaStringNode.execute(propertyName));
     }
 
     @Fallback
     protected Object readNonTruffleStringPropertyOfObject(Object target, Object index,
-            @Cached ObjectPropertyReadNode objectPropertyReadNode) {
-        return objectPropertyReadNode.executePropertyRead(target, index);
+            @Cached CommonReadPropertyNode commonReadPropertyNode) {
+        return commonReadPropertyNode.executeReadProperty(target, index);
     }
 }
 ```
 
 That last specialization is needed,
 because we want to pass all non-string properties,
-like integers, directly to `ObjectPropertyReadNode` --
+like integers, directly to `CommonReadPropertyNode` --
 to make sure all operations (for example, indexing `TruffleString`s with integers)
 are handled correctly.
 
@@ -1030,8 +1030,8 @@ public abstract class ArrayIndexReadExprNode extends EasyScriptExprNode {
             @Cached("propertyName") TruffleString cachedPropertyName,
             @Cached TruffleString.ToJavaStringNode toJavaStringNode,
             @Cached("toJavaStringNode.execute(cachedPropertyName)") String javaStringPropertyName,
-            @Cached ObjectPropertyReadNode objectPropertyReadNode) {
-        return objectPropertyReadNode.executePropertyRead(target, javaStringPropertyName);
+            @Cached CommonReadPropertyNode commonReadPropertyNode) {
+        return commonReadPropertyNode.executeReadProperty(target, javaStringPropertyName);
     }
 
     // ...
@@ -1053,8 +1053,8 @@ public abstract class ArrayIndexReadExprNode extends EasyScriptExprNode {
     protected Object readTruffleStringPropertyOfObjectUncached(
             Object target, TruffleString propertyName,
             @Cached TruffleString.ToJavaStringNode toJavaStringNode,
-            @Cached ObjectPropertyReadNode objectPropertyReadNode) {
-        return objectPropertyReadNode.executePropertyRead(target,
+            @Cached CommonReadPropertyNode commonReadPropertyNode) {
+        return commonReadPropertyNode.executeReadProperty(target,
                 toJavaStringNode.execute(propertyName));
     }
 
@@ -1070,10 +1070,10 @@ Re-running the benchmark with these changes yields:
 
 ```shell-session
 Benchmark                                                  Mode  Cnt       Score      Error  Units
-StringLengthBenchmark.count_while_char_at_direct_prop_ezs  avgt    5     577.467 ±   11.463  us/op
-StringLengthBenchmark.count_while_char_at_direct_prop_js   avgt    5     582.202 ±   22.043  us/op
-StringLengthBenchmark.count_while_char_at_index_prop_ezs   avgt    5     575.608 ±   13.571  us/op
-StringLengthBenchmark.count_while_char_at_index_prop_js    avgt    5  126432.537 ± 5631.640  us/op
+StringLengthBenchmark.count_while_char_at_direct_prop_ezs  avgt    5     576.093 ±    5.992  us/op
+StringLengthBenchmark.count_while_char_at_direct_prop_js   avgt    5     576.772 ±    3.865  us/op
+StringLengthBenchmark.count_while_char_at_index_prop_ezs   avgt    5     576.813 ±    7.087  us/op
+StringLengthBenchmark.count_while_char_at_index_prop_js    avgt    5  112404.250 ± 1012.309  us/op
 ```
 
 So, using caching, we've managed to make the performance of the indexed property access benchmark identical to the direct property access one --
