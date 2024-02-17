@@ -172,7 +172,7 @@ public class FibonacciBenchmark extends TruffleBenchmark {
     private static final String FIBONACCI_JS_PROGRAM = FIBONACCI_JS_FUNCTION + "fib(20);";
 
     @Benchmark
-    public int recursive_ezs_eval() {
+    public int recursive_eval_ezs() {
         return this.truffleContext.eval("ezs", FIBONACCI_JS_PROGRAM).asInt();
     }
 ```
@@ -298,10 +298,10 @@ on my laptop, I get the following results:
 
 ```shell-session
 Benchmark                              Mode  Cnt     Score     Error  Units
-FibonacciBenchmark.recursive_ezs_eval  avgt    5  6028.256 ± 421.844  us/op
+FibonacciBenchmark.recursive_eval_ezs  avgt    5  6028.256 ± 421.844  us/op
+FibonacciBenchmark.recursive_eval_js   avgt    5    78.143 ±   3.453  us/op
+FibonacciBenchmark.recursive_eval_sl   avgt    5    55.662 ±   3.395  us/op
 FibonacciBenchmark.recursive_java      avgt    5    38.383 ±   1.046  us/op
-FibonacciBenchmark.recursive_js_eval   avgt    5    78.143 ±   3.453  us/op
-FibonacciBenchmark.recursive_sl_eval   avgt    5    55.662 ±   3.395  us/op
 ```
 
 This is fascinating -- our EasyScript interpreter is almost 200 times slower than Java!
@@ -339,7 +339,7 @@ suddenly we get a 3x speedup in our benchmark:
 
 ```shell-session
 Benchmark                              Mode  Cnt     Score     Error  Units
-FibonacciBenchmark.recursive_ezs_eval  avgt    5  2135.922 ± 144.021  us/op
+FibonacciBenchmark.recursive_eval_ezs  avgt    5  2135.922 ± 144.021  us/op
 ```
 
 This is very surprising, as we don't expect to see any difference in performance between the two programs!
@@ -391,7 +391,7 @@ but don't perform redundant assignments:
 We get the same performance for the block program as for the program without the block:
 
 ```shell-session
-FibonacciBenchmark.recursive_ezs_eval  avgt    5  2163.692 ± 82.852  us/op
+FibonacciBenchmark.recursive_eval_ezs  avgt    5  2163.692 ± 82.852  us/op
 ```
 
 So, it seems like our above hypothesis about Graal generating sub-optimal code was indeed correct,
@@ -425,7 +425,7 @@ you can add the appropriate JVM arguments in the benchmark configuration:
             "-Dgraal.PrintGraph=Network"
     })
     @Benchmark
-    public int recursive_ezs_eval() {
+    public int recursive_eval_ezs() {
         return this.truffleContext.eval("ezs", FIBONACCI_JS_PROGRAM).asInt();
     }
 ```
@@ -713,20 +713,20 @@ If we re-run the benchmark, we get the following results:
 
 ```shell-session
 Benchmark                              Mode  Cnt    Score   Error  Units
-FibonacciBenchmark.recursive_ezs_eval  avgt    5  102.190 ± 1.099  us/op
+FibonacciBenchmark.recursive_eval_ezs  avgt    5  102.190 ± 1.099  us/op
 ```
 
 So, we went from 6 000 microseconds per invocation to 100,
 with just a few minor code changes!
 
-If we check the graph produced by the `recursive_ezs_eval`
+If we check the graph produced by the `recursive_eval_ezs`
 benchmark now in Ideal Graph Visualizer, we'll get:
 
 ![](/img/truffle/igv/ezs-fib-graph-improved.png)
 
 As we can see, the leaves for recursive calls to the `fib`
 function itself are now represented as `OptimizedDirectCallNode`s,
-instead of the slow `OptimizedIndirectCallNode`s as before.
+instead of the slow `OptimizedIndirectCallNode`s we had there before.
 
 ## Summary
 
