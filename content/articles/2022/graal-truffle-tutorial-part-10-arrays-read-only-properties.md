@@ -293,7 +293,8 @@ we use the `@CachedLibrary` annotation.
 Using it requires us to place a limit on the number of times a specialization can be instantiated,
 in order to not leak memory with too many cached objects
 (libraries are relatively heavyweight objects).
-It's a good practice to always set that limit to `2`,
+It's a good practice to always set that limit to `2`
+when using `@CachedLibrary` in a `@Specialization` method,
 as setting it to `1` sometimes has an adverse impact on performance,
 for reasons that I don't fully understand
 (hopefully, this serves as even more proof that you should always benchmark your interpreter's performance --
