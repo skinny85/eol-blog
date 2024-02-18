@@ -439,7 +439,8 @@ which we name `self`:
 ```java
 public abstract class CharAtMethodBodyExprNode extends BuiltInFunctionBodyExprNode {
     @Specialization
-    protected TruffleString charAtInt(TruffleString self, int index,
+    protected TruffleString charAtInt(
+            TruffleString self, int index,
             @Cached @Shared("lengthNode") TruffleString.CodePointLengthNode lengthNode,
             @Cached @Shared("substringNode") TruffleString.SubstringNode substringNode) {
         return index < 0 || index >= EasyScriptTruffleStrings.length(self, lengthNode)
@@ -448,8 +449,8 @@ public abstract class CharAtMethodBodyExprNode extends BuiltInFunctionBodyExprNo
     }
 
     @Fallback
-    protected TruffleString charAtNonInt(Object self,
-            @SuppressWarnings("unused") Object nonIntIndex,
+    protected TruffleString charAtNonInt(
+            Object self, Object nonIntIndex,
             @Cached @Shared("lengthNode") TruffleString.CodePointLengthNode lengthNode,
             @Cached @Shared("substringNode") TruffleString.SubstringNode substringNode) {
         // we know that 'self' is for sure a TruffleString
@@ -632,8 +633,7 @@ public abstract class ReadTruffleStringPropertyNode extends EasyScriptNode {
 
     @Specialization(guards = "LENGTH_PROP.equals(propertyName)")
     protected int readLengthProperty(
-            TruffleString truffleString,
-            @SuppressWarnings("unused") String propertyName,
+            TruffleString truffleString, String propertyName,
             @Cached TruffleString.CodePointLengthNode lengthNode) {
         return EasyScriptTruffleStrings.length(truffleString, lengthNode);
     }
@@ -662,8 +662,7 @@ public abstract class ReadTruffleStringPropertyNode extends EasyScriptNode {
             "same(charAtMethod.methodTarget, truffleString)"
     })
     protected FunctionObject readCharAtPropertyCached(
-            @SuppressWarnings("unused") TruffleString truffleString,
-            @SuppressWarnings("unused") String propertyName,
+            TruffleString truffleString, String propertyName,
             @Cached("createCharAtMethodObject(truffleString)") FunctionObject charAtMethod) {
         return charAtMethod;
     }
@@ -706,12 +705,11 @@ we need to switch to a specialization that doesn't use caching:
 ```java
 public abstract class ReadTruffleStringPropertyNode extends EasyScriptNode {
     // ...
-    
+
     @Specialization(guards = "CHAR_AT_PROP.equals(propertyName)",
             replaces = "readCharAtPropertyCached")
     protected FunctionObject readCharAtPropertyUncached(
-            TruffleString truffleString,
-            @SuppressWarnings("unused") String propertyName) {
+            TruffleString truffleString, String propertyName) {
         return createCharAtMethodObject(truffleString);
     }
 
@@ -747,8 +745,7 @@ public abstract class ReadTruffleStringPropertyNode extends EasyScriptNode {
 
     @Fallback
     protected Undefined readUnknownProperty(
-            @SuppressWarnings("unused") TruffleString truffleString,
-            @SuppressWarnings("unused") Object property) {
+            TruffleString truffleString, Object property) {
         return Undefined.INSTANCE;
     }
 }
@@ -816,7 +813,8 @@ public abstract class CommonReadPropertyNode extends Node {
     // ...
 
     @Specialization(guards = "interopLibrary.hasMembers(target)", limit = "2")
-    protected Object readProperty(Object target, String propertyName,
+    protected Object readProperty(
+            Object target, String propertyName,
             @CachedLibrary("target") InteropLibrary interopLibrary) {
         try {
             return interopLibrary.readMember(target, propertyName);
@@ -828,14 +826,15 @@ public abstract class CommonReadPropertyNode extends Node {
     }
 
     @Specialization(guards = "interopLibrary.isNull(target)", limit = "2")
-    protected Object readPropertyOfUndefined(@SuppressWarnings("unused") Object target, Object property,
-            @CachedLibrary("target") @SuppressWarnings("unused") InteropLibrary interopLibrary) {
+    protected Object readPropertyOfUndefined(
+            Object target, Object property,
+            @CachedLibrary("target") InteropLibrary interopLibrary) {
         throw new EasyScriptException("Cannot read properties of undefined (reading '" + property + "')");
     }
 
     @Fallback
-    protected Object readPropertyOfNonUndefinedWithoutMembers(@SuppressWarnings("unused") Object target,
-            @SuppressWarnings("unused") Object property) {
+    protected Object readPropertyOfNonUndefinedWithoutMembers(
+            Object target, Object property) {
         return Undefined.INSTANCE;
     }
 }

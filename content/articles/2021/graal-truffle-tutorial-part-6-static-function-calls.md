@@ -343,24 +343,21 @@ public abstract class FunctionDispatchNode extends Node {
 
     @Specialization(guards = "function.callTarget == directCallNode.getCallTarget()", limit = "2")
     protected static Object dispatchDirectly(
-            @SuppressWarnings("unused") FunctionObject function,
-            Object[] arguments,
+            FunctionObject function, Object[] arguments,
             @Cached("create(function.callTarget)") DirectCallNode directCallNode) {
         return directCallNode.call(arguments);
     }
 
     @Specialization(replaces = "dispatchDirectly")
     protected static Object dispatchIndirectly(
-            FunctionObject function,
-            Object[] arguments,
+            FunctionObject function, Object[] arguments,
             @Cached IndirectCallNode indirectCallNode) {
         return indirectCallNode.call(function.callTarget, arguments);
     }
 
     @Fallback
     protected static Object targetIsNotAFunction(
-            Object nonFunction,
-            @SuppressWarnings("unused") Object[] arguments) {
+            Object nonFunction, Object[] arguments) {
         throw new EasyScriptException("'" + nonFunction + "' is not a function");
     }
 }
