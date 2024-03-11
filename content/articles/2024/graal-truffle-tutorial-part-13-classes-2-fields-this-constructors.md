@@ -34,10 +34,10 @@ In order to support saving data to fields,
 we need to add property write expressions to the grammar:
 
 ```shell-session
-expr1 : ID '=' expr1                                       #AssignmentExpr1
-      | object=expr5 '.' ID '=' rvalue=expr1               #PropertyWriteExpr1   // new
-      | arr=expr5 '[' index=expr1 ']' '=' rvalue=expr1     #ArrayIndexWriteExpr1
-      | expr2                                              #PrecedenceTwoExpr1
+expr1 : ID '=' expr1                                   #AssignmentExpr1
+      | object=expr5 '.' ID '=' rvalue=expr1           #PropertyWriteExpr1   // new
+      | arr=expr5 '[' index=expr1 ']' '=' rvalue=expr1 #ArrayIndexWriteExpr1
+      | expr2                                          #PrecedenceTwoExpr1
       ;
 ```
 
@@ -311,12 +311,12 @@ and that's accomplished with the `this` keyword expression:
 
 ```shell-session
 ...
-expr6 : literal                                            #LiteralExpr6
-      | 'this'                                             #ThisExpr6         // new
-      | ID                                                 #ReferenceExpr6
-      | '[' (expr1 (',' expr1)*)? ']'                      #ArrayLiteralExpr6
-      | 'new' constr=expr6 ('('(expr1 (',' expr1)*)?')')?  #NewExpr6
-      | '(' expr1 ')'                                      #PrecedenceOneExpr6
+expr6 : literal                                           #LiteralExpr6
+      | 'this'                                            #ThisExpr6         // new
+      | ID                                                #ReferenceExpr6
+      | '[' (expr1 (',' expr1)*)? ']'                     #ArrayLiteralExpr6
+      | 'new' constr=expr6 ('('(expr1 (',' expr1)*)?')')? #NewExpr6
+      | '(' expr1 ')'                                     #PrecedenceOneExpr6
       ;
 ...
 ```
@@ -559,7 +559,7 @@ public class JavaScriptObject extends DynamicObject {
 
 The capability to perform writes means we need to change the logic of reads.
 Instead of always delegating to the prototype, like we did in the
-[previous part](http://localhost:8080/graal-truffle-tutorial-part-12-classes-1-methods-new#class-instances),
+[previous part](/graal-truffle-tutorial-part-12-classes-1-methods-new#class-instances),
 we now need to first check if the given property is available on the object itself --
 if it is, it shadows the one from the prototype:
 
