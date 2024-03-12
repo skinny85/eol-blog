@@ -59,7 +59,8 @@ public abstract class PropertyWriteExprNode extends EasyScriptExprNode {
     protected abstract String getPropertyName();
 
     @Specialization
-    protected Object writeProperty(Object target, Object rvalue,
+    protected Object writeProperty(
+            Object target, Object rvalue,
             @Cached CommonWritePropertyNode commonWritePropertyNode) {
         return commonWritePropertyNode.executeWriteProperty(target, this.getPropertyName(), rvalue);
     }
@@ -80,7 +81,8 @@ where we cache the Java strings converted from `TruffleString`s for the first tw
 @ImportStatic(EasyScriptTruffleStrings.class)
 public abstract class ArrayIndexWriteExprNode extends EasyScriptExprNode {
     @Specialization(guards = "arrayInteropLibrary.isArrayElementWritable(array, index)", limit = "2")
-    protected Object writeIntIndexOfArray(Object array, int index, Object rvalue,
+    protected Object writeIntIndexOfArray(
+            Object array, int index, Object rvalue,
             @CachedLibrary("array") InteropLibrary arrayInteropLibrary) {
         try {
             arrayInteropLibrary.writeArrayElement(array, index, rvalue);
@@ -91,7 +93,8 @@ public abstract class ArrayIndexWriteExprNode extends EasyScriptExprNode {
     }
 
     @Specialization(guards = "equals(propertyName, cachedPropertyName, equalNode)", limit = "2")
-    protected Object writeTruffleStringPropertyCached(Object target, TruffleString propertyName, Object rvalue,
+    protected Object writeTruffleStringPropertyCached(
+            Object target, TruffleString propertyName, Object rvalue,
             @Cached("propertyName") TruffleString cachedPropertyName,
             @Cached TruffleString.EqualNode equalNode,
             @Cached TruffleString.ToJavaStringNode toJavaStringNode,
@@ -102,7 +105,8 @@ public abstract class ArrayIndexWriteExprNode extends EasyScriptExprNode {
     }
 
     @Specialization(replaces = "writeTruffleStringPropertyCached", limit = "2")
-    protected Object writeTruffleStringPropertyUncached(Object target, TruffleString propertyName, Object rvalue,
+    protected Object writeTruffleStringPropertyUncached(
+            Object target, TruffleString propertyName, Object rvalue,
             @Cached TruffleString.ToJavaStringNode toJavaStringNode,
             @Cached CommonWritePropertyNode commonWritePropertyNode) {
         return commonWritePropertyNode.executeWriteProperty(target,
@@ -110,7 +114,8 @@ public abstract class ArrayIndexWriteExprNode extends EasyScriptExprNode {
     }
 
     @Fallback
-    protected Object writeNonStringProperty(Object target, Object property, Object rvalue,
+    protected Object writeNonStringProperty(
+            Object target, Object property, Object rvalue,
             @Cached CommonWritePropertyNode commonWritePropertyNode) {
         return commonWritePropertyNode.executeWriteProperty(target,
                 EasyScriptTruffleStrings.toString(property), rvalue);
@@ -231,7 +236,8 @@ public final class ArrayObject extends JavaScriptObject {
 
     private Object[] arrayElements;
 
-    public ArrayObject(Shape arrayShape, ClassPrototypeObject arrayPrototype, Object[] arrayElements) {
+    public ArrayObject(Shape arrayShape, ClassPrototypeObject arrayPrototype,
+            Object[] arrayElements) {
         super(arrayShape, arrayPrototype);
         this.setArrayElements(arrayElements, DynamicObjectLibrary.getUncached());
     }
@@ -262,7 +268,8 @@ public final class ArrayObject extends JavaScriptObject {
     }
 
     @ExportMessage
-    void writeArrayElement(long index, Object value,
+    void writeArrayElement(
+            long index, Object value,
             @CachedLibrary("this") DynamicObjectLibrary objectLibrary) {
         if (!this.isArrayElementModifiable(index)) {
             // in JavaScript, it's legal to write past the array size
@@ -281,14 +288,16 @@ public final class ArrayObject extends JavaScriptObject {
         this.setArrayElements(newArrayElements, objectLibrary);
     }
 
-    private void setArrayElements(Object[] arrayElements, DynamicObjectLibrary objectLibrary) {
+    private void setArrayElements(Object[] arrayElements,
+            DynamicObjectLibrary objectLibrary) {
         this.arrayElements = arrayElements;
         this.writeMember(LENGTH_PROP, arrayElements.length, objectLibrary);
     }
 
     // annotation needed here, because the name of the method is the same as the name of the message
     @ExportMessage.Ignore
-    private void writeMember(String member, Object value,
+    private void writeMember(
+            String member, Object value,
             @CachedLibrary("this") DynamicObjectLibrary dynamicObjectLibrary) {
         dynamicObjectLibrary.put(this, member, value);
     }
@@ -412,7 +421,8 @@ public final class EasyScriptLanguageContext {
     public final DynamicObject globalScopeObject;
     public final ShapesAndPrototypes shapesAndPrototypes;
 
-    public EasyScriptLanguageContext(DynamicObject globalScopeObject, ShapesAndPrototypes shapesAndPrototypes) {
+    public EasyScriptLanguageContext(DynamicObject globalScopeObject,
+            ShapesAndPrototypes shapesAndPrototypes) {
         this.globalScopeObject = globalScopeObject;
         this.shapesAndPrototypes = shapesAndPrototypes;
     }
@@ -428,7 +438,8 @@ public final class EasyScriptTruffleLanguage extends TruffleLanguage<EasyScriptL
 
     private final Shape rootShape = Shape.newBuilder().build();
 
-    private final ClassPrototypeObject functionPrototype = new ClassPrototypeObject(this.rootShape, "Function");
+    private final ClassPrototypeObject functionPrototype =
+            new ClassPrototypeObject(this.rootShape, "Function");
 
     @Override
     protected EasyScriptLanguageContext createContext(Env env) {
@@ -1100,7 +1111,8 @@ public abstract class NewExprNode extends EasyScriptExprNode {
     }
 
     @Specialization(limit = "2")
-    protected Object instantiateObject(VirtualFrame frame, ClassPrototypeObject classPrototypeObject,
+    protected Object instantiateObject(
+            VirtualFrame frame, ClassPrototypeObject classPrototypeObject,
             @CachedLibrary("classPrototypeObject") DynamicObjectLibrary dynamicObjectLibrary) {
         var object = new JavaScriptObject(this.currentLanguageContext().shapesAndPrototypes.rootShape, classPrototypeObject);
         var constructor = dynamicObjectLibrary.getOrDefault(classPrototypeObject, "constructor", null);
