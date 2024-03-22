@@ -1288,7 +1288,7 @@ both in the GraalVM JavaScript implementation, and in EasyScript.
 So, this is how fields and constructors can be implemented in Truffle.
 
 As usual, all the code from the article
-[as available on GitHub](https://github.com/skinny85/graalvm-truffle-tutorial/tree/master/part-13).
+[is available on GitHub](https://github.com/skinny85/graalvm-truffle-tutorial/tree/master/part-13).
 
 In the next part of the tutorial,
 we will conclude our miniseries about classes by discussing inheritance.
