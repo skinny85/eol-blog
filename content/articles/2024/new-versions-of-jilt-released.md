@@ -13,14 +13,14 @@ my Java library for generating Builder pattern classes,
 in an [article on this blog](/type-safe-builder-pattern-in-java-and-the-jilt-library) back in 2017.
 And while it has been downloaded thousands of times since then,
 it has received only minor updates during that time,
-like [making it work with Java 9 and later](https://github.com/skinny85/jilt/issues/6).
+like [making it work with Java 9+](https://github.com/skinny85/jilt/issues/6).
 The last release containing any  functional changes
 [happened in 2018](/jilt-1_1-released) -- six years ago.
 
 However, a [recent Tweet](https://twitter.com/maciejwalkowiak/status/1743214197440221356)
 from [Maciej Walkowiak](https://maciejwalkowiak.com),
 of [Spring Cloud](https://spring.io/projects/spring-cloud) fame,
-and the resulting activity around it,
+and the subsequent activity around it,
 has resulted in a surge of interest in Jilt,
 and a few issues raised by its new customers.
 Given the uptick in activity,
@@ -60,7 +60,8 @@ in the setup code --
 all the code generation logic works the same way for records as it does for classes,
 so no changes were needed to be made there.
 
-Thanks to [Maciej Walkowiak](https://maciejwalkowiak.com) for reporting this issue.
+Thanks to [Maciej Walkowiak](https://maciejwalkowiak.com) for
+[reporting this issue](https://github.com/skinny85/jilt/issues/9).
 
 (Technically speaking, this change was included in the previous release,
 `1.3`, but since it was the only change in that version,
@@ -78,7 +79,7 @@ I figured it's better to be consistent with the widely-adopter nomenclature,
 and so I've added a new constant to the `BuilderStyle` enum, called `STAGED`.
 
 In addition, I also took this opportunity to clarify the advantages of the `TYPE_SAFE_UNGROUPED_OPTIONALS` style.
-I think I didn't do a good-enough job explaining under which circumstances you would use it over `STAGED`,
+I think I didn't do a good enough job explaining under which circumstances you would use it over `STAGED`,
 and the name I've originally chosen for it did not help with that.
 So, I've also added a new value to the `BuilderStyle` enum with the name `STAGED_PRESERVING_ORDER`
 as a replacement for `TYPE_SAFE_UNGROUPED_OPTIONALS`,
@@ -147,7 +148,7 @@ public class WrapperBuilder<T> {
 
 Interestingly, this issue also surfaced a bug in
 [JavaPoet](https://github.com/square/javapoet),
-a library Jilt depends on for code generation.
+the library Jilt depends on for code generation.
 When generating a Staged Builder for a class with type parameters,
 there's an edge case where the return type in the method declaration
 of the interfaces generated for making sure the given required property has been set
@@ -194,7 +195,7 @@ public interface PairBuilders {
 ```
 
 The issue here is that the `Second` in the return type of the `first()`
-method in the `First` interface refers here to the type parameter,
+method in the `First` interface refers to the type parameter,
 which shadows the next interface in the chain.
 The correct thing here would be to qualify the type name with the name of the enclosing interface,
 so JavaPoet should generate the return type as `PairBuilders.Second`.
@@ -207,28 +208,28 @@ for reporting and commenting on the issue.
 ## `@Nullable` annotation should make properties optional
 
 A recent trend that's gaining popularity in the Java ecosystem is using annotations to denote whether a given variable,
-field or parameter can be `null` or not.
+field or parameter is permitted to be `null`.
 Some people like to use the `Optional` type,
 introduced in [Java 8](https://docs.oracle.com/javase/8/docs/api/java/util/Optional.html),
 for that purpose,
-but the problem is that an `Optional` instance can still be `null` itself,
-and the Java maintainers like Brian Goetz have clearly said that
-[this is not the idiomatic way to use that type](https://www.reddit.com/r/java/comments/13rv1t2/why_exactly_does_brian_goetz_not_recommend_the).
+but the problem with doing that is the fact that an `Optional` instance can still be `null` itself,
+and additionally, Java maintainers like Brian Goetz have clearly said that
+[this is not the intended way to use that type](https://www.reddit.com/r/java/comments/13rv1t2/why_exactly_does_brian_goetz_not_recommend_the).
 
 Typically, you would use the annotation `@Nullable` to denote that a given value can be `null`,
 and the annotation `@NonNull` (or `@NotNull`) that it cannot be `null`
-(many people also follow the convention that not specifying any annotation implies the value cannot be `null`,
-which saves you _a lot_ of typing).
-This allows IDEs and build tools to emit warnings or errors when violating the annotation-based rules
+(many projects also follow the convention that not specifying any annotation implies the value cannot be `null`,
+which makes the code significantly less verbose).
+This allows IDEs and build tools to emit warnings or errors when violating these annotation-based rules
 (for example, passing the result of a method with the return type annotated as `@Nullable`
 into a parameter annotated with `@NonNull`).
 
 This is relevant for Jilt, since `null` is the default value for optional properties of reference types
-if a value has not been provided for them before constructing the instance of the target class.
+if a value has not been provided for them before constructing an instance of the target class.
 So, if a given field or property is marked as `@Nullable`, it's natural to treat it as an optional property.
 However, before the `1.4` release, Jilt had no awareness of `@Nullable` annotations,
 and thus you always had to add the `@Opt` annotation explicitly in order to make the property optional,
-which could get tedious if a class has many properties.
+which could get tedious if a class had many properties.
 
 In `1.4`, I've decided to change this behavior, and now any property generated from a field or
 constructor/static method parameter annotated with `@Nullable` is automatically considered optional,
@@ -236,10 +237,14 @@ without having to explicitly add the `@Opt` annotation to it.
 
 The tricky part about this is that there is not a single set of these annotations that are widely considered standard in the Java community.
 Instead, the situation is more similar to logging, where you have multiple competing alternatives,
-like [SLF4J](https://www.slf4j.org), or [Log4J2](https://logging.apache.org/log4j/2.x).
+like [SLF4J](https://www.slf4j.org),
+[Log4J2](https://logging.apache.org/log4j/2.x),
+and others.
 In the case of `null`-permitting annotations, you have [JSR-305](https://jcp.org/en/jsr/detail?id=305),
 [JetBrains annotations](https://www.jetbrains.com/help/idea/annotating-source-code.html),
-[and `jspecify`](https://jspecify.dev).
+[and `jspecify`](https://jspecify.dev),
+just to mention a few.
+
 However, in a stroke of luck, all of them use the same name, `@Nullable`,
 for the `null`-permitting annotation.
 So, in Jilt, we simply respect any annotation with the name `Nullable`,
@@ -250,7 +255,8 @@ and Jilt would recognize it, and automatically make the property annotated with 
 In addition to making the property optional, Jilt also propagates the `@Nullable` annotation to the generated setter
 methods for that property, to make sure the IDEs and build tools don't report false positives when passing values to them.
 
-Thanks (again) to [Maciej Walkowiak](https://maciejwalkowiak.com) for reporting this issue.
+Thanks (again) to [Maciej Walkowiak](https://maciejwalkowiak.com) for
+[reporting the issue](https://github.com/skinny85/jilt/issues/11).
 
 ## Summary
 
