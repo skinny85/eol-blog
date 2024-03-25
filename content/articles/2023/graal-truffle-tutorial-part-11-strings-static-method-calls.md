@@ -1023,7 +1023,7 @@ public abstract class ArrayIndexReadExprNode extends EasyScriptExprNode {
     // ...
 
     @Specialization(guards = "equals(propertyName, cachedPropertyName, equalNode)", limit = "2")
-    protected Object readTruffleStringPropertyOfObjectCached(
+    protected Object readTruffleStringPropertyCached(
             Object target, TruffleString propertyName,
             @Cached TruffleString.EqualNode equalNode,
             @Cached("propertyName") TruffleString cachedPropertyName,
@@ -1048,8 +1048,8 @@ If we see more names than that, then we'll switch to the uncached variant:
 public abstract class ArrayIndexReadExprNode extends EasyScriptExprNode {
     // ...
 
-    @Specialization(replaces = "readTruffleStringPropertyOfObjectCached")
-    protected Object readTruffleStringPropertyOfObjectUncached(
+    @Specialization(replaces = "readTruffleStringPropertyCached")
+    protected Object readTruffleStringPropertyUncached(
             Object target, TruffleString propertyName,
             @Cached TruffleString.ToJavaStringNode toJavaStringNode,
             @Cached CommonReadPropertyNode commonReadPropertyNode) {
