@@ -787,7 +787,7 @@ That in turn requires implementing a few other messages:
   for which we just return `true`,
 * [`isMemberReadable(String member)`](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/interop/InteropLibrary.html#isMemberReadable-java.lang.Object-java.lang.String-)
   for which we return `true` if a variable with the provided name exists,
-* [`readMember(String member)`](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/interop/InteropLibrary.html#readMember-java.lang.Object-java.lang.String-)
+* [`readMember(String member)`](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/interop/InteropLibrary.html#readMember(java.lang.Object,java.lang.String%29)
   for which we just return the value of the variable
   (and throw `UnknownIdentifierException` if it doesn't exist),
 * [`toDisplayString()`](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/interop/InteropLibrary.html#toDisplayString-java.lang.Object-boolean-)

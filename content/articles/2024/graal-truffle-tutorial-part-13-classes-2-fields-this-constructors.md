@@ -588,10 +588,10 @@ public class JavaScriptObject extends DynamicObject {
 
     @ExportMessage
     Object readMember(String member,
-            @CachedLibrary("this") DynamicObjectLibrary thisObjectLibrary,
+            @CachedLibrary("this") DynamicObjectLibrary instanceObjectLibrary,
             @CachedLibrary("this.classPrototypeObject") DynamicObjectLibrary prototypeObjectLibrary)
             throws UnknownIdentifierException {
-        Object value = thisObjectLibrary.getOrDefault(this, member, null);
+        Object value = instanceObjectLibrary.getOrDefault(this, member, null);
         if (value == null) {
             value = prototypeObjectLibrary.getOrDefault(this.classPrototypeObject, member, null);
         }
@@ -1290,5 +1290,6 @@ So, this is how fields and constructors can be implemented in Truffle.
 As usual, all the code from the article
 [is available on GitHub](https://github.com/skinny85/graalvm-truffle-tutorial/tree/master/part-13).
 
-In the next part of the tutorial,
+In the
+[next part of the tutorial](/graal-truffle-tutorial-part-14-classes-3-inheritance-super),
 we will conclude our miniseries about classes by discussing inheritance.
