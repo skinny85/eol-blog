@@ -32,7 +32,10 @@ This is useful to create a copy of the target instance with only a few propertie
 without having to make the class itself mutable with setters, for example:
 
 ```java
-Person person = new Person(/* ... */);
+Person person = PersonBuilder.person()
+        .name("Jack")
+        // other properties...
+        .build();
 Person copiedPerson = person.toBuilder()
     .name("John") // example of changing a single property when copying the instance
     .build();
@@ -48,24 +51,40 @@ which I don't want Jilt to replicate,
 and so it cannot add the `toBuilder()` method to the target class.
 
 However, we can employ a simple trick to get around this limitation.
-We can inverse the control flow: instead of making the instance method return a Builder,
+We can invert the control flow: instead of making the instance method return a Builder,
 we can pass that instance to a static factory method of the Builder:
 
 ```java
-Person person = new Person(/* ... */);
+Person person = PersonBuilder.person()
+        .name("Jack")
+        // other properties...
+        .build();
 Person copiedPerson = PersonBuilder.toBuilder(person)
     .name("John")
     .build();
 ```
 
-In version `1.5.` of Jilt, that method will be generated when the new `toBuilder`
+And with that, you can always implement `toBuilder()`
+yourself in your target class:
+
+```java
+public final class Person {
+    // ...
+   
+   PersonBuilder toBuilder() {
+       return PersonBuilder.toBuilder(this);
+   }
+}
+```
+
+In version `1.5.` of Jilt, the static method will be generated on the Builder class when the new `toBuilder`
 attribute of the `@Builder` annotation is set.
 That attribute allows you to control the name of that generated method.
 For the `Person` example above, it would look something like:
 
 ```java
 @Builder(toBuilder = "toBuilder")
-public class Person {
+public final class Person {
     // ...
 }
 ```
