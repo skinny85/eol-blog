@@ -64,16 +64,16 @@ Person copiedPerson = PersonBuilder.toBuilder(person)
     .build();
 ```
 
-And with that, you can always implement `toBuilder()`
-yourself in your target class:
+And with that, you can always add a hand-written `toBuilder()`
+method to the target class that delegates to the static one:
 
 ```java
 public final class Person {
     // ...
-   
-   PersonBuilder toBuilder() {
-       return PersonBuilder.toBuilder(this);
-   }
+
+    PersonBuilder toBuilder() {
+        return PersonBuilder.toBuilder(this);
+    }
 }
 ```
 

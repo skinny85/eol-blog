@@ -82,7 +82,7 @@ There will be a static method for each property of the built class,
 with the same name as the property.
 The static method will take one argument,
 of the same type that the corresponding property has.
-The returned instance of nested interface will,
+The returned instance of the nested interface will,
 in its `accept` method, set that property on the instance passed to it to the value of the static method argument.
 
 Continuing our above example, it looks something like this:
@@ -333,11 +333,24 @@ FullName jfk = FullNameBuilder.fullName(
     middleName("F")
 );
 FullName rfk = FullNameBuilder.copy(jfk,
-    firstName("Robert"));
-
+    firstName("Robert")
+);
 // rfk.firstName == "Robert"
 // rfk.middleName == "F"
 // rfk.lastName == "Kennedy"
+```
+
+You can also add a hand-written `toBuilder` instance method to your target class,
+that delegates to the static one on the Builder:
+
+```java
+public final class FullName {
+    // ...
+
+    public FullName copy(FullNameBuilders.Setter... setters) {
+        return FullNameBuilder.copy(this, setters);
+    }
+}
 ```
 
 ## Other changes
