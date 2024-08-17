@@ -16,7 +16,8 @@ of the tutorial on GraalVM Truffle,
 we added the capability to store state inside class instances to EasyScript,
 our example programming language that is a simplified subset of JavaScript.
 
-In this part, we conclude the miniseries on classes by implementing inheritance,
+In this part, we conclude the miniseries on classes by implementing
+[inheritance](https://en.wikipedia.org/wiki/Inheritance_(object-oriented_programming%29),
 meaning the capability of a class to extend another class.
 In addition, we'll also add support for the `super` keyword,
 which allows referencing properties of the parent of the current class.
@@ -52,7 +53,7 @@ the algorithm implemented in the
 [previous part](/graal-truffle-tutorial-part-13-classes-2-fields-this-constructors)
 is as follows:
 
-1. Do the properties of `obj` itself contain `m`? If they do, return it.
+1. Do the properties of `obj` itself contain `m`? If they do, return its value.
 2. If they don't, search for `m` in the properties of the prototype of the class of `obj`, `C`.
    If it contains a property called `m`, return its value.
 3. If `m` was not found inside the prototype of `C`, return `undefined`.
@@ -85,7 +86,7 @@ obj.m();
 
 The algorithm of searching for `m` in `obj` is very similar:
 
-1. Do the properties of `obj` itself contain `m`? If they do, return it.
+1. Do the properties of `obj` itself contain `m`? If they do, return its value.
 2. If they don’t, search for `m` in the properties of the prototype of the class of `obj`, `C`.
    If it contains a property called `m`, return its value.
 3. If `m` was not found inside the prototype of `C`, does `C` have a parent class?
@@ -97,7 +98,7 @@ The algorithm of searching for `m` in `obj` is very similar:
 
 In most object-oriented languages, including JavaScript
 (C++ is a notable exception),
-there is a special, built-in class that is the root of the class hierarchy .
+there is a special, built-in class that is the root of the class hierarchy.
 It's typically called `Object`,
 and is the only class that doesn't have a superclass
 (if a class declaration omits the `extends` keyword,
@@ -326,9 +327,10 @@ public final class ObjectPrototype extends ClassPrototypeObject {
 }
 ```
 
-We implement the logic of chaining property reads by implementing the
+We implement the inheritance chain for property reads in the
 [`readMember()` message from `InteropLibrary`](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/interop/InteropLibrary.html#readMember(java.lang.Object,java.lang.String%29)
-to delegate to the prototype by calling its `readMember()` message:
+by calling the `readMember()`
+message on the prototype if the given property was not found on the object itself:
 
 ```java
 @ExportLibrary(InteropLibrary.class)
@@ -385,9 +387,13 @@ public class JavaScriptObject extends DynamicObject {
 }
 ```
 
-With this in place, we don't even have to change the logic of reading properties in `CommonReadPropertyNode`;
+This code covers both the case when `JavaScriptObject`
+represents a class instance, or when it represents a class prototype
+(except the `Object` prototype, of course, which we saw above in the `ObjectPrototype` class).
+
+With this code in place, we don't even have to change the logic of reading properties in `CommonReadPropertyNode`;
 since that Node already uses the `InteropLibrary.readMember()` message,
-so using it will correctly implement the property search algorithm we showed above.
+using it will correctly implement the inheritance property search algorithm we showed above.
 
 Note that in JavaScript, it's also possible to change the prototype of an object
 with the [`Object.setPrototype()` static method](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/setPrototypeOf),
@@ -403,7 +409,7 @@ which is different from languages like Java.
 
 Because of that, we need to change the logic of finding the constructor in `NewExprNode`
 to use the `InteropLibrary` instead of `DynamicObjectLibrary` to find the constructor,
-in case it's defined in a parent class:
+in case it's defined in an ancestor of the given class:
 
 ```java
 public abstract class NewExprNode extends EasyScriptExprNode {
