@@ -146,7 +146,7 @@ public final class EasyScriptTruffleStrings {
 
 The actual logic of writing a field in `CommonWritePropertyNode`
 is really simple -- we just use the
-[`writeMember` message from the `InteropLibrary`](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/interop/InteropLibrary.html#writeMember-java.lang.Object-java.lang.String-java.lang.Object-):
+[`writeMember` message from the `InteropLibrary`](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/interop/InteropLibrary.html#writeMember(java.lang.Object,java.lang.String,java.lang.Object%29):
 
 ```java
 public abstract class CommonWritePropertyNode extends Node {

@@ -758,8 +758,8 @@ this means implementing the `TruffleObject` marker interface,
 and overriding message from the
 [interop library](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/interop/InteropLibrary.html).
 In particular, in this case, we're interested in the
-[`isExecutable()`](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/interop/InteropLibrary.html#isExecutable-java.lang.Object-)
-and [`execute()` messages](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/interop/InteropLibrary.html#execute-java.lang.Object-java.lang.Object...-),
+[`isExecutable()`](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/interop/InteropLibrary.html#isExecutable(java.lang.Object%29)
+and [`execute()` messages](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/interop/InteropLibrary.html#execute(java.lang.Object,java.lang.Object...%29),
 so that our functions can be called from other languages.
 
 Here, the `FunctionDispatchNode` will be very helpful --

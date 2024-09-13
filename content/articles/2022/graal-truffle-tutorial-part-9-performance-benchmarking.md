@@ -200,7 +200,7 @@ so, for your benchmarks, you might consider splitting the definition from the in
 You can take out a function as a GraalVM polyglot `Value`
 from the language's global bindings,
 like we did in [part 5](/graal-truffle-tutorial-part-5-global-variables#surfacing-the-global-bindings),
-and use the [`Value.execute()` method](https://www.graalvm.org/sdk/javadoc/org/graalvm/polyglot/Value.html#execute-java.lang.Object...-)
+and use the [`Value.execute()` method](https://www.graalvm.org/sdk/javadoc/org/graalvm/polyglot/Value.html#execute(java.lang.Object...%29)
 to invoke it,
 or pass just the invocation code
 (so, `fib(20)` in our case)

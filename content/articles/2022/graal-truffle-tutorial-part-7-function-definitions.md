@@ -142,11 +142,11 @@ we will use a [Builder class](https://en.wikipedia.org/wiki/Builder_pattern)
 for `FrameDescriptor`s, the
 [`FrameDescriptor.Builder` class](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/frame/FrameDescriptor.Builder.html).
 You create instances of it by calling the
-[`newBuilder()` static factory method](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/frame/FrameDescriptor.html#newBuilder--)
+[`newBuilder()` static factory method](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/frame/FrameDescriptor.html#newBuilder(%29)
 of `FrameDescriptor`.
 
 You create slots in the frame descriptor by calling the
-[`addSlot()` method of `FrameDescriptor.Builder`](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/frame/FrameDescriptor.Builder.html#addSlot-com.oracle.truffle.api.frame.FrameSlotKind-java.lang.Object-java.lang.Object-),
+[`addSlot()` method of `FrameDescriptor.Builder`](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/frame/FrameDescriptor.Builder.html#addSlot(com.oracle.truffle.api.frame.FrameSlotKind,java.lang.Object,java.lang.Object%29),
 and you get back the integer number reserved for that slot.
 The important thing to know is that while retrieving and storing values inside the `VirtualFrame`
 is a fast operation that gets JIT-compiled into efficient machine code,
@@ -156,7 +156,7 @@ during static analysis, but only use the descriptor itself at runtime.
 
 Once the frame slots have been created in the `FrameDescriptor.Builder` instance,
 we call its
-[`build()` method](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/frame/FrameDescriptor.Builder.html#build--),
+[`build()` method](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/frame/FrameDescriptor.Builder.html#build(%29),
 which returns a `FrameDescriptor`.
 That `FrameDescriptor` instance is then passed to the `RootNode` Truffle class.
 When the `CallTarget` that wraps that `RootNode` is invoked,

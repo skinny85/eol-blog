@@ -662,7 +662,7 @@ so your implementations should skip the first argument compared to the library m
 The name of the method in the implementing class must match the name from the library,
 or you can use the `name` attribute of `@ExportMessage` to change it.
 For example, the
-[`isNull()` message](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/interop/InteropLibrary.html#isNull-java.lang.Object-)
+[`isNull()` message](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/interop/InteropLibrary.html#isNull(java.lang.Object%29)
 can be implemented by a method declared as `@ExportMessage boolean isNull()`,
 or by `@ExportMessage(name = "isNull") boolean representsNull()`.
 
@@ -671,10 +671,10 @@ It's common practice to make them package-private,
 to not pollute the public API of the class.
 
 In our `Undefined` class, we need to implement the
-[`isNull()` message](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/interop/InteropLibrary.html#isNull-java.lang.Object-),
+[`isNull()` message](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/interop/InteropLibrary.html#isNull(java.lang.Object%29),
 to return `true`.
 We also implement the
-[`toDisplayString()` message](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/interop/InteropLibrary.html#toDisplayString-java.lang.Object-boolean-),
+[`toDisplayString()` message](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/interop/InteropLibrary.html#toDisplayString(java.lang.Object,boolean%29),
 which is what the `Value` class that wraps our polyglot instance uses when `toString()` is called on it;
 we just return the `"undefined"` string from that method.
 
@@ -749,13 +749,13 @@ we can execute the program we set as our goal at the beginning of the article:
 
 However, there's one more thing we should do to make EasyScript a good citizen of the GraalVM polyglot ecosystem.
 The `Context` class allows retrieving the global variables of a given language with the
-[`getBindings(String languageId)` method](https://www.graalvm.org/truffle/javadoc/org/graalvm/polyglot/Context.html#getBindings-java.lang.String-).
+[`getBindings(String languageId)` method](https://www.graalvm.org/truffle/javadoc/org/graalvm/polyglot/Context.html#getBindings(java.lang.String%29).
 We should allow this capability for EasyScript as well;
 in order to do that,
 we have to add a few elements to our implementation.
 
 First of all, we need to override the
-[`getScope()` method](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/TruffleLanguage.html#getScope-C-) in our `TruffleLanguage` class.
+[`getScope()` method](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/TruffleLanguage.html#getScope(C%29) in our `TruffleLanguage` class.
 We need to return an object allowing access to the global variables from it,
 which is `GlobalScopeObject` in our case.
 Conveniently, the `getScope()` method receives the language context as its argument,
@@ -780,30 +780,30 @@ similarly like we did in the `Undefined` class.
 We start with implementing the `TruffleObject` marker interface.
 Because we return this object from the `getScope()` method in `TruffleLanguage`,
 the first message that we have to implement is the
-[`isScope()` message](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/interop/InteropLibrary.html#isScope-java.lang.Object-)
+[`isScope()` message](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/interop/InteropLibrary.html#isScope(java.lang.Object%29)
 to return `true`.
 That in turn requires implementing a few other messages:
-* [`hasMembers()`](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/interop/InteropLibrary.html#hasMembers-java.lang.Object-)
+* [`hasMembers()`](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/interop/InteropLibrary.html#hasMembers(java.lang.Object%29)
   for which we just return `true`,
-* [`isMemberReadable(String member)`](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/interop/InteropLibrary.html#isMemberReadable-java.lang.Object-java.lang.String-)
+* [`isMemberReadable(String member)`](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/interop/InteropLibrary.html#isMemberReadable(java.lang.Object,java.lang.String%29)
   for which we return `true` if a variable with the provided name exists,
 * [`readMember(String member)`](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/interop/InteropLibrary.html#readMember(java.lang.Object,java.lang.String%29)
   for which we just return the value of the variable
   (and throw `UnknownIdentifierException` if it doesn't exist),
-* [`toDisplayString()`](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/interop/InteropLibrary.html#toDisplayString-java.lang.Object-boolean-)
+* [`toDisplayString()`](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/interop/InteropLibrary.html#toDisplayString(java.lang.Object,boolean%29)
   that we saw already in `Undefined`,
-* [`hasLanguage()`](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/interop/InteropLibrary.html#hasLanguage-java.lang.Object-)
-  and [`getLanguage()`](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/interop/InteropLibrary.html#getLanguage-java.lang.Object-),
+* [`hasLanguage()`](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/interop/InteropLibrary.html#hasLanguage(java.lang.Object%29)
+  and [`getLanguage()`](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/interop/InteropLibrary.html#getLanguage(java.lang.Object%29),
   to signify our value belongs to the `EasyScriptTruffleLanguage` class,
-* and finally, [`getMembers()`](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/interop/InteropLibrary.html#getMembers-java.lang.Object-boolean-),
+* and finally, [`getMembers()`](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/interop/InteropLibrary.html#getMembers(java.lang.Object,boolean%29),
   which returns a different object which is meant to hold the collection of all the names of our variables
   (_not_ their values -- this message has a pretty confusing name,
   in my opinion!).
-  That object must implement the [`hasArrayElements()` message](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/interop/InteropLibrary.html#hasArrayElements-java.lang.Object-),
+  That object must implement the [`hasArrayElements()` message](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/interop/InteropLibrary.html#hasArrayElements(java.lang.Object%29),
   which in turn requires
-  [`getArraySize()`](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/interop/InteropLibrary.html#getArraySize-java.lang.Object-),
-  [`isArrayElementReadable(long index)`](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/interop/InteropLibrary.html#isArrayElementReadable-java.lang.Object-long-)
-  and [`readArrayElement(long index)`](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/interop/InteropLibrary.html#readArrayElement-java.lang.Object-long-),
+  [`getArraySize()`](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/interop/InteropLibrary.html#getArraySize(java.lang.Object%29),
+  [`isArrayElementReadable(long index)`](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/interop/InteropLibrary.html#isArrayElementReadable(java.lang.Object,long%29)
+  and [`readArrayElement(long index)`](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/interop/InteropLibrary.html#readArrayElement(java.lang.Object,long%29),
   all of which basically amount to implementing a simple version of an array or a list.
   We usually write a separate class whose instance we return from this method --
   it doesn't need to be public,
