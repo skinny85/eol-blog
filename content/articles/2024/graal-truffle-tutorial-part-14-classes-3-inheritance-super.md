@@ -261,7 +261,7 @@ public class JavaScriptObject extends DynamicObject {
 ```java
 @ExportLibrary(InteropLibrary.class)
 public class ClassPrototypeObject extends JavaScriptObject {
-    public final String className;
+    private final String className;
 
     public ClassPrototypeObject(Shape shape, String className, DynamicObject prototype) {
         super(shape, prototype);
