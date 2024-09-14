@@ -147,6 +147,10 @@ we introduce a class that performs parsing by first invoking ANTLR,
 and then translating the received parse tree to the Truffle AST nodes:
 
 ```java
+import org.antlr.v4.runtime.BailErrorStrategy;
+import org.antlr.v4.runtime.CharStreams;
+import org.antlr.v4.runtime.CommonTokenStream;
+
 public enum DeclarationKind {
     VAR, LET, CONST;
 
@@ -207,6 +211,10 @@ public final class EasyScriptTruffleParser {
 
     private static EasyScriptExprNode parseExpr1(EasyScriptParser.Expr1Context expr1) {
         // the parts dealing with expressions omitted for brevity...
+    }
+
+    // ...
+}
 ```
 
 We introduce an enum that represents each kind of variable in JavaScript
@@ -273,6 +281,9 @@ We return an instance of this class from the `createContext()`
 method in our `TruffleLanguage` class:
 
 ```java
+import com.oracle.truffle.api.CallTarget;
+import com.oracle.truffle.api.TruffleLanguage;
+
 public final class EasyScriptLanguageContext {
     public final GlobalScopeObject globalScopeObject;
 
@@ -356,6 +367,8 @@ but, of course, the name can be anything you want
 The simplest kind of statement is the expression statement:
 
 ```java
+import com.oracle.truffle.api.frame.VirtualFrame;
+
 public final class ExprStmtNode extends EasyScriptStmtNode {
     @SuppressWarnings("FieldMayBeFinal")
     @Child
@@ -423,6 +436,10 @@ public final class GlobalVarDeclStmtNodeGen extends GlobalVarDeclStmtNode {
             EasyScriptExprNode initializerExpr,
             String name, DeclarationKind declarationKind) {
         // ...
+    }
+
+    // ...
+}
 ```
 
 To use the field in the abstract superclass of the generated class,
@@ -442,6 +459,9 @@ The typical way of using this class is storing it as a `private` `static` field 
 and accessing it through a `static` helper method that takes a `Node` as an argument:
 
 ```java
+import com.oracle.truffle.api.nodes.Node;
+import com.oracle.truffle.api.TruffleLanguage;
+
 public final class EasyScriptLanguageContext {
     private static final TruffleLanguage.ContextReference<EasyScriptLanguageContext> REF =
           TruffleLanguage.ContextReference.create(EasyScriptTruffleLanguage.class);
@@ -458,6 +478,8 @@ With this in place, we can introduce a common ancestor of all EasyScript Nodes,
 and add a helper method to it that calls that `EasyScriptLanguageContext.get()` method:
 
 ```java
+import com.oracle.truffle.api.nodes.Node;
+
 public abstract class EasyScriptNode extends Node {
     protected final EasyScriptLanguageContext currentLanguageContext() {
         return EasyScriptLanguageContext.get(this);
@@ -483,6 +505,9 @@ We need to add new expression classes to our language.
 The first, and simplest, is the `undefined` literal expression:
 
 ```java
+import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.nodes.UnexpectedResultException;
+
 public final class UndefinedLiteralExprNode extends EasyScriptExprNode {
     @Override
     public int executeInt(VirtualFrame frame) throws UnexpectedResultException {
@@ -507,6 +532,9 @@ and throw `UnexpectedResultException` for the remaining `execute*()` methods.
 The second new expression node is the assignment expression:
 
 ```java
+import com.oracle.truffle.api.dsl.NodeChild;
+import com.oracle.truffle.api.dsl.NodeField;
+
 @NodeChild(value = "assignmentExpr")
 @NodeField(name = "name", type = String.class)
 public abstract class GlobalVarAssignmentExprNode extends EasyScriptExprNode {
@@ -529,6 +557,8 @@ but updates the variable in `context.globalScopeObject` instead of creating it.
 The third new expression node is the reference to a variable:
 
 ```java
+import com.oracle.truffle.api.dsl.NodeField;
+
 @NodeField(name = "name", type = String.class)
 public abstract class GlobalVarReferenceExprNode extends EasyScriptExprNode {
     protected abstract String getName();
@@ -549,6 +579,10 @@ We also need to change our addition node,
 to account for the presence of `undefined`:
 
 ```java
+import com.oracle.truffle.api.dsl.Fallback;
+import com.oracle.truffle.api.dsl.NodeChild;
+import com.oracle.truffle.api.dsl.Specialization;
+
 @NodeChild("leftNode")
 @NodeChild("rightNode")
 public abstract class AdditionExprNode extends EasyScriptExprNode {
@@ -588,10 +622,14 @@ And finally, we have our `RootNode`.
 It takes an instance of `TruffleLanguage` and a list of statements in its constructor.
 It passes the `TruffleLanguage` to its `RootNode` superclass with a `super()` call.
 In the `execute()` method,
-it evaluates all of the statements,
+it evaluates all the statements,
 and returns the result of executing the last one:
 
 ```java
+import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.nodes.Node.Children;
+import com.oracle.truffle.api.nodes.RootNode;
+
 public final class EasyScriptRootNode extends RootNode {
     @Children
     private final EasyScriptStmtNode[] stmtNodes;
@@ -713,6 +751,14 @@ public final class Undefined implements TruffleObject {
 This allows us to write the following unit test:
 
 ```java
+import org.graalvm.polyglot.Context;
+import org.graalvm.polyglot.Value;
+
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+public class UndefinedTest {
     @Test
     public void correctly_returns_undefined() {
         Context context = Context.create();
@@ -724,6 +770,9 @@ This allows us to write the following unit test:
         assertTrue(result.isNull());
         assertEquals("undefined", result.toString());
     }
+
+    // ...
+}
 ```
 
 ## Surfacing the global bindings
@@ -732,6 +781,13 @@ With all of the above code in place,
 we can execute the program we set as our goal at the beginning of the article:
 
 ```java
+import org.graalvm.polyglot.Context;
+import org.graalvm.polyglot.Value;
+
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+public class GlobalVariablesTest {
     @Test
     public void evaluates_statements() {
         Context context = Context.create();
@@ -745,6 +801,9 @@ we can execute the program we set as our goal at the beginning of the article:
 
         assertEquals(3.0, result.asDouble(), 0.0);
     }
+
+    // ...
+}
 ```
 
 However, there's one more thing we should do to make EasyScript a good citizen of the GraalVM polyglot ecosystem.
@@ -763,6 +822,8 @@ so, because of the way we designed our classes,
 we can just return `contex.globalScopeObject` from it:
 
 ```java
+import com.oracle.truffle.api.TruffleLanguage;
+
 @TruffleLanguage.Registration(id = "ezs", name = "EasyScript")
 public final class EasyScriptTruffleLanguage
         extends TruffleLanguage<EasyScriptLanguageContext> {
@@ -812,6 +873,14 @@ That in turn requires implementing a few other messages:
 Taking it all together, our class now looks as follows:
 
 ```java
+import com.oracle.truffle.api.interop.InteropLibrary;
+import com.oracle.truffle.api.interop.InvalidArrayIndexException;
+import com.oracle.truffle.api.interop.TruffleObject;
+import com.oracle.truffle.api.interop.UnknownIdentifierException;
+import com.oracle.truffle.api.library.ExportLibrary;
+import com.oracle.truffle.api.library.ExportMessage;
+import com.oracle.truffle.api.TruffleLanguage;
+
 @ExportLibrary(InteropLibrary.class)
 public final class GlobalScopeObject implements TruffleObject {
     private final Map<String, Object> variables = new HashMap<>();
@@ -901,9 +970,19 @@ With this code in place,
 we can write the following unit test retrieving EasyScript's global bindings:
 
 ```java
+import org.graalvm.polyglot.Context;
+import org.graalvm.polyglot.Value;
+
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+public class GlobalBindingsTest {
     @Test
     public void surfaces_global_bindings() {
-        this.context.eval("ezs",
+        Context context = Context.create();
+        context.eval("ezs",
                 "var a = 1; " +
                 "let b = 2 + 3; " +
                 "const c = 4.0; "
@@ -918,6 +997,7 @@ we can write the following unit test retrieving EasyScript's global bindings:
         Value b = globalBindings.getMember("b");
         assertEquals(5, b.asInt());
     }
+}
 ```
 
 ## Summary

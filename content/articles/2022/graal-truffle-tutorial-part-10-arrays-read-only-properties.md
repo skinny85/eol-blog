@@ -57,8 +57,13 @@ The literal expression for arrays is pretty similar to the call Node from
 [part 6](/graal-truffle-tutorial-part-6-static-function-calls#call-expression-node):
 
 ```java
+import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.nodes.ExplodeLoop;
+import com.oracle.truffle.api.object.Shape;
+
 public final class ArrayLiteralExprNode extends EasyScriptExprNode {
     private final Shape arrayShape;
+
     @Children
     private final EasyScriptExprNode[] arrayElementExprs;
 
@@ -86,6 +91,12 @@ but we use a dedicated class for that purpose from Truffle,
 [`DynamicObject`, which implements `TruffleObject`](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/object/DynamicObject.html):
 
 ```java
+import com.oracle.truffle.api.interop.InteropLibrary;
+import com.oracle.truffle.api.library.ExportLibrary;
+import com.oracle.truffle.api.library.ExportMessage;
+import com.oracle.truffle.api.object.DynamicObject;
+import com.oracle.truffle.api.object.Shape;
+
 @ExportLibrary(InteropLibrary.class)
 public final class ArrayObject extends DynamicObject {
     private Object[] arrayElements;
@@ -143,6 +154,10 @@ on the builder returned by the static `newBuilder()` method,
 and cached as a field in the instance of `TruffleLanguage`:
 
 ```java
+import com.oracle.truffle.api.CallTarget;
+import com.oracle.truffle.api.TruffleLanguage;
+import com.oracle.truffle.api.object.Shape;
+
 @TruffleLanguage.Registration(id = "ezs", name = "EasyScript")
 public final class EasyScriptTruffleLanguage extends
         TruffleLanguage<EasyScriptLanguageContext> {
@@ -164,6 +179,8 @@ public final class EasyScriptTruffleLanguage extends
 We then pass that `Shape` for arrays into the parser:
 
 ```java
+import com.oracle.truffle.api.object.Shape;
+
 public final class EasyScriptTruffleParser {
     public static ParsingResult parse(Reader program, Shape arrayShape) throws IOException {
         var lexer = new EasyScriptLexer(CharStreams.fromReader(program));
@@ -259,6 +276,14 @@ which contains, among other things,
 messages for dealing with array-like structures:
 
 ```java
+import com.oracle.truffle.api.dsl.Fallback;
+import com.oracle.truffle.api.dsl.NodeChild;
+import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.interop.InteropLibrary;
+import com.oracle.truffle.api.interop.InvalidArrayIndexException;
+import com.oracle.truffle.api.interop.UnsupportedMessageException;
+import com.oracle.truffle.api.library.CachedLibrary;
+
 @NodeChild("arrayExpr")
 @NodeChild("indexExpr")
 public abstract class ArrayIndexReadExprNode extends EasyScriptExprNode {
@@ -315,6 +340,11 @@ To implement this correctly in `ArrayObject`,
 we need to implement the appropriate messages in that class:
 
 ```java
+import com.oracle.truffle.api.interop.InteropLibrary;
+import com.oracle.truffle.api.library.ExportLibrary;
+import com.oracle.truffle.api.library.ExportMessage;
+import com.oracle.truffle.api.object.DynamicObject;
+
 @ExportLibrary(InteropLibrary.class)
 public final class ArrayObject extends DynamicObject {
     private Object[] arrayElements;
@@ -350,6 +380,15 @@ The write expression is very similar to the read expression,
 but of course using different messages from the interop library:
 
 ```java
+import com.oracle.truffle.api.dsl.Fallback;
+import com.oracle.truffle.api.dsl.NodeChild;
+import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.interop.InteropLibrary;
+import com.oracle.truffle.api.interop.InvalidArrayIndexException;
+import com.oracle.truffle.api.interop.UnsupportedMessageException;
+import com.oracle.truffle.api.interop.UnsupportedTypeException;
+import com.oracle.truffle.api.library.CachedLibrary;
+
 @NodeChild("arrayExpr")
 @NodeChild("indexExpr")
 @NodeChild("rvalueExpr")
@@ -384,6 +423,11 @@ it's possible to write beyond the current array's size --
 the effect of that assignment is that all indexes between the old and new last index are filled with `undefined`:
 
 ```java
+import com.oracle.truffle.api.interop.InteropLibrary;
+import com.oracle.truffle.api.library.ExportLibrary;
+import com.oracle.truffle.api.library.ExportMessage;
+import com.oracle.truffle.api.object.DynamicObject;
+
 @ExportLibrary(InteropLibrary.class)
 public final class ArrayObject extends DynamicObject {
     private Object[] arrayElements;
@@ -447,6 +491,15 @@ expr5 : expr5 '.' ID          #PropertyReadExpr5
 Its implementation will again use the interop library:
 
 ```java
+import com.oracle.truffle.api.dsl.Fallback;
+import com.oracle.truffle.api.dsl.NodeChild;
+import com.oracle.truffle.api.dsl.NodeField;
+import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.interop.InteropLibrary;
+import com.oracle.truffle.api.interop.UnknownIdentifierException;
+import com.oracle.truffle.api.interop.UnsupportedMessageException;
+import com.oracle.truffle.api.library.CachedLibrary;
+
 @NodeChild("targetExpr")
 @NodeField(name = "propertyName", type = String.class)
 public abstract class PropertyReadExprNode extends EasyScriptExprNode {
@@ -489,6 +542,15 @@ so that we can use `DynamicObjectLibrary` inside the implementation of the inter
 in the constructor of `ArrayObject` to first initialize the `length` property to an initial value):
 
 ```java
+import com.oracle.truffle.api.interop.InteropLibrary;
+import com.oracle.truffle.api.interop.UnknownIdentifierException;
+import com.oracle.truffle.api.library.CachedLibrary;
+import com.oracle.truffle.api.library.ExportLibrary;
+import com.oracle.truffle.api.library.ExportMessage;
+import com.oracle.truffle.api.object.DynamicObject;
+import com.oracle.truffle.api.object.DynamicObjectLibrary;
+import com.oracle.truffle.api.object.Shape;
+
 @ExportLibrary(InteropLibrary.class)
 public final class ArrayObject extends DynamicObject {
     @DynamicField
@@ -549,6 +611,9 @@ we need to pass the class of the object to the `Shape` builder with the
 `layout` method:
 
 ```java
+import com.oracle.truffle.api.TruffleLanguage;
+import com.oracle.truffle.api.object.Shape;
+
 @TruffleLanguage.Registration(id = "ezs", name = "EasyScript")
 public final class EasyScriptTruffleLanguage extends
         TruffleLanguage<EasyScriptLanguageContext> {
@@ -565,6 +630,12 @@ that contains all names of the members of a given object.
 We'll re-use it for a few different `TruffleObject`s later:
 
 ```java
+import com.oracle.truffle.api.interop.InteropLibrary;
+import com.oracle.truffle.api.interop.InvalidArrayIndexException;
+import com.oracle.truffle.api.interop.TruffleObject;
+import com.oracle.truffle.api.library.ExportLibrary;
+import com.oracle.truffle.api.library.ExportMessage;
+
 @ExportLibrary(InteropLibrary.class)
 final class MemberNamesObject implements TruffleObject {
     private final Object[] names;
@@ -631,6 +702,15 @@ and then the implementations of the interop library messages use that object cre
 and the static properties, saved as instance fields:
 
 ```java
+import com.oracle.truffle.api.interop.InteropLibrary;
+import com.oracle.truffle.api.interop.TruffleObject;
+import com.oracle.truffle.api.interop.UnknownIdentifierException;
+import com.oracle.truffle.api.library.ExportLibrary;
+import com.oracle.truffle.api.library.ExportMessage;
+import com.oracle.truffle.api.staticobject.DefaultStaticProperty;
+import com.oracle.truffle.api.staticobject.StaticProperty;
+import com.oracle.truffle.api.staticobject.StaticShape;
+
 @ExportLibrary(InteropLibrary.class)
 public final class MathObject implements TruffleObject {
     public static MathObject create(EasyScriptTruffleLanguage language,
@@ -691,30 +771,37 @@ we can write a test using the simplest sorting algorithm,
 [bubble sort](https://en.wikipedia.org/wiki/Bubble_sort):
 
 ```java
+import org.graalvm.polyglot.Value;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+public class PropertiesTest {
+    // ...
+    
     @Test
     public void bubble_sort_changes_array_to_sorted() {
         Value result = this.context.eval("ezs", "" +
-                "const array = [44, 33, 22, 11]; " +
-                "function bubbleSort(array) { " +
-                "    for (var i = 0; i < array.length - 1; i = i + 1) { " +
-                "        for (var j = 0; j < array.length - 1 - i; j = j + 1) { " +
-                "            if (array[j] > array[j + 1]) { " +
-                "                var tmp = array[j]; " +
-                "                array[j] = array[j + 1]; " +
-                "                array[j + 1] = tmp; " +
-                "            } " +
-                "        } " +
-                "    } " +
-                "} " +
-                "bubbleSort(array); " +
-                "array"
-        );
+            "const array = [44, 33, 22, 11]; " +
+            "function bubbleSort(array) { " +
+            "    for (var i = 0; i < array.length - 1; i = i + 1) { " +
+            "        for (var j = 0; j < array.length - 1 - i; j = j + 1) { " +
+            "            if (array[j] > array[j + 1]) { " +
+            "                var tmp = array[j]; " +
+            "                array[j] = array[j + 1]; " +
+            "                array[j + 1] = tmp; " +
+            "            } " +
+            "        } " +
+            "    } " +
+            "} " +
+            "bubbleSort(array); " +
+            "array");
 
         assertEquals(11, result.getArrayElement(0).asInt());
         assertEquals(22, result.getArrayElement(1).asInt());
         assertEquals(33, result.getArrayElement(2).asInt());
         assertEquals(44, result.getArrayElement(3).asInt());
     }
+}
 ```
 
 ## Refactoring the global object to be a `DynamicObject`
@@ -756,6 +843,15 @@ We again take advantage of the fact that `@ExportMessage` methods
 can use the `@CachedLibrary` annotation for its parameters:
 
 ```java
+import com.oracle.truffle.api.interop.InteropLibrary;
+import com.oracle.truffle.api.interop.UnknownIdentifierException;
+import com.oracle.truffle.api.library.CachedLibrary;
+import com.oracle.truffle.api.library.ExportLibrary;
+import com.oracle.truffle.api.library.ExportMessage;
+import com.oracle.truffle.api.object.DynamicObject;
+import com.oracle.truffle.api.object.DynamicObjectLibrary;
+import com.oracle.truffle.api.object.Shape;
+
 @ExportLibrary(InteropLibrary.class)
 public final class GlobalScopeObject extends DynamicObject {
     public GlobalScopeObject(Shape shape) {
@@ -834,6 +930,9 @@ We'll create a very simple expression Node that just returns the global scope ob
 using the `currentLanguageContext()` method:
 
 ```java
+import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.object.DynamicObject;
+
 public abstract class GlobalScopeObjectExprNode extends EasyScriptExprNode {
     @Specialization
     protected DynamicObject returnGlobalScopeObject() {
@@ -848,6 +947,15 @@ and it can be used in the `@CachedLibrary` annotation for creating an instance o
 For example, here's how that looks in the global variable declaration statement:
 
 ```java
+import com.oracle.truffle.api.CompilerDirectives;
+import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
+import com.oracle.truffle.api.dsl.NodeChild;
+import com.oracle.truffle.api.dsl.NodeField;
+import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.library.CachedLibrary;
+import com.oracle.truffle.api.object.DynamicObject;
+import com.oracle.truffle.api.object.DynamicObjectLibrary;
+
 @NodeChild(value = "globalScopeObjectExpr", type = GlobalScopeObjectExprNode.class)
 @NodeChild(value = "initializerExpr", type = EasyScriptExprNode.class)
 @NodeField(name = "name", type = String.class)
@@ -889,6 +997,14 @@ to save whether a given variable is a `const`
 We check the value of that flag in the global variable assignment Node:
 
 ```java
+import com.oracle.truffle.api.dsl.NodeChild;
+import com.oracle.truffle.api.dsl.NodeField;
+import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.library.CachedLibrary;
+import com.oracle.truffle.api.object.DynamicObject;
+import com.oracle.truffle.api.object.DynamicObjectLibrary;
+import com.oracle.truffle.api.object.Property;
+
 @NodeChild(value = "globalScopeObjectExpr", type = GlobalScopeObjectExprNode.class)
 @NodeChild(value = "assignmentExpr")
 @NodeField(name = "name", type = String.class)
@@ -920,6 +1036,16 @@ we can roll back the changes that we made in the
 to make `FunctionObject` mutable:
 
 ```java
+import com.oracle.truffle.api.CompilerDirectives;
+import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
+import com.oracle.truffle.api.dsl.NodeChild;
+import com.oracle.truffle.api.dsl.NodeField;
+import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.frame.FrameDescriptor;
+import com.oracle.truffle.api.library.CachedLibrary;
+import com.oracle.truffle.api.object.DynamicObject;
+import com.oracle.truffle.api.object.DynamicObjectLibrary;
+
 @NodeChild(value = "globalScopeObjectExpr", type = GlobalScopeObjectExprNode.class)
 @NodeField(name = "funcName", type = String.class)
 @NodeField(name = "frameDescriptor", type = FrameDescriptor.class)
@@ -958,6 +1084,13 @@ public abstract class FuncDeclStmtNode extends EasyScriptStmtNode {
 And we can remove the caching of resolved functions when referencing a global variable:
 
 ```java
+import com.oracle.truffle.api.dsl.NodeChild;
+import com.oracle.truffle.api.dsl.NodeField;
+import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.library.CachedLibrary;
+import com.oracle.truffle.api.object.DynamicObject;
+import com.oracle.truffle.api.object.DynamicObjectLibrary;
+
 @NodeChild(value = "globalScopeObjectExpr", type = GlobalScopeObjectExprNode.class)
 @NodeField(name = "name", type = String.class)
 public abstract class GlobalVarReferenceExprNode extends EasyScriptExprNode {

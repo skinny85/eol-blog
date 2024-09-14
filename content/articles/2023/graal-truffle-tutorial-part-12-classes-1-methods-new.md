@@ -98,6 +98,9 @@ In order to give `FuncDeclStmtNode` access to that class prototype object,
 we create a new expression Node that simply returns a reference to the object it was given:
 
 ```java
+import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.object.DynamicObject;
+
 public final class DynamicObjectReferenceExprNode extends EasyScriptExprNode {
     private final DynamicObject dynamicObject;
 
@@ -121,6 +124,16 @@ that are used for (global) functions.
 just with the names slightly changed to reflect it's now more generic than just handling global functions:
 
 ```java
+import com.oracle.truffle.api.CompilerDirectives;
+import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
+import com.oracle.truffle.api.dsl.NodeChild;
+import com.oracle.truffle.api.dsl.NodeField;
+import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.frame.FrameDescriptor;
+import com.oracle.truffle.api.library.CachedLibrary;
+import com.oracle.truffle.api.object.DynamicObject;
+import com.oracle.truffle.api.object.DynamicObjectLibrary;
+
 @NodeChild(value = "containerObjectExpr", type = EasyScriptExprNode.class)
 @NodeField(name = "funcName", type = String.class)
 @NodeField(name = "frameDescriptor", type = FrameDescriptor.class)
@@ -136,7 +149,8 @@ public abstract class FuncDeclStmtNode extends EasyScriptStmtNode {
     private FunctionObject cachedFunction;
 
     @Specialization(limit = "2")
-    protected Object declareFunction(DynamicObject containerObject,
+    protected Object declareFunction(
+            DynamicObject containerObject,
             @CachedLibrary("containerObject") DynamicObjectLibrary objectLibrary) {
         if (this.cachedFunction == null) {
             CompilerDirectives.transferToInterpreterAndInvalidate();
@@ -159,6 +173,9 @@ and returns the class prototype object,
 which is saved as a global variable with a name equal to the class name by `GlobalVarDeclStmtNode`:
 
 ```java
+import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.nodes.ExplodeLoop;
+
 public final class ClassDeclExprNode extends EasyScriptExprNode {
     @Children
     private final FuncDeclStmtNode[] classMethodDecls;
@@ -187,6 +204,12 @@ public final class ClassDeclExprNode extends EasyScriptExprNode {
 that only saves the class name it corresponds to:
 
 ```java
+import com.oracle.truffle.api.interop.InteropLibrary;
+import com.oracle.truffle.api.library.ExportLibrary;
+import com.oracle.truffle.api.library.ExportMessage;
+import com.oracle.truffle.api.object.DynamicObject;
+import com.oracle.truffle.api.object.Shape;
+
 @ExportLibrary(InteropLibrary.class)
 public final class ClassPrototypeObject extends DynamicObject {
     private final String className;
@@ -286,6 +309,12 @@ but save them as an array in the field
 Putting it all together, the implementation of the `new` Node looks as follows:
 
 ```java
+import com.oracle.truffle.api.dsl.Executed;
+import com.oracle.truffle.api.dsl.Fallback;
+import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.nodes.ExplodeLoop;
+
 public abstract class NewExprNode extends EasyScriptExprNode {
     @Child
     @Executed
@@ -375,6 +404,14 @@ So, our `ClassInstanceObject` has to implement the methods from the `InteropLibr
 by delegating all property reads to the underlying `ClassPrototypeObject`:
 
 ```java
+import com.oracle.truffle.api.interop.InteropLibrary;
+import com.oracle.truffle.api.interop.TruffleObject;
+import com.oracle.truffle.api.interop.UnknownIdentifierException;
+import com.oracle.truffle.api.library.CachedLibrary;
+import com.oracle.truffle.api.library.ExportLibrary;
+import com.oracle.truffle.api.library.ExportMessage;
+import com.oracle.truffle.api.object.DynamicObjectLibrary;
+
 @ExportLibrary(InteropLibrary.class)
 public final class ClassInstanceObject implements TruffleObject {
     // this can't be private, because it's used in specialization guard expressions
@@ -468,6 +505,8 @@ In the first one, we will create the instance of the `Adder`
 class inside the main loop:
 
 ```java
+import org.openjdk.jmh.annotations.Benchmark;
+
 public class InstanceMethodBenchmark extends TruffleBenchmark {
     private static final int INPUT = 1_000_000;
 
@@ -506,6 +545,8 @@ And in the second variant,
 we create the instance of the `Adder` class outside the loop:
 
 ```java
+import org.openjdk.jmh.annotations.Benchmark;
+
 public class InstanceMethodBenchmark extends TruffleBenchmark {
     private static final String COUNT_METHOD_PROP_ALLOC_OUTSIDE_FOR = "" +
             "function countMethodPropAllocOutsideFor(n) { " +

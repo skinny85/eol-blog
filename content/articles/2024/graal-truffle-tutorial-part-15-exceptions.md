@@ -268,7 +268,6 @@ as ANTLR uses 0-based indexing for it,
 while Truffle needs 1-based indexes):
 
 ```java
-import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.source.SourceSection;
 import org.antlr.v4.runtime.ParserRuleContext;
 
@@ -585,6 +584,8 @@ which we surface through the slightly modified `ShapesAndPrototypes` class from
 [part 13](/graal-truffle-tutorial-part-13-classes-2-fields-this-constructors#handling-built-in-objects-and-functions):
 
 ```java
+import com.oracle.truffle.api.object.Shape;
+
 public final class ShapesAndPrototypes {
     public final Shape rootShape, arrayShape;
     public final ObjectPrototype objectPrototype;
@@ -665,11 +666,13 @@ since this happens before we can parse any JavaScript code:
 
 ```java
 import com.oracle.truffle.api.frame.FrameDescriptor;
+import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.object.DynamicObjectLibrary;
 import com.oracle.truffle.api.TruffleLanguage;
 
 @TruffleLanguage.Registration(id = "ezs", name = "EasyScript")
-public final class EasyScriptTruffleLanguage extends TruffleLanguage<EasyScriptLanguageContext> {
+public final class EasyScriptTruffleLanguage extends
+        TruffleLanguage<EasyScriptLanguageContext> {
     private DynamicObject createGlobalScopeObject(DynamicObjectLibrary objectLibrary) {
         // add a constructor to all Error types
         for (Map.Entry<String, ClassPrototypeObject> entry :

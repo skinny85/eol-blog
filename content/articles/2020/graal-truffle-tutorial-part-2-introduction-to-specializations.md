@@ -25,6 +25,12 @@ This means that our implementation is incorrect with regards to things like over
 It can be showed with the following simple test:
 
 ```java
+import com.oracle.truffle.api.CallTarget;
+
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+public class OverflowTest {
     @Test
     public void adding_1_to_int_max_overflows() {
         EasyScriptNode exprNode = new AdditionNode(
@@ -37,6 +43,7 @@ It can be showed with the following simple test:
 
         assertEquals(Integer.MIN_VALUE, result);
     }
+}
 ```
 
 As this test shows, when we add `1` to `Integer.MAX_VALUE`,
@@ -144,7 +151,7 @@ We'll get there, I promise!)
 
 ```js
 function add(a, b) {
-	return a + b; // <--- AdditionNode instance
+    return a + b; // <--- AdditionNode instance
 }
 ```
 
@@ -157,7 +164,7 @@ it transitions to the `Integer` state,
 where only the `int` specialization is active.
 As long as `add` gets called with arguments that are integers whose sum is between `Integer.MIN_VALUE` and `Integer.MAX_VALUE`,
 the `AdditionNode` remains in the `Integer` state.
-If it gets gets JIT-compiled in that state,
+If it gets JIT-compiled in that state,
 it will produce very efficient machine code that only deals with adding 32-bit integers.
 
 But if `add` is later called during program execution with at least one `double` argument, like `2.5`,
@@ -186,8 +193,7 @@ For all we know, the next parts of the program call `add(5, 10)` a hundred times
 and in that case the `Integer` state would result in generating more efficient code.
 
 The reason why there is no transition back to the `Integer` state is the speculative nature of its JIT compilation.
-In theory,
-every time the compiler generates native code when the `int` specialization is active,
+In theory, every time the compiler generates native code when the `int` specialization is active,
 that code can be invalidated later in the program execution --
 if `add` is called with arguments that can't be represented by `int`s.
 If we transitioned back to the `Integer` state every time `add` was called with small `int` arguments,
@@ -249,6 +255,8 @@ The integer literal node is the again the simplest --
 we simply return its value in all cases:
 
 ```java
+import com.oracle.truffle.api.frame.VirtualFrame;
+
 public final class IntLiteralNode extends EasyScriptNode {
     private final int value;
 
@@ -276,6 +284,9 @@ public final class IntLiteralNode extends EasyScriptNode {
 The new floating-point literal node is almost as simple:
 
 ```java
+import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.nodes.UnexpectedResultException;
+
 public final class DoubleLiteralNode extends EasyScriptNode {
     private final double value;
 
@@ -328,6 +339,9 @@ public final class AdditionNode extends EasyScriptNode {
         this.rightNode = rightNode;
         this.specializationState = SpecializationState.UNINITIALIZED;
     }
+
+    // ...
+}
 ```
 
 Notice that the field representing the state is annotated with `@CompilerDirectives .CompilationFinal`.
@@ -338,18 +352,32 @@ This is crucial in making sure that efficient machine code is generated for each
 We start with the `executeDouble` method, which is very simple:
 
 ```java
+import com.oracle.truffle.api.frame.VirtualFrame;
+
+public final class AdditionNode extends EasyScriptNode {
+    // ...
+
     @Override
     public double executeDouble(VirtualFrame frame) {
         double leftValue = this.leftNode.executeDouble(frame);
         double rightValue = this.rightNode.executeDouble(frame);
         return leftValue + rightValue;
     }
+
+    // ...
+}
 ```
 
 `executeInt` is much more complicated,
 because we have to handle the `UnexpectedResultException` in all cases:
 
 ```java
+import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.nodes.UnexpectedResultException;
+
+public final class AdditionNode extends EasyScriptNode {
+    // ...
+
     @Override
     public int executeInt(VirtualFrame frame) throws UnexpectedResultException {
         int leftValue;
@@ -381,6 +409,9 @@ because we have to handle the `UnexpectedResultException` in all cases:
     private void activateDoubleSpecialization() {
         this.specializationState = SpecializationState.DOUBLE;
     }
+
+    // ...
+}
 ```
 
 `Math.addExact` performs integer addition,
@@ -393,6 +424,13 @@ we delegate to the appropriate `execute*()` method.
 If not, we call `executeGeneric` on the children of the node:
 
 ```java
+import com.oracle.truffle.api.CompilerDirectives;
+import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.nodes.UnexpectedResultException;
+
+public final class AdditionNode extends EasyScriptNode {
+    // ...
+
     @Override
     public Object executeGeneric(VirtualFrame frame) {
         if (this.specializationState == SpecializationState.INT) {
@@ -472,6 +510,12 @@ without having to explicitly call `transferToInterpreterAndInvalidate()`.
 We can verify our implementation now handles integer overflow correctly with a unit test:
 
 ```java
+import com.oracle.truffle.api.CallTarget;
+
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+public class OverflowTest {
     @Test
     public void adding_1_to_int_max_does_not_overflow() {
         EasyScriptNode exprNode = new AdditionNode(
@@ -484,6 +528,7 @@ We can verify our implementation now handles integer overflow correctly with a u
 
         assertEquals(Integer.MAX_VALUE + 1D, result);
     }
+}
 ```
 
 You can check out the [full code on GitHub](https://github.com/skinny85/graalvm-truffle-tutorial/tree/master/part-02/ReadMe.md).

@@ -52,6 +52,11 @@ which we often call "direct access" in this series,
 simply delegates to `CommonWritePropertyNode`:
 
 ```java
+import com.oracle.truffle.api.dsl.Cached;
+import com.oracle.truffle.api.dsl.NodeChild;
+import com.oracle.truffle.api.dsl.NodeField;
+import com.oracle.truffle.api.dsl.Specialization;
+
 @NodeChild("targetExpr")
 @NodeField(name = "propertyName", type = String.class)
 @NodeChild("rvalueExpr")
@@ -75,6 +80,18 @@ We use a similar trick that we employed in
 where we cache the Java strings converted from `TruffleString`s for the first two property names we encounter:
 
 ```java
+import com.oracle.truffle.api.dsl.Cached;
+import com.oracle.truffle.api.dsl.Fallback;
+import com.oracle.truffle.api.dsl.ImportStatic;
+import com.oracle.truffle.api.dsl.NodeChild;
+import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.interop.InteropLibrary;
+import com.oracle.truffle.api.interop.InvalidArrayIndexException;
+import com.oracle.truffle.api.interop.UnsupportedMessageException;
+import com.oracle.truffle.api.interop.UnsupportedTypeException;
+import com.oracle.truffle.api.library.CachedLibrary;
+import com.oracle.truffle.api.strings.TruffleString;
+
 @NodeChild("arrayExpr")
 @NodeChild("indexExpr")
 @NodeChild("rvalueExpr")
@@ -134,6 +151,8 @@ we just have to make sure to annotate it with `@TruffleBoundary`
 so that it doesn't get partially evaluated:
 
 ```java
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
+
 public final class EasyScriptTruffleStrings {
     // ...
 
@@ -149,6 +168,15 @@ is really simple -- we just use the
 [`writeMember` message from the `InteropLibrary`](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/interop/InteropLibrary.html#writeMember(java.lang.Object,java.lang.String,java.lang.Object%29):
 
 ```java
+import com.oracle.truffle.api.dsl.Fallback;
+import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.interop.InteropLibrary;
+import com.oracle.truffle.api.interop.UnknownIdentifierException;
+import com.oracle.truffle.api.interop.UnsupportedMessageException;
+import com.oracle.truffle.api.interop.UnsupportedTypeException;
+import com.oracle.truffle.api.library.CachedLibrary;
+import com.oracle.truffle.api.nodes.Node;
+
 public abstract class CommonWritePropertyNode extends Node {
     public abstract Object executeWriteProperty(Object target, Object property, Object rvalue);
 
@@ -229,6 +257,15 @@ you can use the same capabilities as in the Node classes,
 such as `@CachedLibrary`, `@Fallback`, etc.:
 
 ```java
+import com.oracle.truffle.api.dsl.Fallback;
+import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.interop.InteropLibrary;
+import com.oracle.truffle.api.library.CachedLibrary;
+import com.oracle.truffle.api.library.ExportLibrary;
+import com.oracle.truffle.api.library.ExportMessage;
+import com.oracle.truffle.api.object.DynamicObjectLibrary;
+import com.oracle.truffle.api.object.Shape;
+
 @ExportLibrary(InteropLibrary.class)
 public final class ArrayObject extends JavaScriptObject {
     // must be package-private, since it's used in specialization guard expressions
@@ -334,6 +371,8 @@ So, how do we pass the object that corresponds to `this` into methods that read 
 We'll use a very simple schema, where we pass the current object as the first argument of any method:
 
 ```java
+import com.oracle.truffle.api.frame.VirtualFrame;
+
 public final class ThisExprNode extends EasyScriptExprNode {
     @Override
     public Object executeGeneric(VirtualFrame frame) {
@@ -394,6 +433,8 @@ which will spare us from having to pass them explicitly to every Node that needs
 like the array literal Node:
 
 ```java
+import com.oracle.truffle.api.object.Shape;
+
 public final class ShapesAndPrototypes {
     public final Shape rootShape;
     public final Shape arrayShape;
@@ -415,6 +456,8 @@ public final class ShapesAndPrototypes {
 And then we surface this new object in our Truffle language context:
 
 ```java
+import com.oracle.truffle.api.object.DynamicObject;
+
 public final class EasyScriptLanguageContext {
     // ...
 
@@ -432,8 +475,13 @@ public final class EasyScriptLanguageContext {
 Of course, creating all of these prototypes is the responsibility of the main `TruffleLanguage` class:
 
 ```java
+import com.oracle.truffle.api.TruffleLanguage;
+import com.oracle.truffle.api.object.DynamicObjectLibrary;
+import com.oracle.truffle.api.object.Shape;
+
 @TruffleLanguage.Registration(id = "ezs", name = "EasyScript")
-public final class EasyScriptTruffleLanguage extends TruffleLanguage<EasyScriptLanguageContext> {
+public final class EasyScriptTruffleLanguage extends
+        TruffleLanguage<EasyScriptLanguageContext> {
     // ...
 
     private final Shape rootShape = Shape.newBuilder().build();
@@ -502,8 +550,13 @@ not for built-in methods, like `charAt` of Strings, though,
 since those already have an explicit argument in their specializations that represents `this`:
 
 ```java
+import com.oracle.truffle.api.CallTarget;
+import com.oracle.truffle.api.TruffleLanguage;
+import com.oracle.truffle.api.dsl.NodeFactory;
+
 @TruffleLanguage.Registration(id = "ezs", name = "EasyScript")
-public final class EasyScriptTruffleLanguage extends TruffleLanguage<EasyScriptLanguageContext> {
+public final class EasyScriptTruffleLanguage extends
+        TruffleLanguage<EasyScriptLanguageContext> {
     // ...
 
     private FunctionObject defineBuiltInFunction(NodeFactory<? extends BuiltInFunctionBodyExprNode> nodeFactory) {
@@ -542,6 +595,12 @@ The `JavaScriptObject` class contains the common logic of writing properties,
 using the [dynamic object library](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/object/DynamicObjectLibrary.html):
 
 ```java
+import com.oracle.truffle.api.interop.InteropLibrary;
+import com.oracle.truffle.api.library.CachedLibrary;
+import com.oracle.truffle.api.library.ExportLibrary;
+import com.oracle.truffle.api.library.ExportMessage;
+import com.oracle.truffle.api.object.DynamicObjectLibrary;
+
 @ExportLibrary(InteropLibrary.class)
 public class JavaScriptObject extends DynamicObject {
     // ...
@@ -575,6 +634,14 @@ we now need to first check if the given property is available on the object itse
 if it is, it shadows the one from the prototype:
 
 ```java
+import com.oracle.truffle.api.interop.InteropLibrary;
+import com.oracle.truffle.api.interop.UnknownIdentifierException;
+import com.oracle.truffle.api.library.CachedLibrary;
+import com.oracle.truffle.api.library.ExportLibrary;
+import com.oracle.truffle.api.library.ExportMessage;
+import com.oracle.truffle.api.object.DynamicObjectLibrary;
+import com.oracle.truffle.api.object.Shape;
+
 @ExportLibrary(InteropLibrary.class)
 public class JavaScriptObject extends DynamicObject {
     // this can't be private, because it's used in specialization guard expressions
@@ -633,6 +700,9 @@ in all Nodes that create these objects,
 like the array literal expression Node:
 
 ```java
+import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.nodes.ExplodeLoop;
+
 public final class ArrayLiteralExprNode extends EasyScriptExprNode {
     @Children
     private final EasyScriptExprNode[] arrayElementExprs;
@@ -658,6 +728,16 @@ public final class ArrayLiteralExprNode extends EasyScriptExprNode {
 And `FuncDeclStmtNode`:
 
 ```java
+import com.oracle.truffle.api.CompilerDirectives;
+import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
+import com.oracle.truffle.api.dsl.NodeChild;
+import com.oracle.truffle.api.dsl.NodeField;
+import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.frame.FrameDescriptor;
+import com.oracle.truffle.api.library.CachedLibrary;
+import com.oracle.truffle.api.object.DynamicObject;
+import com.oracle.truffle.api.object.DynamicObjectLibrary;
+
 @NodeChild(value = "containerObjectExpr", type = EasyScriptExprNode.class)
 @NodeField(name = "funcName", type = String.class)
 @NodeField(name = "frameDescriptor", type = FrameDescriptor.class)
@@ -673,7 +753,8 @@ public abstract class FuncDeclStmtNode extends EasyScriptStmtNode {
     private FunctionObject cachedFunction;
 
     @Specialization(limit = "1")
-    protected Object declareFunction(DynamicObject containerObject,
+    protected Object declareFunction(
+            DynamicObject containerObject,
             @CachedLibrary("containerObject") DynamicObjectLibrary objectLibrary) {
         if (this.cachedFunction == null) {
             CompilerDirectives.transferToInterpreterAndInvalidate();
@@ -707,6 +788,13 @@ and make sure that new argument is added to the beginning of the array that is p
 representing a given function or method:
 
 ```java
+import com.oracle.truffle.api.dsl.Cached;
+import com.oracle.truffle.api.dsl.Fallback;
+import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.nodes.DirectCallNode;
+import com.oracle.truffle.api.nodes.IndirectCallNode;
+import com.oracle.truffle.api.nodes.Node;
+
 public abstract class FunctionDispatchNode extends Node {
     // receiver is the new parameter here
     public abstract Object executeDispatch(Object function, Object[] arguments, Object receiver);
@@ -774,6 +862,9 @@ What does that look like in practice?
 We introduce two new methods to the root of our expression Node hierarchy, `EasyScriptExprNode`:
 
 ```java
+import com.oracle.truffle.api.dsl.TypeSystemReference;
+import com.oracle.truffle.api.frame.VirtualFrame;
+
 @TypeSystemReference(EasyScriptTypeSystem.class)
 public abstract class EasyScriptExprNode extends EasyScriptNode {
     // ...
@@ -813,6 +904,9 @@ we can now use these new methods instead of `executeGeneric()`
 to get the new argument we need to call `FunctionDispatchNode.executeDispatch()`:
 
 ```java
+import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.nodes.ExplodeLoop;
+
 public final class FunctionCallExprNode extends EasyScriptExprNode {
     @SuppressWarnings("FieldMayBeFinal")
     @Child
@@ -872,6 +966,11 @@ and saving it in an instance field of `PropertyReadExprNode` annotated with `@Ch
 instead of using `@Cached` in the specialization:
 
 ```java
+import com.oracle.truffle.api.dsl.NodeChild;
+import com.oracle.truffle.api.dsl.NodeField;
+import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.frame.VirtualFrame;
+
 @NodeChild("targetExpr")
 @NodeField(name = "propertyName", type = String.class)
 public abstract class PropertyReadExprNode extends EasyScriptExprNode {
@@ -911,6 +1010,19 @@ To solve this issue, we can use a simple trick: introduce another layer of indir
 We can move all existing specializations of `ArrayIndexReadExprNode` into a new static Node class nested inside it:
 
 ```java
+import com.oracle.truffle.api.dsl.Cached;
+import com.oracle.truffle.api.dsl.Fallback;
+import com.oracle.truffle.api.dsl.ImportStatic;
+import com.oracle.truffle.api.dsl.NodeChild;
+import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.interop.InteropLibrary;
+import com.oracle.truffle.api.interop.InvalidArrayIndexException;
+import com.oracle.truffle.api.interop.UnsupportedMessageException;
+import com.oracle.truffle.api.library.CachedLibrary;
+import com.oracle.truffle.api.nodes.Node;
+import com.oracle.truffle.api.strings.TruffleString;
+
 @NodeChild("arrayExpr")
 @NodeChild("indexExpr")
 public abstract class ArrayIndexReadExprNode extends EasyScriptExprNode {
@@ -985,6 +1097,10 @@ This way, that same one specialization can be called from
 `evaluateAsFunction()`:
 
 ```java
+import com.oracle.truffle.api.dsl.NodeChild;
+import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.frame.VirtualFrame;
+
 @NodeChild("arrayExpr")
 @NodeChild("indexExpr")
 public abstract class ArrayIndexReadExprNode extends EasyScriptExprNode {
@@ -1027,6 +1143,13 @@ we don't need to do any of that complicated target caching anymore,
 and we can just read the method to call directly from the String prototype:
 
 ```java
+import com.oracle.truffle.api.dsl.Cached;
+import com.oracle.truffle.api.dsl.Fallback;
+import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.library.CachedLibrary;
+import com.oracle.truffle.api.object.DynamicObjectLibrary;
+import com.oracle.truffle.api.strings.TruffleString;
+
 public abstract class ReadTruffleStringPropertyNode extends EasyScriptNode {
     protected static final String LENGTH_PROP = "length";
 
@@ -1092,6 +1215,14 @@ and if it does, we call it with the provided arguments,
 making sure to pass the newly created instance as the receiver:
 
 ```java
+import com.oracle.truffle.api.dsl.Executed;
+import com.oracle.truffle.api.dsl.Fallback;
+import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.library.CachedLibrary;
+import com.oracle.truffle.api.nodes.ExplodeLoop;
+import com.oracle.truffle.api.object.DynamicObjectLibrary;
+
 public abstract class NewExprNode extends EasyScriptExprNode {
     @Child
     @Executed
@@ -1161,6 +1292,8 @@ we can write a benchmark that counts in a loop,
 and stores the current count inside a class instance:
 
 ```java
+import org.openjdk.jmh.annotations.Benchmark;
+
 public class CounterThisBenchmark extends TruffleBenchmark {
     private static final int INPUT = 1_000_000;
 
@@ -1220,6 +1353,8 @@ one with direct property access, shown above,
 and then a second one with indexed property access:
 
 ```java
+import org.openjdk.jmh.annotations.Benchmark;
+
 public class CounterThisBenchmark extends TruffleBenchmark {
     // ...
 
@@ -1287,8 +1422,8 @@ both in the GraalVM JavaScript implementation, and in EasyScript.
 
 So, this is how fields and constructors can be implemented in Truffle.
 
-As usual, all the code from the article
-[is available on GitHub](https://github.com/skinny85/graalvm-truffle-tutorial/tree/master/part-13).
+As usual, all code from the article is
+[available on GitHub](https://github.com/skinny85/graalvm-truffle-tutorial/tree/master/part-13).
 
 In the
 [next part of the tutorial](/graal-truffle-tutorial-part-14-classes-3-inheritance-super),

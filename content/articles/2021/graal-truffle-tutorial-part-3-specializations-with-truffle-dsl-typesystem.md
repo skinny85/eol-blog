@@ -60,6 +60,7 @@ import com.oracle.truffle.api.dsl.NodeChild;
 @NodeChild("rightNode")
 public abstract class AdditionNode extends EasyScriptNode {
     // ...
+}
 ```
 
 This tells the annotation processor that it should generate a `Node`
@@ -82,6 +83,7 @@ import com.oracle.truffle.api.dsl.NodeChildren;
 })
 public abstract class AdditionNode extends EasyScriptNode {
     // ...
+}
 ```
 
 , as Java 8 was the first version that allowed repeating the same annotation multiple times on the same target)
@@ -110,7 +112,8 @@ With that said, here's how `AdditionNode` looks for EasyScript handling 32-bit i
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
 
-@NodeChild("leftNode") @NodeChild("rightNode")
+@NodeChild("leftNode")
+@NodeChild("rightNode")
 public abstract class AdditionNode extends EasyScriptNode {
     @Specialization(rewriteOn = ArithmeticException.class)
     protected int addInts(int leftValue, int rightValue) {
@@ -147,6 +150,12 @@ Here's a simple test,
 showing our addition working correctly:
 
 ```java
+import com.oracle.truffle.api.CallTarget;
+
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+public class OverflowTest {
     @Test
     public void adding_1_to_int_max_does_not_overflow() {
         EasyScriptNode exprNode = AdditionNodeGen.create(
@@ -159,6 +168,7 @@ showing our addition working correctly:
 
         assertEquals(Integer.MAX_VALUE + 1D, result);
     }
+}
 ```
 
 ## Truffle DSL code
@@ -361,7 +371,7 @@ using the lock requires a lot of boilerplate code
 you need to unlock it in a `finally` block, etc.),
 and so I skipped it in the manually written version,
 but the DSL can go this extra mile,
-taking care of all of the boilerplate code for us.
+taking care of all the boilerplate code for us.
 
 However, if you compare the `executeInt` and `executeDouble` methods between the manually written and generated versions,
 you'll see they're basically identical.
@@ -383,6 +393,12 @@ could be used with `IntLiteralNode`.
 If we attempt to write a test for overflow using `IntLiteralNode`:
 
 ```java
+import com.oracle.truffle.api.CallTarget;
+
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+public class OverflowTest {
     @Test
     public void adding_1_to_int_max_does_not_overflow() {
         EasyScriptNode exprNode = AdditionNodeGen.create(
@@ -395,6 +411,7 @@ If we attempt to write a test for overflow using `IntLiteralNode`:
 
         assertEquals(Integer.MAX_VALUE + 1D, result);
     }
+}
 ```
 
 It will actually fail with an exception:
@@ -410,6 +427,12 @@ removing some unnecessary details,
 to make it easier to see exactly what is the problem:
 
 ```java
+import com.oracle.truffle.api.dsl.UnsupportedSpecializationException;
+import com.oracle.truffle.api.nodes.Node;
+
+public final class AdditionNodeGen extends AdditionNode {
+    // ...
+
     private Object executeAndSpecialize(Object leftNodeValue, Object rightNodeValue) {
         if (!this.excludedStates.contains(INT_STATE) &&
                 leftNodeValue instanceof Integer &&
@@ -438,6 +461,9 @@ to make it easier to see exactly what is the problem:
 
         throw new UnsupportedSpecializationException(this, new Node[] {this.leftNode_, this.rightNode_}, leftNodeValue, rightNodeValue);
     }
+
+    // ...
+}
 ```
 
 With this, we can clearly see what happens:
@@ -479,6 +505,8 @@ public abstract class EasyScriptTypeSystem {
     public static boolean isDouble(Object value) {
         return value instanceof Double || value instanceof Integer;
     }
+
+    // ...
 }
 ```
 
@@ -493,6 +521,13 @@ the Truffle DSL allows us to implement our own conversion logic,
 in a static method annotated with `@TypeCast`:
 
 ```java
+import com.oracle.truffle.api.dsl.TypeCast;
+import com.oracle.truffle.api.dsl.TypeSystem;
+
+@TypeSystem
+public abstract class EasyScriptTypeSystem {
+    // ...
+
     @TypeCast(double.class)
     public static double asDouble(Object value) {
         if (value instanceof Integer) {
@@ -501,6 +536,7 @@ in a static method annotated with `@TypeCast`:
             return (double) value;
         }
     }
+}
 ```
 
 So, this defines a type system,
@@ -512,10 +548,12 @@ it's usually placed on the abstract Node superclass:
 
 ```java
 import com.oracle.truffle.api.dsl.TypeSystemReference;
+import com.oracle.truffle.api.nodes.Node;
 
 @TypeSystemReference(EasyScriptTypeSystem.class)
 public abstract class EasyScriptNode extends Node {
     // ...
+}
 ```
 
 If you now run the above `adding_1_to_int_max_does_not_overflow` test,
@@ -524,6 +562,12 @@ If you examine the `AdditionNodeGen` class,
 you should see that `executeAndSpecialize()` now uses our methods:
 
 ```java
+import com.oracle.truffle.api.dsl.UnsupportedSpecializationException;
+import com.oracle.truffle.api.nodes.Node;
+
+public final class AdditionNodeGen extends AdditionNode {
+    // ...
+
     private Object executeAndSpecialize(Object leftNodeValue, Object rightNodeValue) {
         if (!this.excludedStates.contains(INT_STATE) &&
                 leftNodeValue instanceof Integer &&
@@ -552,6 +596,9 @@ you should see that `executeAndSpecialize()` now uses our methods:
 
         throw new UnsupportedSpecializationException(this, new Node[] {this.leftNode_, this.rightNode_}, leftNodeValue, rightNodeValue);
     }
+
+    // ...
+}
 ```
 
 (`instanceof` is still used for `int`s, as we didn't instruct the Truffle DSL to do anything special for them)
@@ -604,7 +651,7 @@ We've only scratched the surface of the capabilities of the DSL --
 we'll see some of them later,
 as we add more features to our EasyScript language.
 
-As always, all of the code from the article is
+As always, all code from the article is
 [available on GitHub](https://github.com/skinny85/graalvm-truffle-tutorial/tree/master/part-03/ReadMe.md).
 
 In the [next part](/graal-truffle-tutorial-part-4-parsing-and-the-trufflelanguage-class)

@@ -132,6 +132,8 @@ an instance of which we get in the constructor of the parser class
 (which will be called by the `TruffleLanguage` implementation for this part):
 
 ```java
+import com.oracle.truffle.api.object.Shape;
+
 public final class EasyScriptTruffleParser {
     // ...
 
@@ -229,6 +231,12 @@ to create an instance of `ClassPrototypeObject`, which is an infinite recursion 
 so, we break that dependency by using `DynamicObject`:
 
 ```java
+import com.oracle.truffle.api.interop.InteropLibrary;
+import com.oracle.truffle.api.library.ExportLibrary;
+import com.oracle.truffle.api.library.ExportMessage;
+import com.oracle.truffle.api.object.DynamicObject;
+import com.oracle.truffle.api.object.Shape;
+
 @ExportLibrary(InteropLibrary.class)
 public class JavaScriptObject extends DynamicObject {
     public final DynamicObject prototype;
@@ -259,6 +267,12 @@ public class JavaScriptObject extends DynamicObject {
 ```
 
 ```java
+import com.oracle.truffle.api.interop.InteropLibrary;
+import com.oracle.truffle.api.library.ExportLibrary;
+import com.oracle.truffle.api.library.ExportMessage;
+import com.oracle.truffle.api.object.DynamicObject;
+import com.oracle.truffle.api.object.Shape;
+
 @ExportLibrary(InteropLibrary.class)
 public class ClassPrototypeObject extends JavaScriptObject {
     private final String className;
@@ -290,6 +304,15 @@ and overrides the interop message implementations to not use the prototype field
 so we don't want the interop message implementations from `JavaScriptObject` to delegate to it):
 
 ```java
+import com.oracle.truffle.api.interop.InteropLibrary;
+import com.oracle.truffle.api.interop.UnknownIdentifierException;
+import com.oracle.truffle.api.library.CachedLibrary;
+import com.oracle.truffle.api.library.ExportLibrary;
+import com.oracle.truffle.api.library.ExportMessage;
+import com.oracle.truffle.api.object.DynamicObject;
+import com.oracle.truffle.api.object.DynamicObjectLibrary;
+import com.oracle.truffle.api.object.Shape;
+
 @ExportLibrary(InteropLibrary.class)
 public final class ObjectPrototype extends ClassPrototypeObject {
     public ObjectPrototype(Shape shape) {
@@ -333,6 +356,15 @@ by calling the `readMember()`
 message on the prototype if the given property was not found on the object itself:
 
 ```java
+import com.oracle.truffle.api.interop.InteropLibrary;
+import com.oracle.truffle.api.interop.UnknownIdentifierException;
+import com.oracle.truffle.api.interop.UnsupportedMessageException;
+import com.oracle.truffle.api.library.CachedLibrary;
+import com.oracle.truffle.api.library.ExportLibrary;
+import com.oracle.truffle.api.library.ExportMessage;
+import com.oracle.truffle.api.object.DynamicObject;
+import com.oracle.truffle.api.object.DynamicObjectLibrary;
+
 @ExportLibrary(InteropLibrary.class)
 public class JavaScriptObject extends DynamicObject {
     public final DynamicObject prototype;
@@ -412,6 +444,13 @@ to use the `InteropLibrary` instead of `DynamicObjectLibrary` to find the constr
 in case it's defined in an ancestor of the given class:
 
 ```java
+import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.interop.InteropLibrary;
+import com.oracle.truffle.api.interop.UnknownIdentifierException;
+import com.oracle.truffle.api.interop.UnsupportedMessageException;
+import com.oracle.truffle.api.library.CachedLibrary;
+
 public abstract class NewExprNode extends EasyScriptExprNode {
     // ...
 
@@ -473,6 +512,13 @@ since `hasOwnProperty()` is unlikely to be used in performance-critical code --
 however, feel free to change that in your own implementation:
 
 ```java
+import com.oracle.truffle.api.dsl.Fallback;
+import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.library.CachedLibrary;
+import com.oracle.truffle.api.object.DynamicObject;
+import com.oracle.truffle.api.object.DynamicObjectLibrary;
+import com.oracle.truffle.api.strings.TruffleString;
+
 public abstract class HasOwnPropertyMethodBodyExprNode extends BuiltInFunctionBodyExprNode {
     @Specialization(limit = "2")
     protected boolean hasOwnPropertyDynamicObject(
@@ -505,6 +551,11 @@ which we add to the `ShapesAndPrototypes` class from the
 and which is available through the Truffle language context:
 
 ```java
+import com.oracle.truffle.api.dsl.Cached;
+import com.oracle.truffle.api.dsl.Fallback;
+import com.oracle.truffle.api.library.CachedLibrary;
+import com.oracle.truffle.api.object.DynamicObjectLibrary;
+
 public abstract class CommonReadPropertyNode extends EasyScriptNode {
     // ...
 
@@ -545,6 +596,8 @@ that isn't annotated with `@TruffleBoundary`,
 and which checks whether the argument it received is already a Java `String`:
 
 ```java
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
+
 public final class EasyScriptTruffleStrings {
     // ...
 
@@ -567,6 +620,14 @@ This allows Graal to hoist the `String`
 type assertion present in `toStringOfMaybeString()` to the specialization that uses it:
 
 ```java
+import com.oracle.truffle.api.dsl.Cached;
+import com.oracle.truffle.api.dsl.Fallback;
+import com.oracle.truffle.api.interop.InteropLibrary;
+import com.oracle.truffle.api.interop.UnknownIdentifierException;
+import com.oracle.truffle.api.interop.UnsupportedMessageException;
+import com.oracle.truffle.api.library.CachedLibrary;
+import com.oracle.truffle.api.strings.TruffleString;
+
 public abstract class ReadTruffleStringPropertyNode extends EasyScriptNode {
     public static final String LENGTH_PROP = "length";
 
@@ -597,8 +658,14 @@ In order for the above property read logic to be able to find the new method,
 we add the `hasOwnProperty` method to the `Object` prototype in `EasyScriptTruffleLanguage`:
 
 ```java
+import com.oracle.truffle.api.TruffleLanguage;
+import com.oracle.truffle.api.object.DynamicObject;
+import com.oracle.truffle.api.object.DynamicObjectLibrary;
+import com.oracle.truffle.api.object.Shape;
+
 @TruffleLanguage.Registration(id = "ezs", name = "EasyScript")
-public final class EasyScriptTruffleLanguage extends TruffleLanguage<EasyScriptLanguageContext> {
+public final class EasyScriptTruffleLanguage extends
+        TruffleLanguage<EasyScriptLanguageContext> {
     private final Shape rootShape = Shape.newBuilder().build();
     private final ObjectPrototype objectPrototype = new ObjectPrototype(this.rootShape);
 
@@ -671,6 +738,8 @@ So, we can delegate to the `ThisExprNode` from the
 which we add as a `@Child` Node:
 
 ```java
+import com.oracle.truffle.api.frame.VirtualFrame;
+
 public final class SuperExprNode extends EasyScriptExprNode {
     @SuppressWarnings("FieldMayBeFinal")
     @Child
@@ -751,6 +820,12 @@ Of course, since `@Child` implies the field is compilation final,
 we need to invalidate the current code if we've already been JIT-compiled before saving that field for the first time:
 
 ```java
+import com.oracle.truffle.api.CompilerDirectives;
+import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.interop.InteropLibrary;
+import com.oracle.truffle.api.interop.UnknownIdentifierException;
+import com.oracle.truffle.api.interop.UnsupportedMessageException;
+
 public final class SuperExprNode extends EasyScriptExprNode {
     private final ClassPrototypeObject classPrototype;
 
@@ -797,8 +872,13 @@ which we create in the `EasyScriptTruffleLanguage` class,
 and surface as another field of the Truffle language context:
 
 ```java
+import com.oracle.truffle.api.TruffleLanguage;
+import com.oracle.truffle.api.object.DynamicObjectLibrary;
+import com.oracle.truffle.api.object.Shape;
+
 @TruffleLanguage.Registration(id = "ezs", name = "EasyScript")
-public final class EasyScriptTruffleLanguage extends TruffleLanguage<EasyScriptLanguageContext> {
+public final class EasyScriptTruffleLanguage extends
+        TruffleLanguage<EasyScriptLanguageContext> {
     private final Shape rootShape = Shape.newBuilder().build();
     private final ObjectPrototype objectPrototype = new ObjectPrototype(this.rootShape);
     private final ClassPrototypeObject functionPrototype = new ClassPrototypeObject(this.rootShape,
@@ -864,6 +944,9 @@ call `executeGeneric()` on its target expression in their `evaluateAsReceiver()`
 we have to make sure to delegate to `ThisEpxrNode` in `SuperExprNode`:
 
 ```java
+import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.interop.InteropLibrary;
+
 public final class SuperExprNode extends EasyScriptExprNode {
     private final ClassPrototypeObject classPrototype;
 
@@ -891,6 +974,11 @@ public final class SuperExprNode extends EasyScriptExprNode {
 Then, we check for the presence of `SuperExprNode` in `PropertyReadExprNode`:
 
 ```java
+import com.oracle.truffle.api.dsl.NodeChild;
+import com.oracle.truffle.api.dsl.NodeField;
+import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.frame.VirtualFrame;
+
 @NodeChild("targetExpr")
 @NodeField(name = "propertyName", type = String.class)
 public abstract class PropertyReadExprNode extends EasyScriptExprNode {
@@ -940,6 +1028,12 @@ public final class SuperExprNode extends EasyScriptExprNode {
 And we also use it in `ArrayIndexReadExprNode`:
 
 ```java
+import com.oracle.truffle.api.dsl.ImportStatic;
+import com.oracle.truffle.api.dsl.NodeChild;
+import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.nodes.Node;
+
 @NodeChild("arrayExpr")
 @NodeChild("indexExpr")
 public abstract class ArrayIndexReadExprNode extends EasyScriptExprNode {
@@ -1041,8 +1135,8 @@ where we made an object's prototype impossible to change after it has been insta
 
 So, this is how class inheritance can be implemented in Truffle.
 
-As usual, all the code from the article
-[is available on GitHub](https://github.com/skinny85/graalvm-truffle-tutorial/tree/master/part-14).
+As usual, all the code from the article is
+[available on GitHub](https://github.com/skinny85/graalvm-truffle-tutorial/tree/master/part-14).
 
 In the [next part](/graal-truffle-tutorial-part-15-exceptions)
 of the tutorial, we will talk about implementing exception handling.

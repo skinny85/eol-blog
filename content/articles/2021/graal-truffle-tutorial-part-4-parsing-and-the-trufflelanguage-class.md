@@ -162,6 +162,11 @@ With this in place,
 we can write our first real EasyScript program! 
 
 ```java
+import com.oracle.truffle.api.CallTarget;
+
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 public class ParsingTest {
     @Test
     public void parses_and_executes_EasyScript_code_correctly() {
@@ -195,6 +200,7 @@ and we can write a simple unit test executing a JavaScript program straight from
 ```java
 import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.Value;
+
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -244,8 +250,9 @@ Here's how this class looks for EasyScript:
 
 ```java
 import com.oracle.truffle.api.CallTarget;
-import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.TruffleLanguage;
+import com.oracle.truffle.api.TruffleLanguage.Env;
+import com.oracle.truffle.api.TruffleLanguage.ParsingRequest;
 
 @TruffleLanguage.Registration(id = "ezs", name = "EasyScript")
 public final class EasyScriptTruffleLanguage extends TruffleLanguage<Void> {
@@ -274,6 +281,7 @@ With this in place, we can evaluate EasyScript code the same way we did JavaScri
 ```java
 import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.Value;
+
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -334,5 +342,5 @@ In the [next part of the series](/graal-truffle-tutorial-part-5-global-variables
 we will finally start making EasyScript look more like a real programming language --
 we will add support for variables.
 
-As always, all of the code in the article
+As always, all code from the article
 [is available on GitHub](https://github.com/skinny85/graalvm-truffle-tutorial/tree/master/part-04).

@@ -24,7 +24,7 @@ function add(a, b) {
 ```
 
 We have the "function" keyword, followed by the name of the function,
-and then its arguments, in parenthesis.
+and then its arguments, in parentheses.
 The body of the function is a block of statements, between brackets;
 the function can include their own local variables,
 which live only for the duration of the function call.
@@ -226,6 +226,11 @@ because we need to track what local variables and arguments we've seen so far in
 we'll just assume anything that is not local is global):
 
 ```java
+import com.oracle.truffle.api.frame.FrameDescriptor;
+import org.antlr.v4.runtime.BailErrorStrategy;
+import org.antlr.v4.runtime.CharStreams;
+import org.antlr.v4.runtime.CommonTokenStream;
+
 public final class EasyScriptTruffleParser {
     public static List<EasyScriptStmtNode> parse(Reader program) throws IOException {
         var lexer = new EasyScriptLexer(CharStreams.fromReader(program));
@@ -286,6 +291,8 @@ In the first loop, we only handle function declarations;
 in the second one, we handle the remaining statement types:
 
 ```java
+import com.oracle.truffle.api.frame.FrameSlotKind;
+
 public final class EasyScriptTruffleParser {
     // ...
 
@@ -367,6 +374,13 @@ we don't need a local equivalent of `GlobalVarDeclStmtNode`
 so, we transform a local variable declaration into a local variable assignment:
 
 ```java
+import com.oracle.truffle.api.dsl.ImportStatic;
+import com.oracle.truffle.api.dsl.NodeChild;
+import com.oracle.truffle.api.dsl.NodeField;
+import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.frame.FrameSlotKind;
+import com.oracle.truffle.api.frame.VirtualFrame;
+
 @NodeChild("initializerExpr")
 @NodeField(name = "frameSlot", type = int.class)
 @ImportStatic(FrameSlotKind.class)
@@ -406,7 +420,7 @@ We use specializations if the local variables happen to have an `int` or `double
 We use the `guards` attribute of `@Specialization` to make sure they are only activated if the frame slot
 has the correct type (or has not yet been initialized,
 which is represented by the `Illegal` frame slot kind --
-that's why each specialization sets the approproate kind,
+that's why each specialization sets the appropriate kind,
 even though it might be redundant).
 If an object is assigned to a given local variable at any time,
 we stop further specializations, and work on the boxed object exclusively.
@@ -424,6 +438,8 @@ that allows discarding the value of the expression,
 and returning `undefined` always:
 
 ```java
+import com.oracle.truffle.api.frame.VirtualFrame;
+
 public final class ExprStmtNode extends EasyScriptStmtNode {
     @SuppressWarnings("FieldMayBeFinal")
     @Child
@@ -450,6 +466,9 @@ public final class ExprStmtNode extends EasyScriptStmtNode {
 ### Parsing a function declaration
 
 ```java
+import com.oracle.truffle.api.frame.FrameDescriptor;
+import org.antlr.v4.runtime.tree.TerminalNode;
+
 public final class EasyScriptTruffleParser {
     // ...
 
@@ -507,6 +526,8 @@ passing it the list of statements that comprise the function's body,
 wrapped as a single `EasyScriptStatement`:
 
 ```java
+import com.oracle.truffle.api.frame.VirtualFrame;
+
 public final class BlockStmtNode extends EasyScriptStmtNode {
     @Children
     private final EasyScriptStmtNode[] stmts;
@@ -530,6 +551,8 @@ public final class BlockStmtNode extends EasyScriptStmtNode {
 `FuncDeclStmtNode` looks as follows:
 
 ```java
+import com.oracle.truffle.api.frame.VirtualFrame;
+
 public final class FuncDeclStmtNode extends EasyScriptStmtNode {
     private final String funcName;
     private final FrameDescriptor frameDescriptor;
@@ -566,6 +589,8 @@ we have to create a new `RootNode`.
 `StmtBlockRootNode` is very simple:
 
 ```java
+import com.oracle.truffle.api.frame.FrameDescriptor;
+
 public final class StmtBlockRootNode extends RootNode {
     @SuppressWarnings("FieldMayBeFinal")
     @Child
@@ -606,11 +631,15 @@ The `newFunction` method in `GlobalScopeObject` is extremely simple:
 ```java
 @ExportLibrary(InteropLibrary.class)
 public final class GlobalScopeObject implements TruffleObject {
+    private final Map<String, Object> variables = new HashMap<>();
+    private final Set<String> constants = new HashSet<>();
+
     // ...
 
     public void newFunction(String name, FunctionObject func) {
         this.variables.put(name, func);
     }
+}
 ```
 
 We don't have to do any checking for duplicates,
@@ -667,6 +696,8 @@ But if the assignment is to a function argument,
 we use the `WriteFunctionArgExprNode` class:
 
 ```java
+import com.oracle.truffle.api.frame.VirtualFrame;
+
 public final class WriteFunctionArgExprNode extends EasyScriptExprNode {
     private final int index;
 
@@ -749,6 +780,10 @@ public final class EasyScriptTruffleParser {
 This is where we use the information about the frame slot we saved in `LocalVarAssignmentExprNode`:
 
 ```java
+import com.oracle.truffle.api.dsl.NodeField;
+import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.frame.VirtualFrame;
+
 @NodeField(name = "frameSlot", type = int.class)
 public abstract class LocalVarReferenceExprNode extends EasyScriptExprNode {
     protected abstract int getFrameSlot();
@@ -779,8 +814,8 @@ The code in the Nodes themselves is relatively straightforward,
 and doesn't really use many features we haven't seen before --
 the new elements in this part are mainly the APIs related to storing different values in the `VirtualFrame` instance.
 
-As usual, all of the code in the article
-[is available on GitHub](https://github.com/skinny85/graalvm-truffle-tutorial/tree/master/part-07).
+As usual, all code from the article is
+[available on GitHub](https://github.com/skinny85/graalvm-truffle-tutorial/tree/master/part-07).
 
 In the [next part](/graal-truffle-tutorial-part-8-conditionals-loops-control-flow)
 of the series,

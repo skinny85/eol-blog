@@ -64,6 +64,9 @@ we add support for subtraction by allowing the operator to be either `+`, or `-`
 We use the new class in our parser:
 
 ```java
+public final class EasyScriptTruffleParser {
+    // ...
+
     private EasyScriptExprNode parseAdditionSubtractionExpr(EasyScriptParser.AddSubtractExpr4Context addSubtractExpr) {
         EasyScriptExprNode leftSide  = this.parseExpr4(addSubtractExpr.left);
         EasyScriptExprNode rightSide = this.parseExpr5(addSubtractExpr.right);
@@ -75,11 +78,15 @@ We use the new class in our parser:
                 return SubtractionExprNodeGen.create(leftSide, rightSide);
         }
     }
+}
 ```
 
 And the subtraction Node itself is pretty much identical to the addition one:
 
 ```java
+import com.oracle.truffle.api.dsl.Fallback;
+import com.oracle.truffle.api.dsl.Specialization;
+
 public abstract class SubtractionExprNode extends BinaryOperationExprNode {
     @Specialization(rewriteOn = ArithmeticException.class)
     protected int subtractInts(int leftValue, int rightValue) {
@@ -115,6 +122,19 @@ for details.
 Because of that, I like to introduce a common benchmark superclass that gathers the shared configuration:
 
 ```java
+import org.graalvm.polyglot.Context;
+import org.openjdk.jmh.annotations.BenchmarkMode;
+import org.openjdk.jmh.annotations.Fork;
+import org.openjdk.jmh.annotations.Measurement;
+import org.openjdk.jmh.annotations.Mode;
+import org.openjdk.jmh.annotations.OutputTimeUnit;
+import org.openjdk.jmh.annotations.Scope;
+import org.openjdk.jmh.annotations.Setup;
+import org.openjdk.jmh.annotations.State;
+import org.openjdk.jmh.annotations.TearDown;
+import org.openjdk.jmh.annotations.Warmup;
+import java.util.concurrent.TimeUnit;
+
 @Warmup(iterations = 5, time = 1)
 @Measurement(iterations = 5, time = 1)
 @Fork(value = 1, jvmArgsAppend = "-Dgraalvm.locatorDisabled=true")
@@ -161,6 +181,8 @@ which are very similar to methods with the same annotations from test frameworks
 The benchmark class extends our above superclass:
 
 ```java
+import org.openjdk.jmh.annotations.Benchmark;
+
 public class FibonacciBenchmark extends TruffleBenchmark {
     private static final String FIBONACCI_JS_FUNCTION = "" +
             "function fib(n) { " +
@@ -175,6 +197,9 @@ public class FibonacciBenchmark extends TruffleBenchmark {
     public int recursive_eval_ezs() {
         return this.truffleContext.eval("ezs", FIBONACCI_JS_PROGRAM).asInt();
     }
+
+    // ...
+}
 ```
 
 Benchmark methods are annotated with `@Benchmark`.
@@ -214,16 +239,24 @@ but to track performance relative to other similar code.
 The obvious baseline is implementing the same Fibonacci function in Java:
 
 ```java
+import org.openjdk.jmh.annotations.Benchmark;
+
+public class FibonacciBenchmark extends TruffleBenchmark {
+    // ...
+
     public static int fibonacciRecursive(int n) {
         return n < 2
-                ? 1
-                : fibonacciRecursive(n - 1) + fibonacciRecursive(n - 2);
+            ? 1
+            : fibonacciRecursive(n - 1) + fibonacciRecursive(n - 2);
     }
 
     @Benchmark
     public int recursive_java() {
         return fibonacciRecursive(20);
     }
+
+    // ...
+}
 ```
 
 Another good candidate for a comparative benchmark is using the
@@ -239,16 +272,26 @@ dependencies {
     // ...
     implementation "org.graalvm.js:js:22.3.0"
 }
+
+// ...
 ```
 
 And with that, we can execute the same benchmark program,
 but with JavaScript instead of EasyScript:
 
 ```java
+import org.openjdk.jmh.annotations.Benchmark;
+
+public class FibonacciBenchmark extends TruffleBenchmark {
+    // ...
+
     @Benchmark
     public int recursive_js_eval() {
         return this.truffleContext.eval("js", FIBONACCI_JS_PROGRAM).asInt();
     }
+
+    // ...
+}
 ```
 
 And finally, we also introduce one more Truffle language for comparison:
@@ -270,11 +313,18 @@ dependencies {
     // ...
     implementation "org.graalvm.truffle:truffle-sl:22.3.0"
 }
+
+// ...
 ```
 
 And then we can write a benchmark for it:
 
 ```java
+import org.openjdk.jmh.annotations.Benchmark;
+
+public class FibonacciBenchmark extends TruffleBenchmark {
+    // ...
+
     @Benchmark
     public int recursive_sl_eval() {
         return this.truffleContext.eval("sl", FIBONACCI_JS_FUNCTION +
@@ -282,6 +332,7 @@ And then we can write a benchmark for it:
                 "    return fib(20); " +
                 "}").asInt();
     }
+}
 ```
 
 SimpleLanguage is very similar to JavaScript,
@@ -330,7 +381,7 @@ For example, in the code of the benchmark, the `if` statement uses a block:
 
 However, if we instead use a single statement instead of a block:
 
-```java
+```js
     if (n < 2)
         return 1;
 ```
@@ -348,6 +399,9 @@ If we look at the implementation of the node that represents a block of statemen
 `BlockStmtNode`:
 
 ```java
+import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.nodes.ExplodeLoop;
+
 public final class BlockStmtNode extends EasyScriptStmtNode {
     @Children
     private final EasyScriptStmtNode[] stmts;
@@ -377,6 +431,12 @@ If we change the implementation to be a little more complicated,
 but don't perform redundant assignments:
 
 ```java
+import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.nodes.ExplodeLoop;
+
+public final class BlockStmtNode extends EasyScriptStmtNode {
+    // ...
+
     @Override
     @ExplodeLoop
     public Object executeStatement(VirtualFrame frame) {
@@ -386,6 +446,7 @@ but don't perform redundant assignments:
         }
         return stmtsMinusOne < 0 ? Undefined.INSTANCE : this.stmts[stmtsMinusOne].executeStatement(frame);
     }
+}
 ```
 
 We get the same performance for the block program as for the program without the block:
@@ -420,6 +481,12 @@ For example, to dump the data from the EasyScript benchmark,
 you can add the appropriate JVM arguments in the benchmark configuration:
 
 ```java
+import org.openjdk.jmh.annotations.Benchmark;
+import org.openjdk.jmh.annotations.Fork;
+
+public class FibonacciBenchmark extends TruffleBenchmark {
+    // ...
+
     @Fork(jvmArgsPrepend = {
             "-Dgraal.Dump=:1",
             "-Dgraal.PrintGraph=Network"
@@ -428,6 +495,7 @@ you can add the appropriate JVM arguments in the benchmark configuration:
     public int recursive_eval_ezs() {
         return this.truffleContext.eval("ezs", FIBONACCI_JS_PROGRAM).asInt();
     }
+}
 ```
 
 After [downloading IGV](https://www.oracle.com/downloads/graalvm-downloads.html),
@@ -509,6 +577,11 @@ and we would avoid searching for it each time in our global variables Map!
 Let's make `FunctionObject` mutable:
 
 ```java
+import com.oracle.truffle.api.Assumption;
+import com.oracle.truffle.api.CallTarget;
+import com.oracle.truffle.api.interop.TruffleObject;
+import com.oracle.truffle.api.utilities.CyclicAssumption;
+
 public final class FunctionObject implements TruffleObject {
     private final String functionName;
     private final CyclicAssumption functionWasNotRedefinedCyclicAssumption;
@@ -544,6 +617,7 @@ public final class FunctionObject implements TruffleObject {
     public int getArgumentCount() {
         return this.argumentCount;
     }
+
     // ...
 }
 ```
@@ -566,6 +640,11 @@ and we will call `redefine()` on the `FunctionObject` if we already have a funct
 (remember, in JavaScript, it's legal to define a function with a name that already exists):
 
 ```java
+import com.oracle.truffle.api.CallTarget;
+import com.oracle.truffle.api.interop.InteropLibrary;
+import com.oracle.truffle.api.interop.TruffleObject;
+import com.oracle.truffle.api.library.ExportLibrary;
+
 @ExportLibrary(InteropLibrary.class)
 public final class GlobalScopeObject implements TruffleObject {
     private final Map<String, Object> variables = new HashMap<>();
@@ -590,12 +669,20 @@ public final class GlobalScopeObject implements TruffleObject {
             return newFunction;
         }
     }
+
     // ...
+}
 ```
 
 With this, we can change the implementation of function declaration:
 
 ```java
+import com.oracle.truffle.api.CallTarget;
+import com.oracle.truffle.api.CompilerDirectives;
+import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
+import com.oracle.truffle.api.frame.FrameDescriptor;
+import com.oracle.truffle.api.frame.VirtualFrame;
+
 public final class FuncDeclStmtNode extends EasyScriptStmtNode {
     private final String funcName;
     private final FrameDescriptor frameDescriptor;
@@ -653,6 +740,11 @@ Also, now that we always return the same `FunctionObject`
 instance for a given name, we can add caching to the variable reference Node:
 
 ```java
+import com.oracle.truffle.api.CompilerDirectives;
+import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
+import com.oracle.truffle.api.dsl.NodeField;
+import com.oracle.truffle.api.dsl.Specialization;
+
 @NodeField(name = "name", type = String.class)
 public abstract class GlobalVarReferenceExprNode extends EasyScriptExprNode {
     protected abstract String getName();
@@ -691,6 +783,12 @@ Fortunately, the `@Specialization` annotation has an `assumptions`
 attribute that can be used for this purpose:
 
 ```java
+import com.oracle.truffle.api.Assumption;
+import com.oracle.truffle.api.dsl.Cached;
+import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.nodes.DirectCallNode;
+import com.oracle.truffle.api.nodes.Node;
+
 public abstract class FunctionDispatchNode extends Node {
     @Specialization(
             guards = "function.getCallTarget() == directCallNode.getCallTarget()",
@@ -703,7 +801,9 @@ public abstract class FunctionDispatchNode extends Node {
             @Cached("create(function.getCallTarget())") DirectCallNode directCallNode) {
         return directCallNode.call(extendArguments(arguments, function));
     }
+
     // ...
+}
 ```
 
 ## Results after changes

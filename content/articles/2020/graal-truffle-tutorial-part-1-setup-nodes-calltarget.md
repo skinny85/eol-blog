@@ -37,14 +37,14 @@ Once you've downloaded the correct archive for your operating system and extract
 you need to set the `JAVA_HOME`
 environment variable to point to the directory containing the uncompressed contents:
 
-```shell
+```shell-session
 $ export JAVA_HOME=/path/to/extracted/archive
 ```
 
 You can verify the installation works by executing the `java`
 command using `JAVA_HOME`:
 
-```shell
+```shell-session
 $ $JAVA_HOME/bin/java -version
 
 openjdk version "17.0.5" 2022-10-18
@@ -108,9 +108,9 @@ Let's say we have the following JavaScritpt code:
 
 ```js
 function factorial(n) {
-	if (n < 3)
-		return n;
-	return n * factorial(n - 1);
+    if (n < 3)
+        return n;
+    return n * factorial(n - 1);
 }
 ```
 
@@ -199,6 +199,8 @@ Our first node is the integer literal node,
 and it's very simple:
 
 ```java
+import com.oracle.truffle.api.frame.VirtualFrame;
+
 public final class IntLiteralNode extends EasyScriptNode {
     private final int value;
 
@@ -216,6 +218,8 @@ public final class IntLiteralNode extends EasyScriptNode {
 And the second one is the addition node:
 
 ```java
+import com.oracle.truffle.api.frame.VirtualFrame;
+
 public final class AdditionNode extends EasyScriptNode {
     @SuppressWarnings("FieldMayBeFinal")
     @Child
@@ -271,6 +275,7 @@ we will just delegate straight to an `EasyScriptNode`
 that we get through the constructor:
 
 ```java
+import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.RootNode;
 
 public final class EasyScriptRootNode extends RootNode {
@@ -327,7 +332,7 @@ we are finally ready to write our unit test:
 
 ```java
 import com.oracle.truffle.api.CallTarget;
-import com.oracle.truffle.api.Truffle;
+
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -350,7 +355,7 @@ public class ExecuteNodesTest {
 Phew! It was a lot of work,
 but we finally managed to add `12` and `34` together using Truffle!
 
-All of the code from the article is available on
+All the code from the article is available on
 [GitHub](https://github.com/skinny85/graalvm-truffle-tutorial/blob/master/part-01/ReadMe.md).
 
 ## Next article

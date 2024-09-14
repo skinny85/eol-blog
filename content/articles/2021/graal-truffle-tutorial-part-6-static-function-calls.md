@@ -154,6 +154,9 @@ In the case of EasyScript at this moment,
 that's `int` and `double`:
 
 ```java
+import com.oracle.truffle.api.dsl.ImplicitCast;
+import com.oracle.truffle.api.dsl.TypeSystem;
+
 @TypeSystem({
         int.class,
         double.class,
@@ -173,6 +176,11 @@ We can use those methods in our base `EasyScriptExprNode`
 class to implement the non-generic `execute*()` methods:
 
 ```java
+import com.oracle.truffle.api.dsl.TypeSystemReference;
+import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.nodes.Node;
+import com.oracle.truffle.api.nodes.UnexpectedResultException;
+
 @TypeSystemReference(EasyScriptTypeSystem.class)
 public abstract class EasyScriptExprNode extends Node {
     public abstract Object executeGeneric(VirtualFrame frame);
@@ -254,6 +262,8 @@ but that does use the Truffle DSL,
 and we'll delegate the actual function call to that Node after evaluating the subexpressions:
 
 ```java
+import com.oracle.truffle.api.frame.VirtualFrame;
+
 public final class FunctionCallExprNode extends EasyScriptExprNode {
     @SuppressWarnings("FieldMayBeFinal")
     @Child
@@ -338,6 +348,13 @@ In that case, we need to fail with an exception.
 So, our `FunctionDispatchNode` looks as follows:
 
 ```java
+import com.oracle.truffle.api.dsl.Cached;
+import com.oracle.truffle.api.dsl.Fallback;
+import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.nodes.DirectCallNode;
+import com.oracle.truffle.api.nodes.IndirectCallNode;
+import com.oracle.truffle.api.nodes.Node;
+
 public abstract class FunctionDispatchNode extends Node {
     public abstract Object executeDispatch(Object function, Object[] arguments);
 
@@ -472,6 +489,9 @@ The function `RootNode` is extremely simple --
 it just wraps an `EasyScriptExprNode` representing the body of our function:
 
 ```java
+import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.nodes.RootNode;
+
 public final class FunctionRootNode extends RootNode {
     @SuppressWarnings("FieldMayBeFinal")
     @Child
@@ -500,6 +520,8 @@ The arguments the function was called with will be inserted into the `arguments`
 So, we have to read the function's argument from there:
 
 ```java
+import com.oracle.truffle.api.frame.VirtualFrame;
+
 public final class ReadFunctionArgExprNode extends EasyScriptExprNode {
     private final int index;
 
@@ -533,6 +555,10 @@ Finally, we can write the Node that represents our `abs()` function.
 Of course, we want to use specializations to define it more efficiently in case the argument is an `int`:
 
 ```java
+import com.oracle.truffle.api.dsl.Fallback;
+import com.oracle.truffle.api.dsl.NodeChild;
+import com.oracle.truffle.api.dsl.Specialization;
+
 @NodeChild(value = "argument", type = ReadFunctionArgExprNode.class)
 public abstract class AbsFunctionBodyExprNode extends EasyScriptExprNode {
     @Specialization(rewriteOn = ArithmeticException.class)
@@ -573,6 +599,9 @@ and point it to the correct `FunctionObject`.
 We do that in the `createContext()` method of our `TruffleLanguage` implementation:
 
 ```java
+import com.oracle.truffle.api.CallTarget;
+import com.oracle.truffle.api.TruffleLanguage;
+
 @TruffleLanguage.Registration(id = "ezs", name = "EasyScript")
 public final class EasyScriptTruffleLanguage extends
         TruffleLanguage<EasyScriptLanguageContext> {
@@ -606,12 +635,21 @@ public final class EasyScriptTruffleLanguage extends
 With this in place, we can now write a unit test calling our `abs()` function!
 
 ```java
+import org.graalvm.polyglot.Value;
+
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+public class FunctionsTest {
     @Test
     public void calling_Math_abs_works() {
         Value result = this.context.eval("ezs", "Math.abs(-2)");
 
         assertEquals(2, result.asInt());
     }
+
+    // ...
+}
 ```
 
 ## `NodeFactory`
@@ -661,6 +699,9 @@ and annotate that with `@GenerateNodeFactory`,
 to reduce duplication:
 
 ```java
+import com.oracle.truffle.api.dsl.GenerateNodeFactory;
+import com.oracle.truffle.api.dsl.NodeChild;
+
 @NodeChild(value = "arguments", type = ReadFunctionArgExprNode[].class)
 @GenerateNodeFactory
 public abstract class BuiltInFunctionBodyExprNode extends EasyScriptExprNode {
@@ -673,6 +714,9 @@ because each function takes a different amount of arguments.
 We can make our `pow()` function body Node inherit from this class:
 
 ```java
+import com.oracle.truffle.api.dsl.Fallback;
+import com.oracle.truffle.api.dsl.Specialization;
+
 public abstract class PowFunctionBodyExprNode extends BuiltInFunctionBodyExprNode {
     @Specialization(guards = "exponent >= 0", rewriteOn = ArithmeticException.class)
     protected int intPow(int base, int exponent) {
@@ -701,6 +745,10 @@ because we know only non-negative exponents can return an `int` result for `pow(
 And with this, we can now write our helper method inside `EasyScriptTruffleLanguage`:
 
 ```java
+import com.oracle.truffle.api.CallTarget;
+import com.oracle.truffle.api.TruffleLanguage;
+import com.oracle.truffle.api.dsl.NodeFactory;
+
 @TruffleLanguage.Registration(id = "ezs", name = "EasyScript")
 public final class EasyScriptTruffleLanguage extends
         TruffleLanguage<EasyScriptLanguageContext> {
@@ -738,12 +786,21 @@ and create that many `ReadFunctionArgExprNode`s for the children of a given func
 And now, we can unit test the `pow()` function:
 
 ```java
+import org.graalvm.polyglot.Value;
+
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+public class FunctionsTest {
     @Test
     public void calling_Math_pow_works() {
         Value result = this.context.eval("ezs", "Math.pow(2, 3)");
 
         assertEquals(8, result.asInt());
     }
+
+    // ...
+}
 ```
 
 ## `FunctionObject` as a polyglot value
@@ -774,6 +831,12 @@ like strings, or objects of an arbitrary class.
 Our `FunctionObject` should take that into account before calling our function body:
 
 ```java
+import com.oracle.truffle.api.CallTarget;
+import com.oracle.truffle.api.interop.InteropLibrary;
+import com.oracle.truffle.api.interop.TruffleObject;
+import com.oracle.truffle.api.library.ExportLibrary;
+import com.oracle.truffle.api.library.ExportMessage;
+
 @ExportLibrary(InteropLibrary.class)
 public final class FunctionObject implements TruffleObject {
     public final CallTarget callTarget;
@@ -820,6 +883,13 @@ I've decided to go with the simplest solution possible.
 And with this, we can actually call EasyScript functions straight from Java!
 
 ```java
+import org.graalvm.polyglot.Value;
+
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+public class FunctionsTest {
     @Test
     public void an_EasyScript_function_can_be_called_from_Java() {
         Value mathAbs = this.context.eval("ezs", "Math.abs");
@@ -829,6 +899,9 @@ And with this, we can actually call EasyScript functions straight from Java!
         Value result = mathAbs.execute(-3);
         assertEquals(3, result.asInt());
     }
+
+    // ...
+}
 ```
 
 ## Summary
@@ -837,8 +910,8 @@ I hope you can see now why I've waited to tackle function calls until part 6 of 
 they are one of the more complex areas of Truffle,
 mainly because optimizing function calls is such a critical part of writing a high-performance language implementation.
 
-As usual, all of the code in the article
-[is available on GitHub](https://github.com/skinny85/graalvm-truffle-tutorial/tree/master/part-06).
+As usual, all code from the article is
+[available on GitHub](https://github.com/skinny85/graalvm-truffle-tutorial/tree/master/part-06).
 
 In the [next article](/graal-truffle-tutorial-part-7-function-definitions),
 we continue with the topic of functions --

@@ -46,9 +46,9 @@ For example, if you have a Java class like this:
 
 ```java
 public class Example {
-	public static int increment(int argument) {
-		return argument + 1;
-	}
+    public static int increment(int argument) {
+        return argument + 1;
+    }
 }
 ```
 
@@ -67,7 +67,7 @@ public class Example {
   public Example();
     Code:
        0: aload_0
-       1: invokespecial #1                  // Method java/lang/Object."<init>":()V
+       1: invokespecial #1          // Method java/lang/Object."<init>":()V
        4: return
 
   public static int increment(int);
@@ -161,34 +161,40 @@ For example, an interpreter for a simple language that allows only addition of i
 would look something like this:
 
 ```java
+import com.oracle.truffle.api.nodes.Node;
+
 // Node is a class from Truffle
 public abstract class MyNode extends Node {
-	public abstract int executeInt();
+    public abstract int executeInt();
 }
 
 public class IntLiteralNode extends MyNode {
-	private final int value;
+    private final int value;
 
-	public IntLiteralNode(int value) { this.value = value; }
+    public IntLiteralNode(int value) {
+        this.value = value;
+    }
 
-	@Override
-	public int executeInt() { return this.value; }
+    @Override
+    public int executeInt() {
+        return this.value;
+    }
 }
 
 public class IntAddNode extends MyNode {
-	private final MyNode left, right;
+    private final MyNode left, right;
 
-	public IntAddNode(MyNode left, MyNode right) {
-		this.left = left;
-		this.right = right;
-	}
+    public IntAddNode(MyNode left, MyNode right) {
+        this.left = left;
+        this.right = right;
+    }
 
-	@Override
-	public int executeInt() {
-		int leftResult = this.left.executeInt();
-		int rightResult = this.right.executeInt();
-		return leftResult + rightResult;
-	}
+    @Override
+    public int executeInt() {
+        int leftResult = this.left.executeInt();
+        int rightResult = this.right.executeInt();
+        return leftResult + rightResult;
+    }
 }
 ```
 
@@ -212,8 +218,10 @@ the interpreter looks something like this:
 
 ```java
 public int interpretMyLanguage() {
-	MyNode node = new IntAddNode(new IntLiteralNode(12), new IntLiteralNode(34));
-	return node.executeInt();
+    MyNode node = new IntAddNode(
+            new IntLiteralNode(12),
+            new IntLiteralNode(34));
+    return node.executeInt();
 }
 ```
 
@@ -227,12 +235,12 @@ Graal does aggressive inlining of the `executeInt` method and constant folding f
 and produces something like this
 (I'm showing the code in [Static Single Assignment](https://en.wikipedia.org/wiki/Static_single_assignment_form) form):
 
-```shell
+```shell-session
 int interpretMyLanguage();
-	$tmp1 = 12            # left IntLiteralNode, inlined and constant-folded
-	$tmp2 = 34            # right IntLiteralNode, inlined and constant-folded
-	$tmp3 = $tmp1 + $tmp2 # inlined executeInt() from IntAddNode
-	return $tmp3
+    $tmp1 = 12            # left IntLiteralNode, inlined and constant-folded
+    $tmp2 = 34            # right IntLiteralNode, inlined and constant-folded
+    $tmp3 = $tmp1 + $tmp2 # inlined executeInt() from IntAddNode
+    return $tmp3
 ```
 
 (By the way, it's very probable that Graal would keep applying constant folding until it reduced this code to just `return 46`,
@@ -270,18 +278,20 @@ The implementation of the `IntAverageNode` in the interpreter is fairly simple:
 
 ```java
 public class IntAverageNode extends MyNode {
-	public final List<MyNode> args;
+    public final List<MyNode> args;
 
-	public IntAverageNode(List<MyNode> args) { this.args = args; }
+    public IntAverageNode(List<MyNode> args) {
+        this.args = args;
+    }
 
-	@Override
-	public int executeInt() {
-		int sum = 0;
-		for (int i = 0; i < args.size(); i++) {
-			sum += args.get(i).executeInt();
-		}
-		return sum / args.size();
-	}
+    @Override
+    public int executeInt() {
+        int sum = 0;
+        for (int i = 0; i < args.size(); i++) {
+            sum += args.get(i).executeInt();
+        }
+        return sum / args.size();
+    }
 }
 ```
 
@@ -301,13 +311,13 @@ method with the `@ExplodeLoop` Truffle annotation:
 
 ```java
 public class IntAverageNode extends MyNode {
-	// same as above...
+    // same as above...
 
-	@Override
-	@ExplodeLoop
-	public int executeInt() {
-		// implementation as above...
-	}
+    @Override
+    @ExplodeLoop
+    public int executeInt() {
+        // implementation as above...
+    }
 }
 ```
 
@@ -318,13 +328,13 @@ which, when combined with inlining and constant folding,
 will produce the following code for the `avg(1, 2, 3)` case
 (again in SSA form):
 
-```shell
-	$sum = 0
-	$tmp1 = $sum  + 1  # $tmp1 == 1
-	$tmp2 = $tmp1 + 2  # $tmp2 == 3
-	$tmp3 = $tmp2 + 3  # $tmp3 == 6
-	$tmp4 = $tmp3 / 3  # $tmp4 == 2
-	return $tmp4
+```shell-session
+    $sum = 0
+    $tmp1 = $sum  + 1  # $tmp1 == 1
+    $tmp2 = $tmp1 + 2  # $tmp2 == 3
+    $tmp3 = $tmp2 + 3  # $tmp3 == 6
+    $tmp4 = $tmp3 / 3  # $tmp4 == 2
+    return $tmp4
 ```
 
 The loop is completely gone,

@@ -121,6 +121,11 @@ along with the Node representing the block of statements,
 which means we need a new class to represent the results of parsing:
 
 ```java
+import com.oracle.truffle.api.frame.FrameDescriptor;
+import org.antlr.v4.runtime.BailErrorStrategy;
+import org.antlr.v4.runtime.CharStreams;
+import org.antlr.v4.runtime.CommonTokenStream;
+
 public final class ParsingResult {
     public final BlockStmtNode programStmtBlock;
     public final FrameDescriptor topLevelFrameDescriptor;
@@ -145,6 +150,9 @@ public final class EasyScriptTruffleParser {
                 new BlockStmtNode(stmts),
                 easyScriptTruffleParser.frameDescriptor.build());
     }
+
+    // ...
+}
 ```
 
 The second challenge is that we can now have arbitrary scopes nested in each other,
@@ -174,6 +182,11 @@ and a `Map<String, FrameMember>` that stored all arguments and local variables o
 But now, we need four fields to represent the state:
 
 ```java
+import com.oracle.truffle.api.frame.FrameDescriptor;
+
+public final class EasyScriptTruffleParser {
+    // ...
+
     private enum ParserState { TOP_LEVEL, NESTED_SCOPE_IN_TOP_LEVEL, FUNC_DEF }
     private ParserState state;
 
@@ -187,6 +200,9 @@ But now, we need four fields to represent the state:
         this.localScopes = new Stack<>();
         this.localVariablesCounter = 0;
     }
+    
+    // ...
+}
 ```
 
 We can't rely anymore on the `frameDescriptor` field to distinguish whether we're parsing the global scope,
@@ -201,6 +217,9 @@ we can't simply search the top-most one;
 we have to search all of them, starting from the top one:
 
 ```java
+public final class EasyScriptTruffleParser {
+    // ...
+
     private FrameMember findFrameMember(String memberName) {
         for (var scope : this.localScopes) {
             FrameMember ret = scope.get(memberName);
@@ -210,6 +229,7 @@ we have to search all of them, starting from the top one:
         }
         return null;
     }
+}
 ```
 
 Finally, we maintain an integer counter of the local variables,
@@ -224,6 +244,9 @@ for easier debugging).
 ### Parsing a statement block
 
 ```java
+public final class EasyScriptTruffleParser {
+    // ...
+
     private BlockStmtNode parseStmtBlock(EasyScriptParser.BlockStmtContext blockStmt) {
         return parseStmtBlock(blockStmt.stmt());
     }
@@ -243,6 +266,7 @@ for easier debugging).
 
         return new BlockStmtNode(ret);
     }
+}
 ```
 
 To parse a block of statements between curly braces,
@@ -263,6 +287,9 @@ because `for` also introduces a new scope
 the `a` variable is only visible inside the loop statement):
 
 ```java
+public final class EasyScriptTruffleParser {
+    // ...
+
     private ForStmtNode parseForStmt(EasyScriptParser.ForStmtContext forStmt) {
         ParserState previousParserState = this.state;
 
@@ -282,6 +309,7 @@ the `a` variable is only visible inside the loop statement):
 
         return ret;
     }
+}
 ```
 
 ## Adding booleans to the language
@@ -293,6 +321,9 @@ We start by adding `boolean` to the `TypeSystem` class we've been using since
 [part 3](/graal-truffle-tutorial-part-3-specializations-with-truffle-dsl-typesystem#the-typesystem-class):
 
 ```java
+import com.oracle.truffle.api.dsl.ImplicitCast;
+import com.oracle.truffle.api.dsl.TypeSystem;
+
 @TypeSystem({
         boolean.class,
         int.class,
@@ -309,6 +340,10 @@ public abstract class EasyScriptTypeSystem {
 And then we need a new `execute*()` method in our superclass of all expressions:
 
 ```java
+import com.oracle.truffle.api.dsl.TypeSystemReference;
+import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.nodes.UnexpectedResultException;
+
 @TypeSystemReference(EasyScriptTypeSystem.class)
 public abstract class EasyScriptExprNode extends EasyScriptNode {
     public abstract Object executeGeneric(VirtualFrame frame);
@@ -356,6 +391,8 @@ we will override that default implementation --
 for example, here's how we do it in the integer literal Node:
 
 ```java
+import com.oracle.truffle.api.frame.VirtualFrame;
+
 public final class IntLiteralExprNode extends EasyScriptExprNode {
     private final int value;
 
@@ -388,6 +425,13 @@ public final class IntLiteralExprNode extends EasyScriptExprNode {
 In addition, we'll have to take into account booleans in our local variable assignment with a specialization for handling them:
 
 ```java
+import com.oracle.truffle.api.dsl.ImportStatic;
+import com.oracle.truffle.api.dsl.NodeChild;
+import com.oracle.truffle.api.dsl.NodeField;
+import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.frame.FrameSlotKind;
+import com.oracle.truffle.api.frame.VirtualFrame;
+
 @NodeChild("initializerExpr")
 @NodeField(name = "frameSlot", type = int.class)
 @ImportStatic(FrameSlotKind.class)
@@ -446,6 +490,8 @@ Comparison operators are very straightforward to implement.
 We start with a common superclass of binary operations that will save us repeating some annotations:
 
 ```java
+import com.oracle.truffle.api.dsl.NodeChild;
+
 @NodeChild("leftSide")
 @NodeChild("rightSide")
 public abstract class BinaryOperationExprNode extends EasyScriptExprNode {
@@ -455,6 +501,9 @@ public abstract class BinaryOperationExprNode extends EasyScriptExprNode {
 Using it, equality (`===`) looks as follows:
 
 ```java
+import com.oracle.truffle.api.dsl.Fallback;
+import com.oracle.truffle.api.dsl.Specialization;
+
 public abstract class EqualityExprNode extends BinaryOperationExprNode {
     @Specialization
     protected boolean intEquality(int leftValue, int rightValue) {
@@ -481,6 +530,9 @@ public abstract class EqualityExprNode extends BinaryOperationExprNode {
 Greater than or equal (`>=`) is even simpler:
 
 ```java
+import com.oracle.truffle.api.dsl.Fallback;
+import com.oracle.truffle.api.dsl.Specialization;
+
 public abstract class GreaterOrEqualExprNode extends BinaryOperationExprNode {
     @Specialization
     protected boolean intGreaterOrEqual(int leftValue, int rightValue) {
@@ -511,6 +563,7 @@ the ability to execute different code based on some condition is crucial to expr
 Despite its huge significance, the implementation of the statement is really simple:
 
 ```java
+import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.profiles.ConditionProfile;
 
 public final class IfStmtNode extends EasyScriptStmtNode {
@@ -589,6 +642,8 @@ we evaluate the expression we were given,
 and throw that exception:
 
 ```java
+import com.oracle.truffle.api.frame.VirtualFrame;
+
 public final class ReturnStmtNode extends EasyScriptStmtNode {
     @Child
     private EasyScriptExprNode returnExpr;
@@ -609,6 +664,8 @@ That exception is then caught, and used as the return value,
 in the class that represents the body of a user-defined function:
 
 ```java
+import com.oracle.truffle.api.frame.VirtualFrame;
+
 public final class UserFuncBodyStmtNode extends EasyScriptStmtNode {
     @Children
     private final EasyScriptStmtNode[] stmts;
@@ -644,6 +701,8 @@ of course, only if the loop condition is still true.
 They are also implemented with exceptions:
 
 ```java
+import com.oracle.truffle.api.nodes.ControlFlowException;
+
 public final class BreakException extends ControlFlowException {
 }
 
@@ -654,6 +713,8 @@ public final class ContinueException extends ControlFlowException {
 And the statement Nodes implementing them are probably the simplest we've seen so far:
 
 ```java
+import com.oracle.truffle.api.frame.VirtualFrame;
+
 public final class BreakStmtNode extends EasyScriptStmtNode {
     @Override
     public Object executeStatement(VirtualFrame frame) {
@@ -688,7 +749,10 @@ like automatic loop unrolling.
 So, our `while` Node looks as follows:
 
 ```java
+import com.oracle.truffle.api.Truffle;
+import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.LoopNode;
+import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RepeatingNode;
 
 public final class WhileStmtNode extends EasyScriptStmtNode {
@@ -740,6 +804,12 @@ by either terminating the loop, or continuing with the next iteration, respectiv
 we first execute the body of the loop, and only then check the condition:
 
 ```java
+import com.oracle.truffle.api.Truffle;
+import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.nodes.LoopNode;
+import com.oracle.truffle.api.nodes.Node;
+import com.oracle.truffle.api.nodes.RepeatingNode;
+
 public final class DoWhileStmtNode extends EasyScriptStmtNode {
     @Child private LoopNode loopNode;
 
@@ -794,6 +864,12 @@ just broken down into several steps:
 This is how that looks like in code:
 
 ```java
+import com.oracle.truffle.api.Truffle;
+import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.nodes.LoopNode;
+import com.oracle.truffle.api.nodes.Node;
+import com.oracle.truffle.api.nodes.RepeatingNode;
+
 public final class ForStmtNode extends EasyScriptStmtNode {
     @Child private EasyScriptStmtNode initStmt;
     @Child private LoopNode loopNode;

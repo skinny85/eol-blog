@@ -104,6 +104,8 @@ dependencies {
     // ...
     implementation "org.apache.commons:commons-text:1.10.0"
 }
+
+// ...
 ```
 
 You might be worried that adding a dependency on a library not meant for partial evaluation might negatively impact performance,
@@ -121,6 +123,9 @@ and makes sure strings, and operations on them, are as efficient as possible.
 So, our string literal Node simply needs to create an instance of this class:
 
 ```java
+import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.strings.TruffleString;
+
 public final class StringLiteralExprNode extends EasyScriptExprNode {
     private final TruffleString value;
 
@@ -147,6 +152,8 @@ it's common to introduce a helper class
 that contains simple, one-line helper methods:
 
 ```java
+import com.oracle.truffle.api.strings.TruffleString;
+
 public final class EasyScriptTruffleStrings {
     private static final TruffleString.Encoding JAVA_SCRIPT_STRING_ENCODING = TruffleString.Encoding.UTF_16;
 
@@ -171,6 +178,10 @@ The first one is the `executeBool()` method in the top-level `EasyScriptExprNode
 as empty strings are considered falsy in JavaScript:
 
 ```java
+import com.oracle.truffle.api.dsl.TypeSystemReference;
+import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.strings.TruffleString;
+
 @TypeSystemReference(EasyScriptTypeSystem.class)
 public abstract class EasyScriptExprNode extends EasyScriptNode {
     public boolean executeBool(VirtualFrame frame) {
@@ -180,7 +191,7 @@ public abstract class EasyScriptExprNode extends EasyScriptNode {
         }
         // other cases here...
     }
-    
+
     // ...
 }
 ```
@@ -190,6 +201,10 @@ we have to add new specializations to them,
 as strings can be compared with `===` and `!==` in JavaScript:
 
 ```java
+import com.oracle.truffle.api.dsl.Cached;
+import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.strings.TruffleString;
+
 public abstract class EqualityExprNode extends BinaryOperationExprNode {
     // ...
    
@@ -228,6 +243,10 @@ as it's legal to compare strings with `>`, `<=`, etc. in JavaScript.
 We only show the Node for greater (`>`) -- the others are very similar:
 
 ```java
+import com.oracle.truffle.api.dsl.Cached;
+import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.strings.TruffleString;
+
 public abstract class GreaterExprNode extends BinaryOperationExprNode {
     // ...
 
@@ -263,6 +282,10 @@ in case both arguments are `TruffleString`s,
 similarly like we have a specialization for integer addition:
 
 ```java
+import com.oracle.truffle.api.dsl.Cached;
+import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.strings.TruffleString;
+
 public abstract class AdditionExprNode extends BinaryOperationExprNode {
     // ...
 
@@ -272,12 +295,12 @@ public abstract class AdditionExprNode extends BinaryOperationExprNode {
         return EasyScriptTruffleStrings.concat(leftValue, rightValue, concatNode);
     }
 
-   // ...
+    // ...
 }
 
 public final class EasyScriptTruffleStrings {
     private static final TruffleString.Encoding JAVA_SCRIPT_STRING_ENCODING = TruffleString.Encoding.UTF_16;
-   
+
     public static TruffleString concat(TruffleString s1, TruffleString s2, TruffleString.ConcatNode concatNode) {
         return concatNode.execute(s1, s2, JAVA_SCRIPT_STRING_ENCODING, true);
     }
@@ -299,6 +322,11 @@ And finally, we need to write a generic specialization that coerces its argument
 and then concatenates them:
 
 ```java
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
+import com.oracle.truffle.api.dsl.Cached;
+import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.strings.TruffleString;
+
 public abstract class AdditionExprNode extends BinaryOperationExprNode {
     // ...
 
@@ -368,6 +396,11 @@ It will be `null` for function calls,
 but non-`null` for method calls:
 
 ```java
+import com.oracle.truffle.api.CallTarget;
+import com.oracle.truffle.api.interop.InteropLibrary;
+import com.oracle.truffle.api.interop.TruffleObject;
+import com.oracle.truffle.api.library.ExportLibrary;
+
 @ExportLibrary(InteropLibrary.class)
 public final class FunctionObject implements TruffleObject {
     public final CallTarget callTarget;
@@ -400,6 +433,8 @@ has a non-`null` method target
 and offset the original arguments by one to the right):
 
 ```java
+import com.oracle.truffle.api.nodes.Node;
+
 public abstract class FunctionDispatchNode extends Node {
     // ...
 
@@ -437,6 +472,12 @@ which represents the string that is the target of the method call,
 which we name `self`:
 
 ```java
+import com.oracle.truffle.api.dsl.Cached;
+import com.oracle.truffle.api.dsl.Cached.Shared;
+import com.oracle.truffle.api.dsl.Fallback;
+import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.strings.TruffleString;
+
 public abstract class CharAtMethodBodyExprNode extends BuiltInFunctionBodyExprNode {
     @Specialization
     protected TruffleString charAtInt(
@@ -492,8 +533,14 @@ the `CallTarget`s for this built-in method is created in `TruffleLanguage`
 when instantiating a new Context object:
 
 ```java
+import com.oracle.truffle.api.CallTarget;
+import com.oracle.truffle.api.TruffleLanguage;
+import com.oracle.truffle.api.dsl.NodeFactory;
+import com.oracle.truffle.api.object.DynamicObjectLibrary;
+
 @TruffleLanguage.Registration(id = "ezs", name = "EasyScript")
-public final class EasyScriptTruffleLanguage extends TruffleLanguage<EasyScriptLanguageContext> {
+public final class EasyScriptTruffleLanguage extends
+        TruffleLanguage<EasyScriptLanguageContext> {
     // ...
 
     @Override
@@ -536,6 +583,8 @@ in our version, holds a single `CallTarget`
 (of course, feel free to add more string methods to it in your own implementation):
 
 ```java
+import com.oracle.truffle.api.CallTarget;
+
 public final class StringPrototype {
     public final CallTarget charAtMethod;
 
@@ -548,6 +597,9 @@ public final class StringPrototype {
 It's stored as the second field of the EasyScript TruffleLanguage Context:
 
 ```java
+import com.oracle.truffle.api.object.DynamicObject;
+import com.oracle.truffle.api.object.Shape;
+
 public final class EasyScriptLanguageContext {
     // ...
 
@@ -581,6 +633,8 @@ Instead, we will create a dedicated Node class that contains the logic of readin
 and which operates on `TruffleString`:
 
 ```java
+import com.oracle.truffle.api.strings.TruffleString;
+
 public abstract class ReadTruffleStringPropertyNode extends EasyScriptNode {
     public abstract Object executeReadTruffleStringProperty(TruffleString truffleString, Object property);
 
@@ -602,19 +656,23 @@ which should return a one-element substring of the original string
 (unless the index is out of range, in which case it should return `undefined`):
 
 ```java
+import com.oracle.truffle.api.dsl.Cached;
+import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.strings.TruffleString;
+
 public abstract class ReadTruffleStringPropertyNode extends EasyScriptNode {
     // ...
-   
+
     @Specialization
     protected Object readStringIndex(
-                TruffleString truffleString, int index,
-                @Cached TruffleString.CodePointLengthNode lengthNode,
-                @Cached TruffleString.SubstringNode substringNode) {
+            TruffleString truffleString, int index,
+            @Cached TruffleString.CodePointLengthNode lengthNode,
+            @Cached TruffleString.SubstringNode substringNode) {
         return index < 0 || index >= EasyScriptTruffleStrings.length(truffleString, lengthNode)
-                ? Undefined.INSTANCE
-                : EasyScriptTruffleStrings.substring(truffleString, index, 1, substringNode);
+            ? Undefined.INSTANCE
+            : EasyScriptTruffleStrings.substring(truffleString, index, 1, substringNode);
     }
-    
+
     // ...
 }
 ```
@@ -626,6 +684,10 @@ and the constant needs to be `protected`,
 as it will be read by the subclass generated by the Truffle DSL:
 
 ```java
+import com.oracle.truffle.api.dsl.Cached;
+import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.strings.TruffleString;
+
 public abstract class ReadTruffleStringPropertyNode extends EasyScriptNode {
     protected static final String LENGTH_PROP = "length";
 
@@ -651,6 +713,11 @@ so we cache it -- but, that means we have to make sure,
 in the guard expression, that the target of the property read has not changed:
 
 ```java
+import com.oracle.truffle.api.dsl.Cached;
+import com.oracle.truffle.api.dsl.ImportStatic;
+import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.strings.TruffleString;
+
 @ImportStatic(EasyScriptTruffleStrings.class)
 public abstract class ReadTruffleStringPropertyNode extends EasyScriptNode {
     protected static final String CHAR_AT_PROP = "charAt";
@@ -703,6 +770,9 @@ If a given AST node for accessing the `charAt` property encounters more than 3 s
 we need to switch to a specialization that doesn't use caching:
 
 ```java
+import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.strings.TruffleString;
+
 public abstract class ReadTruffleStringPropertyNode extends EasyScriptNode {
     // ...
 
@@ -740,6 +810,9 @@ And finally, we need a catch-all specialization for all properties besides
 for which we should just return `undefined`:
 
 ```java
+import com.oracle.truffle.api.dsl.Fallback;
+import com.oracle.truffle.api.strings.TruffleString;
+
 public abstract class ReadTruffleStringPropertyNode extends EasyScriptNode {
     // ...
 
@@ -771,6 +844,8 @@ is outside the EayScript expression Node hierarchy,
 and that contains the shared logic for reading a property of an object:
 
 ```java
+import com.oracle.truffle.api.nodes.Node;
+
 public abstract class CommonReadPropertyNode extends Node {
     public abstract Object executeReadProperty(Object target, Object property);
 
@@ -789,6 +864,11 @@ but, the Truffle DSL did, in the `ReadTruffleStringPropertyNodeGen` class it gen
 and `@Cached` is clever enough to find it):
 
 ```java
+import com.oracle.truffle.api.dsl.Cached;
+import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.nodes.Node;
+import com.oracle.truffle.api.strings.TruffleString;
+
 public abstract class CommonReadPropertyNode extends Node {
     // ...
 
@@ -809,6 +889,14 @@ or for attempting to read from a type that doesn't have any properties) are move
 [part 10](/graal-truffle-tutorial-part-10-arrays-read-only-properties#adding-the-length-property):
 
 ```java
+import com.oracle.truffle.api.dsl.Fallback;
+import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.interop.InteropLibrary;
+import com.oracle.truffle.api.interop.UnknownIdentifierException;
+import com.oracle.truffle.api.interop.UnsupportedMessageException;
+import com.oracle.truffle.api.library.CachedLibrary;
+import com.oracle.truffle.api.nodes.Node;
+
 public abstract class CommonReadPropertyNode extends Node {
     // ...
 
@@ -843,6 +931,11 @@ public abstract class CommonReadPropertyNode extends Node {
 With that in place, we change `PropertyReadExprNode` to delegate to this new `CommonReadPropertyNode` class:
 
 ```java
+import com.oracle.truffle.api.dsl.Cached;
+import com.oracle.truffle.api.dsl.NodeChild;
+import com.oracle.truffle.api.dsl.NodeField;
+import com.oracle.truffle.api.dsl.Specialization;
+
 @NodeChild("targetExpr")
 @NodeField(name = "propertyName", type = String.class)
 public abstract class PropertyReadExprNode extends EasyScriptExprNode {
@@ -867,11 +960,22 @@ We use the [`TruffleString.ToJavaStringNode` class](https://www.graalvm.org/truf
 for that purpose:
 
 ```java
+import com.oracle.truffle.api.dsl.Cached;
+import com.oracle.truffle.api.dsl.Fallback;
+import com.oracle.truffle.api.dsl.NodeChild;
+import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.interop.InteropLibrary;
+import com.oracle.truffle.api.interop.InvalidArrayIndexException;
+import com.oracle.truffle.api.interop.UnsupportedMessageException;
+import com.oracle.truffle.api.library.CachedLibrary;
+import com.oracle.truffle.api.strings.TruffleString;
+
 @NodeChild("arrayExpr")
 @NodeChild("indexExpr")
 public abstract class ArrayIndexReadExprNode extends EasyScriptExprNode {
     @Specialization(guards = "arrayInteropLibrary.isArrayElementReadable(array, index)", limit = "2")
-    protected Object readIntIndexOfArray(Object array, int index,
+    protected Object readIntIndexOfArray(
+            Object array, int index,
             @CachedLibrary("array") InteropLibrary arrayInteropLibrary) {
         try {
             return arrayInteropLibrary.readArrayElement(array, index);
@@ -881,7 +985,8 @@ public abstract class ArrayIndexReadExprNode extends EasyScriptExprNode {
     }
 
     @Specialization
-    protected Object readTruffleStringPropertyOfObject(Object target, TruffleString propertyName,
+    protected Object readTruffleStringPropertyOfObject(
+            Object target, TruffleString propertyName,
             @Cached TruffleString.ToJavaStringNode toJavaStringNode,
             @Cached CommonReadPropertyNode commonReadPropertyNode) {
         return commonReadPropertyNode.executeReadProperty(target,
@@ -889,7 +994,8 @@ public abstract class ArrayIndexReadExprNode extends EasyScriptExprNode {
     }
 
     @Fallback
-    protected Object readNonTruffleStringPropertyOfObject(Object target, Object index,
+    protected Object readNonTruffleStringPropertyOfObject(
+            Object target, Object index,
             @Cached CommonReadPropertyNode commonReadPropertyNode) {
         return commonReadPropertyNode.executeReadProperty(target, index);
     }
@@ -912,6 +1018,8 @@ We'll run it for EasyScript,
 and for the GraalVM JavaScript implementation:
 
 ```java
+import org.openjdk.jmh.annotations.Benchmark;
+
 public class StringLengthBenchmark extends TruffleBenchmark {
     private static final int INPUT = 1_000_000;
 
@@ -1016,6 +1124,12 @@ We have to make sure the `TruffleString` that represents the property being read
 and then we cache the Java `String` created from the `TruffleString`:
 
 ```java
+import com.oracle.truffle.api.dsl.Cached;
+import com.oracle.truffle.api.dsl.ImportStatic;
+import com.oracle.truffle.api.dsl.NodeChild;
+import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.strings.TruffleString;
+
 @NodeChild("arrayExpr")
 @NodeChild("indexExpr")
 @ImportStatic(EasyScriptTruffleStrings.class)
@@ -1042,6 +1156,12 @@ so we'll save at most two different keys for a given property access.
 If we see more names than that, then we'll switch to the uncached variant:
 
 ```java
+import com.oracle.truffle.api.dsl.Cached;
+import com.oracle.truffle.api.dsl.ImportStatic;
+import com.oracle.truffle.api.dsl.NodeChild;
+import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.strings.TruffleString;
+
 @NodeChild("arrayExpr")
 @NodeChild("indexExpr")
 @ImportStatic(EasyScriptTruffleStrings.class)
