@@ -531,7 +531,7 @@ public class OverflowTest {
 }
 ```
 
-You can check out the [full code on GitHub](https://github.com/skinny85/graalvm-truffle-tutorial/tree/master/part-02/ReadMe.md).
+You can check out the [full code on GitHub](https://github.com/skinny85/graalvm-truffle-tutorial/tree/master/part-02).
 
 ## Next article
 
@@ -543,7 +543,7 @@ and we haven't even covered the entire semantics of the 'plus' operator in JavaS
 which allows string concatenation, and even adding arbitrary values
 (for example, the expression `{} + []` is valid in JavaScript).
 
-In the [next article](/graal-truffle-tutorial-part-3-specializations-with-truffle-dsl-typesystem), we'll see how to use the
+In the [next part](/graal-truffle-tutorial-part-3-specializations-with-truffle-dsl-typesystem) of the series, we'll see how to use the
 [Truffle DSL](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/dsl/package-summary.html)
 to achieve exactly the same result,
 but with a fraction of the code.

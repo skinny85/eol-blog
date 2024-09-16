@@ -1055,8 +1055,8 @@ which means we at least didn't introduce some obvious inefficiency to EasyScript
 
 So, this is how exceptions work in Truffle.
 
-As usual, all the code from the article
-[is available on GitHub](https://github.com/skinny85/graalvm-truffle-tutorial/tree/master/part-15).
+As usual, all the code from the article is
+[available on GitHub](https://github.com/skinny85/graalvm-truffle-tutorial/tree/master/part-15).
 
-In the next part of the tutorial,
+In the next part of the series,
 we will talk about adding support for debugging your language.

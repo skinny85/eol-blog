@@ -1206,6 +1206,6 @@ So, that's how you implement strings and methods in Truffle languages.
 As usual, all code from the article is
 [available on GitHub](https://github.com/skinny85/graalvm-truffle-tutorial/tree/master/part-11).
 
-In the [next part of the series](/graal-truffle-tutorial-part-12-classes-1-methods-new),
+In the [next part](/graal-truffle-tutorial-part-12-classes-1-methods-new) of the series,
 we will start adding support for classes to our language --
 beginning with class declarations, methods, and the `new` operator.

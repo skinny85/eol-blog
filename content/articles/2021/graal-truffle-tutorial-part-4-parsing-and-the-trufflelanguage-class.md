@@ -338,9 +338,9 @@ we've made EasyScript a fully-fledged language,
 with a parser,
 and a first-class citizen of the GraalVM polyglot ecosystem.
 
-In the [next part of the series](/graal-truffle-tutorial-part-5-global-variables),
-we will finally start making EasyScript look more like a real programming language --
-we will add support for variables.
+As always, all code from the article is
+[available on GitHub](https://github.com/skinny85/graalvm-truffle-tutorial/tree/master/part-04).
 
-As always, all code from the article
-[is available on GitHub](https://github.com/skinny85/graalvm-truffle-tutorial/tree/master/part-04).
+In the [next part](/graal-truffle-tutorial-part-5-global-variables) of the series,
+we will finally start making EasyScript look more like a real programming language --
+we will add support for (global) variables.

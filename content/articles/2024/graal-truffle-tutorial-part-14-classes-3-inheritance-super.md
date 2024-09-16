@@ -1139,4 +1139,4 @@ As usual, all the code from the article is
 [available on GitHub](https://github.com/skinny85/graalvm-truffle-tutorial/tree/master/part-14).
 
 In the [next part](/graal-truffle-tutorial-part-15-exceptions)
-of the tutorial, we will talk about implementing exception handling.
+of the series, we will talk about implementing exception handling.

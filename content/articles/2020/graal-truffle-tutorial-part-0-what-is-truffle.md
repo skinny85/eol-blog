@@ -343,7 +343,7 @@ pretty much exactly what you would expect to be generated from a compiler for th
 
 ## Summary
 
-So, these are the basic of Truffle (and Graal).
-In later articles in the series,
+So, these are the basics of Truffle (and Graal).
+In [later parts](/graal-truffle-tutorial-part-1-setup-nodes-calltarget) of the series,
 we'll dive deeper into the various elements of writing the interpreter,
 and exploring its performance.

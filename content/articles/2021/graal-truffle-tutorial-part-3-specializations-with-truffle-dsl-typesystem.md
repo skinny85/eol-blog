@@ -652,7 +652,7 @@ we'll see some of them later,
 as we add more features to our EasyScript language.
 
 As always, all code from the article is
-[available on GitHub](https://github.com/skinny85/graalvm-truffle-tutorial/tree/master/part-03/ReadMe.md).
+[available on GitHub](https://github.com/skinny85/graalvm-truffle-tutorial/tree/master/part-03).
 
 In the [next part](/graal-truffle-tutorial-part-4-parsing-and-the-trufflelanguage-class)
 of the series,

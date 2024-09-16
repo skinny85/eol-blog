@@ -599,6 +599,6 @@ So, those are the basics of implementing class support in Truffle languages.
 As usual, all code from the article is
 [available on GitHub](https://github.com/skinny85/graalvm-truffle-tutorial/tree/master/part-12).
 
-In the [next part of the series](/graal-truffle-tutorial-part-13-classes-2-fields-this-constructors),
+In the [next part](/graal-truffle-tutorial-part-13-classes-2-fields-this-constructors) of the series,
 we will allow storing state in our classes by adding support for fields,
 the `this` keyword, and constructors.

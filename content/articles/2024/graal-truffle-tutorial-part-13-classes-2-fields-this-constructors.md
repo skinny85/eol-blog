@@ -1425,6 +1425,5 @@ So, this is how fields and constructors can be implemented in Truffle.
 As usual, all code from the article is
 [available on GitHub](https://github.com/skinny85/graalvm-truffle-tutorial/tree/master/part-13).
 
-In the
-[next part of the tutorial](/graal-truffle-tutorial-part-14-classes-3-inheritance-super),
+In the [next part](/graal-truffle-tutorial-part-14-classes-3-inheritance-super) of the series,
 we will conclude our miniseries about classes by discussing inheritance.

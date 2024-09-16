@@ -928,9 +928,9 @@ public final class ForStmtNode extends EasyScriptStmtNode {
 Phew! We covered a lot of ground today,
 but we made EasyScript much more powerful in the process.
 
-As usual, all of the code from the article
-[is available on GitHub](https://github.com/skinny85/graalvm-truffle-tutorial/tree/master/part-08).
+As usual, all code from the article is
+[available on GitHub](https://github.com/skinny85/graalvm-truffle-tutorial/tree/master/part-08).
 
-In the next part of the series,
+In the [next part](/graal-truffle-tutorial-part-9-performance-benchmarking) of the series,
 we will talk about benchmarking your language's implementation to measure how fast it is,
 and diagnosing performance issues.

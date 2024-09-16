@@ -1005,8 +1005,8 @@ public class GlobalBindingsTest {
 Phew! Something seemingly as simple as global variables turned out to be a lot of work,
 but we finally managed to power through it.
 
-As usual, the full working code from the article
-[is available on GitHub](https://github.com/skinny85/graalvm-truffle-tutorial/tree/master/part-05).
+As usual, the full working code from the article is
+[available on GitHub](https://github.com/skinny85/graalvm-truffle-tutorial/tree/master/part-05).
 
 In the
 [next part](/graal-truffle-tutorial-part-6-static-function-calls)

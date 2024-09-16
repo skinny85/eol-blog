@@ -355,11 +355,11 @@ public class ExecuteNodesTest {
 Phew! It was a lot of work,
 but we finally managed to add `12` and `34` together using Truffle!
 
-All the code from the article is available on
-[GitHub](https://github.com/skinny85/graalvm-truffle-tutorial/blob/master/part-01/ReadMe.md).
+All the code from the article is
+[available on GitHub](https://github.com/skinny85/graalvm-truffle-tutorial/blob/master/part-01).
 
 ## Next article
 
-In [part 2 of the series](/graal-truffle-tutorial-part-2-introduction-to-specializations),
+In [part 2](/graal-truffle-tutorial-part-2-introduction-to-specializations) of the series,
 we'll introduce one of the most important concepts in Truffle --
 **specializations**.

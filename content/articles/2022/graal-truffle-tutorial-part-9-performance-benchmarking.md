@@ -837,8 +837,8 @@ Graal, as most optimizing compilers, is so complex that it acts as basically a "
 from the perspective of the language implementer,
 and can often surprise you.
 
-As usual, all of the code from the article
-[is available on GitHub](https://github.com/skinny85/graalvm-truffle-tutorial/tree/master/part-09).
+As usual, all code from the article is
+[available on GitHub](https://github.com/skinny85/graalvm-truffle-tutorial/tree/master/part-09).
 
 We've barely scratched the surface of the capabilities of Ideal Graph Visualizer in this article --
 it's a very powerful, if slightly tricky to use, tool.
@@ -850,9 +850,8 @@ If you want to learn more about it, I recommend the following resources:
   by Roberto Castañeda Lozano
 - ["Visualization of Program Dependence Graphs"](https://ssw.jku.at/Research/Papers/Wuerthinger07Master),
   the master thesis of Thomas Würthinger, the author of IGV
-
-In the next
-[part of the series](/graal-truffle-tutorial-part-10-arrays-read-only-properties),
+  
+In the [next part](/graal-truffle-tutorial-part-10-arrays-read-only-properties) of the series,
 we will talk about implementing arrays,
 and adding properties (for now, just reading them -- without writing)
 to our language.

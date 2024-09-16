@@ -913,6 +913,6 @@ mainly because optimizing function calls is such a critical part of writing a hi
 As usual, all code from the article is
 [available on GitHub](https://github.com/skinny85/graalvm-truffle-tutorial/tree/master/part-06).
 
-In the [next article](/graal-truffle-tutorial-part-7-function-definitions),
+In the [next part](/graal-truffle-tutorial-part-7-function-definitions) of the series,
 we continue with the topic of functions --
 we will learn how to implement function definitions.
