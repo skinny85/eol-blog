@@ -14,7 +14,7 @@
     "metalsmith-prism": "^3.1.1",
     "metalsmith-watch": "^1.0.3",
     "metalsmith-express": "^0.1.0",
-    "serve-static": "^1.13.2"
+    "serve-static": "^1.16.2"
   },
   "scripts": {
     "build": "NODE_ENV=production node build.js",
