@@ -18,7 +18,7 @@ of the tutorial on GraalVM Truffle,
 we finished the implementation of classes in EasyScript,
 our simplified subset of JavaScript.
 
-But there is an important kind of class that has additional capabilities in many languages:
+But there is an important subset of classes that have additional capabilities in many languages:
 [exceptions](https://en.wikipedia.org/wiki/Exception_handling).
 These are special objects that are used for signaling error conditions that the given piece of code does not know how to handle.
 
@@ -26,7 +26,7 @@ Since exceptions are a popular feature present in many languages,
 including JavaScript, we will show how to implement them in Truffle.
 As part of that implementation, we will introduce a few new Truffle concepts,
 like the [`SourceSection` class](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/source/SourceSection.html),
-the [`StackTrace` class](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/TruffleStackTrace.html),
+the [`TruffleStackTrace` class](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/TruffleStackTrace.html),
 and the [`TruffleStackTraceElement` class](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/TruffleStackTraceElement.html).
 
 ## Parsing
@@ -138,7 +138,7 @@ and the [`Context.eval(Source)` method](https://www.graalvm.org/truffle/javadoc/
 instead of the
 [`Context.eval(String, String)` method](https://www.graalvm.org/truffle/javadoc/org/graalvm/polyglot/Context.html#eval(java.lang.String,java.lang.CharSequence%29)
 which we used in previous parts of the series,
-as we want to make sure the line numbers in the source code are preserved in the stack trace:
+as we want to make sure the line numbers from the source code are preserved in the stack trace:
 
 ```java
 import org.graalvm.polyglot.Context;
@@ -546,7 +546,7 @@ public final class TryStmtNode extends EasyScriptStmtNode {
 
 Since the condition determining whether the given `try` statement has a `catch` block or not is compilation-final,
 the entire `if` will actually be eliminated when this Node gets JIT-compiled,
-and only the appropriate branch will be left.
+and only the relevant branch will be left in native code.
 
 ## Built-in error types
 
@@ -892,7 +892,7 @@ we can use the
 [`TruffleStackTrace.getStackTrace()` method](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/TruffleStackTrace.html#getStackTrace(java.lang.Throwable%29),
 passing it the `JavaScriptException` we have created.
 That gives us a `List` of
-[`StackTraceElement` instances](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/TruffleStackTraceElement.html)
+[`TruffleStackTraceElement` instances](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/TruffleStackTraceElement.html)
 which we can render as a `TruffleString`:
 
 ```java
