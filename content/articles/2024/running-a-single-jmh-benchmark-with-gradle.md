@@ -62,7 +62,9 @@ as the multiple patterns are combined with the "and" logical operator,
 instead of "or", and thus you can't just specify `["MyBenchmark1", "MyBenchmark2"]`
 to run two benchmarks --
 if you try, JMH will fail with the error message
-`No matching benchmarks. Miss-spelled regexp?`.
+`No matching benchmarks. Miss-spelled regexp?`
+(you would have to specify it as `"MyBenchmark1|MyBenchmark2"`,
+or `"MyBenchmark(1|2)"` for short).
 This is a weird decision, in my opinion, but there's nothing we can do about it,
 and so I think the ability to specify multiple patterns is not really needed.)
 
