@@ -92,7 +92,8 @@ import com.oracle.truffle.api.instrumentation.Tag;
 import com.oracle.truffle.api.source.SourceSection;
 
 @GenerateWrapper
-public abstract class EasyScriptStmtNode extends EasyScriptNode implements InstrumentableNode {
+public abstract class EasyScriptStmtNode extends EasyScriptNode
+        implements InstrumentableNode {
     private final SourceSection sourceSection;
 
     protected EasyScriptStmtNode(SourceSection sourceSection) {
@@ -106,7 +107,8 @@ public abstract class EasyScriptStmtNode extends EasyScriptNode implements Instr
 
     @Override
     public WrapperNode createWrapper(ProbeNode probe) {
-        return new EasyScriptStmtNodeWrapper(this.sourceSection, this, probe);
+        return new EasyScriptStmtNodeWrapper(this.sourceSection,
+            this, probe);
     }
 
     @Override
@@ -156,7 +158,7 @@ Similarly, class declarations are also not interesting,
 for the same reasons as function declarations.
 Since we don't have a dedicated statement for class declarations,
 unlike function declarations, but use the `GlobalVarDeclStmtNode`
-class containing a `ClassDeclExprNode` innstead,
+class containing a `ClassDeclExprNode` instead,
 we will also override the `hasTag()` method in
 `GlobalVarDeclStmtNode` to check whether it has a non-`null` `SourceSection`,
 and only provide the `StatementTag` if it does.
@@ -207,8 +209,8 @@ public final class UserFuncBodyStmtNode extends EasyScriptStmtNode {
     @Children
     private final EasyScriptStmtNode[] stmts;
 
-    public UserFuncBodyStmtNode(
-            List<EasyScriptStmtNode> stmts, SourceSection sourceSection) {
+    public UserFuncBodyStmtNode(List<EasyScriptStmtNode> stmts,
+            SourceSection sourceSection) {
         super(sourceSection);
 
         this.stmts = stmts.toArray(new EasyScriptStmtNode[]{});
@@ -240,12 +242,13 @@ public final class BlockStmtNode extends EasyScriptStmtNode {
         this(stmts, null);
     }
 
-    public BlockStmtNode(List<EasyScriptStmtNode> stmts, SourceSection sourceSection) {
+    public BlockStmtNode(List<EasyScriptStmtNode> stmts,
+            SourceSection sourceSection) {
         this(stmts, false, sourceSection);
     }
 
-    public BlockStmtNode(List<EasyScriptStmtNode> stmts, boolean programBlock,
-            SourceSection sourceSection) {
+    public BlockStmtNode(List<EasyScriptStmtNode> stmts,
+            boolean programBlock, SourceSection sourceSection) {
         super(sourceSection);
 
         this.stmts = stmts.toArray(new EasyScriptStmtNode[]{});
@@ -254,7 +257,8 @@ public final class BlockStmtNode extends EasyScriptStmtNode {
 
     @Override
     public boolean hasTag(Class<? extends Tag> tag) {
-        return this.programBlock && tag == StandardTags.RootTag.class;
+        return this.programBlock && 
+            tag == StandardTags.RootTag.class;
     }
 
     // ...
@@ -271,7 +275,7 @@ import com.oracle.truffle.api.instrumentation.ProvidedTags;
 import com.oracle.truffle.api.instrumentation.StandardTags;
 
 @ProvidedTags({
-        StandardTags.StatementTag.class, StandardTags.RootTag.class
+    StandardTags.StatementTag.class, StandardTags.RootTag.class
 })
 @TruffleLanguage.Registration(id = "ezs", name = "EasyScript")
 public final class EasyScriptTruffleLanguage extends
@@ -405,7 +409,8 @@ import com.oracle.truffle.api.instrumentation.InstrumentableNode;
 import com.oracle.truffle.api.nodes.Node;
 
 @GenerateWrapper
-public abstract class EasyScriptStmtNode extends EasyScriptNode implements InstrumentableNode {
+public abstract class EasyScriptStmtNode extends EasyScriptNode
+        implements InstrumentableNode {
     // ...
 
     public final Node findParentBlock() {
@@ -454,18 +459,24 @@ import com.oracle.truffle.api.nodes.Node;
 
 @GenerateWrapper
 @ExportLibrary(value = NodeLibrary.class)
-public abstract class EasyScriptStmtNode extends EasyScriptNode implements InstrumentableNode {
+public abstract class EasyScriptStmtNode extends EasyScriptNode
+        implements InstrumentableNode {
     // ...
 
     @ExportMessage
     boolean hasScope(Frame frame,
-            @Cached(value = "this.findParentBlock()", adopt = false, allowUncached = true) @Shared("thisParentBlock") Node thisParentBlock) {
+            @Cached(value = "this.findParentBlock()", adopt = false, allowUncached = true)
+            @Shared("thisParentBlock")
+            Node thisParentBlock) {
         return !(thisParentBlock instanceof StmtBlockRootNode);
     }
 
     @ExportMessage
-    Object getScope(Frame frame, boolean nodeEnter,
-            @Cached(value = "this.findParentBlock()", adopt = false, allowUncached = true) @Shared("thisParentBlock") Node thisParentBlock) {
+    Object getScope(Frame frame,
+            boolean nodeEnter,
+            @Cached(value = "this.findParentBlock()", adopt = false, allowUncached = true)
+            @Shared("thisParentBlock")
+            Node thisParentBlock) {
         return thisParentBlock instanceof BlockStmtNode
                 ? new BlockDebuggerScopeObject((BlockStmtNode) thisParentBlock, frame)
                 : new FuncDebuggerScopeObject((UserFuncBodyStmtNode) thisParentBlock, frame);
@@ -571,7 +582,8 @@ public abstract class RefObject implements TruffleObject {
     public final String refName;
     private final SourceSection refSourceSection;
 
-    public RefObject(String refName, SourceSection refSourceSection) {
+    public RefObject(String refName,
+            SourceSection refSourceSection) {
         this.refName = refName;
         this.refSourceSection = refSourceSection;
     }
@@ -611,7 +623,8 @@ import java.util.Objects;
 public final class FuncArgRefObject extends RefObject {
     private final int funcArgIndex;
 
-    public FuncArgRefObject(String refName, SourceSection refSourceSection,
+    public FuncArgRefObject(String refName,
+            SourceSection refSourceSection,
             int funcArgIndex) {
         super(refName, refSourceSection);
         this.funcArgIndex = funcArgIndex;
@@ -652,7 +665,8 @@ import com.oracle.truffle.api.source.SourceSection;
 public final class LocalVarRefObject extends RefObject {
     private final int localVarSlot;
 
-    public LocalVarRefObject(String refName, SourceSection refSourceSection,
+    public LocalVarRefObject(String refName,
+            SourceSection refSourceSection,
             int localVarSlot) {
         super(refName, refSourceSection);
         this.localVarSlot = localVarSlot;
@@ -782,13 +796,17 @@ abstract class AbstractDebuggerScopeObject implements TruffleObject {
         static boolean isMemberReadableCached(
                 AbstractDebuggerScopeObject receiver,
                 String member,
-                @Cached("member") String cachedMember,
-                @Cached("isMemberReadableUncached(receiver, member)") boolean cachedResult) {
+                @Cached("member")
+                String cachedMember,
+                @Cached("isMemberReadableUncached(receiver, member)")
+                boolean cachedResult) {
             return cachedResult;
         }
 
         @Specialization(replaces = "isMemberReadableCached")
-        static boolean isMemberReadableUncached(AbstractDebuggerScopeObject receiver, String member) {
+        static boolean isMemberReadableUncached(
+                AbstractDebuggerScopeObject receiver,
+                String member) {
             return receiver.hasReferenceCalled(member);
         }
     }
@@ -799,21 +817,28 @@ abstract class AbstractDebuggerScopeObject implements TruffleObject {
         static Object readMemberCached(
                 AbstractDebuggerScopeObject receiver,
                 String member,
-                @Cached("member") String cachedMember,
-                @Cached("receiver.findReference(member)") RefObject refObject)
+                @Cached("member")
+                String cachedMember,
+                @Cached("receiver.findReference(member)")
+                RefObject refObject)
                 throws UnknownIdentifierException {
             return readMember(receiver, cachedMember, refObject);
         }
 
         @Specialization(replaces = "readMemberCached")
         @TruffleBoundary
-        static Object readMemberUncached(AbstractDebuggerScopeObject receiver, String member)
+        static Object readMemberUncached(
+                AbstractDebuggerScopeObject receiver,
+                String member)
                 throws UnknownIdentifierException {
             RefObject refObject = receiver.findReference(member);
             return readMember(receiver, member, refObject);
         }
 
-        private static Object readMember(AbstractDebuggerScopeObject receiver, String member, RefObject refObject)
+        private static Object readMember(
+                AbstractDebuggerScopeObject receiver,
+                String member,
+                RefObject refObject)
                 throws UnknownIdentifierException {
             if (refObject == null) {
                 throw UnknownIdentifierException.create(member);
@@ -860,13 +885,17 @@ abstract class AbstractDebuggerScopeObject implements TruffleObject {
         static boolean isMemberModifiableCached(
                 AbstractDebuggerScopeObject receiver,
                 String member,
-                @Cached("member") String cachedMember,
-                @Cached("isMemberModifiableUncached(receiver, member)") boolean cachedResult) {
+                @Cached("member")
+                String cachedMember,
+                @Cached("isMemberModifiableUncached(receiver, member)")
+                boolean cachedResult) {
             return cachedResult;
         }
 
         @Specialization(replaces = "isMemberModifiableCached")
-        static boolean isMemberModifiableUncached(AbstractDebuggerScopeObject receiver, String member) {
+        static boolean isMemberModifiableUncached(
+                AbstractDebuggerScopeObject receiver,
+                String member) {
             return receiver.hasReferenceCalled(member);
         }
     }
@@ -878,20 +907,29 @@ abstract class AbstractDebuggerScopeObject implements TruffleObject {
                 AbstractDebuggerScopeObject receiver,
                 String member,
                 Object value,
-                @Cached("member") String cachedMember,
-                @Cached("receiver.findReference(member)") RefObject refObject)
+                @Cached("member")
+                String cachedMember,
+                @Cached("receiver.findReference(member)")
+                RefObject refObject)
                 throws UnknownIdentifierException {
             writeMember(receiver, member, refObject, value);
         }
 
         @Specialization(replaces = "writeMemberCached")
-        static void writeMemberUncached(AbstractDebuggerScopeObject receiver, String member, Object value)
+        static void writeMemberUncached(
+                AbstractDebuggerScopeObject receiver,
+                String member,
+                Object value)
                 throws UnknownIdentifierException {
             RefObject refObject = receiver.findReference(member);
             writeMember(receiver, member, refObject, value);
         }
 
-        private static void writeMember(AbstractDebuggerScopeObject receiver, String member, RefObject refObject, Object value)
+        private static void writeMember(
+                AbstractDebuggerScopeObject receiver,
+                String member,
+                RefObject refObject,
+                Object value)
                 throws UnknownIdentifierException {
             if (refObject == null) {
                 throw UnknownIdentifierException.create(member);
@@ -917,7 +955,8 @@ import com.oracle.truffle.api.library.ExportMessage;
 public final class FuncDebuggerScopeObject extends AbstractDebuggerScopeObject {
     private final UserFuncBodyStmtNode userFuncBodyStmtNode;
 
-    public FuncDebuggerScopeObject(UserFuncBodyStmtNode userFuncBodyStmtNode, Frame frame) {
+    public FuncDebuggerScopeObject(UserFuncBodyStmtNode userFuncBodyStmtNode,
+            Frame frame) {
         super(frame);
         this.userFuncBodyStmtNode = userFuncBodyStmtNode;
     }
@@ -965,24 +1004,27 @@ public final class BlockDebuggerScopeObject extends AbstractDebuggerScopeObject 
 
     @ExportMessage
     Object toDisplayString(boolean allowSideEffects,
-            @Cached(value = "this.blockStmtNode.findParentBlock()", adopt = false, allowUncached = true) @Shared("nodeGrandParentBlock") Node nodeGrandParentBlock
-    ) {
-        if (nodeGrandParentBlock instanceof RootNode) {
-            return ((RootNode) nodeGrandParentBlock).getName();
-        } else {
-            return "block";
-        }
+            @Cached(value = "this.blockStmtNode.findParentBlock()", adopt = false, allowUncached = true)
+            @Shared("nodeGrandParentBlock")
+            Node nodeGrandParentBlock) {
+       return nodeGrandParentBlock instanceof RootNode
+            ? ((RootNode) nodeGrandParentBlock).getName()
+            : "block";
     }
 
     @ExportMessage
     boolean hasScopeParent(
-            @Cached(value = "this.blockStmtNode.findParentBlock()", adopt = false, allowUncached = true) @Shared("nodeGrandParentBlock") Node nodeGrandParentBlock) {
+            @Cached(value = "this.blockStmtNode.findParentBlock()", adopt = false, allowUncached = true)
+            @Shared("nodeGrandParentBlock")
+            Node nodeGrandParentBlock) {
         return !(nodeGrandParentBlock instanceof StmtBlockRootNode);
     }
 
     @ExportMessage
     Object getScopeParent(
-            @Cached(value = "this.blockStmtNode.findParentBlock()", adopt = false, allowUncached = true) @Shared("nodeGrandParentBlock") Node nodeGrandParentBlock)
+            @Cached(value = "this.blockStmtNode.findParentBlock()", adopt = false, allowUncached = true)
+            @Shared("nodeGrandParentBlock")
+            Node nodeGrandParentBlock)
             throws UnsupportedMessageException {
         if (nodeGrandParentBlock instanceof BlockStmtNode) {
             return new BlockDebuggerScopeObject((BlockStmtNode) nodeGrandParentBlock, this.frame);
@@ -1047,9 +1089,9 @@ public final class UserFuncBodyStmtNode extends EasyScriptStmtNode {
                 if (visitedNode instanceof ReadFunctionArgExprNode) {
                     var readFunctionArgExprNode = (ReadFunctionArgExprNode) visitedNode;
                     funcArgs.add(new FuncArgRefObject(
-                            readFunctionArgExprNode.argName,
-                            readFunctionArgExprNode.getSourceSection(),
-                            readFunctionArgExprNode.index));
+                         readFunctionArgExprNode.argName,
+                         readFunctionArgExprNode.getSourceSection(),
+                         readFunctionArgExprNode.index));
                     return true;
                 }
                 return NodeUtil.forEachChild(visitedNode, this);
@@ -1059,7 +1101,8 @@ public final class UserFuncBodyStmtNode extends EasyScriptStmtNode {
         var localVarNodeVisitor = new LocalVarNodeVisitor();
         NodeUtil.forEachChild(this, localVarNodeVisitor);
 
-        var allReferences = new RefObject[funcArgs.size() + localVarNodeVisitor.localVarRefs.size()];
+        var allReferences = new RefObject[funcArgs.size() +
+             localVarNodeVisitor.localVarRefs.size()];
         var i = 0;
         for (var funcArg : funcArgs) {
             allReferences[i++] = funcArg;
@@ -1121,9 +1164,9 @@ public final class LocalVarNodeVisitor implements NodeVisitor {
         if (this.inDeclaration && visistedNode instanceof LocalVarAssignmentExprNode) {
             var lvaen = (LocalVarAssignmentExprNode) visistedNode;
             localVarRefs.add(new LocalVarRefObject(
-                    lvaen.getSlotName(),
-                    lvaen.getSourceSection(),
-                    lvaen.getFrameSlot()));
+                 lvaen.getSlotName(),
+                 lvaen.getSourceSection(),
+                 lvaen.getFrameSlot()));
             return true;
         }
         // Recur into any Node except a block of statements.
@@ -1175,10 +1218,10 @@ public final class BlockStmtNode extends EasyScriptStmtNode {
 
         Node parentBlock = this.findParentBlock();
         RefObject[] parentVariables = parentBlock instanceof BlockStmtNode
-                ? ((BlockStmtNode) parentBlock).getLocalVarRefs()
-                : (parentBlock instanceof UserFuncBodyStmtNode
-                    ? ((UserFuncBodyStmtNode) parentBlock).getFuncArgAndLocalVarRefs()
-                    : null);
+             ? ((BlockStmtNode) parentBlock).getLocalVarRefs()
+             : (parentBlock instanceof UserFuncBodyStmtNode
+                 ? ((UserFuncBodyStmtNode) parentBlock).getFuncArgAndLocalVarRefs()
+                 : null);
         if (parentVariables == null || parentVariables.length == 0) {
             return variables;
         }
@@ -1279,8 +1322,8 @@ public class DebuggerTest {
         try (DebuggerSession debuggerSession = this.debuggerTester.startSession()) {
             debuggerSession.suspendNextExecution();
             debuggerSession.install(Breakpoint.newBuilder(source.getURI())
-                    .lineIs(17)
-                    .build());
+                 .lineIs(17)
+                 .build());
             this.debuggerTester.startEval(source);
 
             this.debuggerTester.expectSuspended(event -> {
