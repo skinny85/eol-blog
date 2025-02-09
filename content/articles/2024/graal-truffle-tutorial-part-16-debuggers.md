@@ -330,7 +330,7 @@ public final class StmtBlockRootNode extends RootNode {
 ```
 
 We create all of these source sections in the parser,
-same way as in the [previous part of the series](/graal-truffle-tutorial-part-15-exceptions).
+same way as in the [previous part of the series](/graal-truffle-tutorial-part-15-exceptions#filling-polyglot-stack-traces).
 
 With this in place, we can write a simple Java program that executes a given JavaScript program,
 using the same [`Context` class](https://www.graalvm.org/truffle/javadoc/org/graalvm/polyglot/Context.html)
@@ -491,7 +491,7 @@ since the Node structure is immutable within a specific program,
 and also
 [`@Shared`](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/dsl/Cached.Shared.html),
 which we first saw in
-[part 11](/graal-truffle-tutorial-part-11-strings-static-method-calls),
+[part 11](/graal-truffle-tutorial-part-11-strings-static-method-calls#method-implementation),
 to calculate the parent block of given statement once across multiple exported messages.
 
 We need to specify `adopt = false` in the `@Cached` annotation,

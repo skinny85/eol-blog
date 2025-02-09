@@ -373,7 +373,7 @@ there is a pretty obvious problem with this solution:
 each object contains 5 references inside of it,
 even though all of those references point at the same method implementations.
 That makes each instance of the class take a lot of memory --
-and there can be thousands or millions of these instances created during the lifetime of the program.
+and there can be potentially thousands or even millions of these instances created during the lifetime of the program.
 
 So, to solve this issue,
 it's typical in implementations of object-oriented languages to store class methods in a single separate object,
