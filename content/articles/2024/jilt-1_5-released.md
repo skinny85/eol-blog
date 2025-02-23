@@ -83,6 +83,8 @@ That attribute allows you to control the name of that generated method.
 For the `Person` example above, it would look something like:
 
 ```java
+import org.jilt.Builder;
+
 @Builder(toBuilder = "toBuilder")
 public final class Person {
     // ...
@@ -183,6 +185,10 @@ For example, if we wanted to make the constructor of the `User` class from the
 it would look something like this:
 
 ```java
+import org.jilt.Builder;
+import org.jilt.BuilderStyle;
+import org.jilt.Opt;
+
 public final class User {
     public final String email, username, firstName, lastName, displayName;
 
