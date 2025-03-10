@@ -693,15 +693,16 @@ public final class EasyScriptTruffleLanguage extends
                                                     new ThisExprNode(),
                                                     new ReadFunctionArgExprNode(1),
                                                     "message"
-                                            ), null),
+                                            )),
                                             // this.name = <name>;
                                             new ExprStmtNode(PropertyWriteExprNodeGen.create(
                                                     new ThisExprNode(),
                                                     new StringLiteralExprNode(entry.getKey()),
                                                     "name"
-                                            ), null)
+                                            ))
                                     )),
-                                    "constructor").getCallTarget(),
+                                    "constructor"
+                            ).getCallTarget(),
                             1),
                     0);
         }
