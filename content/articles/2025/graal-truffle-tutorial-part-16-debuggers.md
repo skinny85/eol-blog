@@ -765,8 +765,7 @@ it's not a good idea to use polymorphic methods like `RefObject`'s
 `readReference()` and `writeReference()`,
 as they don't play well with partial evaluation.
 In order to mitigate that issue,
-we will use specializations when implementing the `InteropLibrary`,
-messages in `AbstractDebuggerScopeObject`,
+we will use specializations when implementing the `InteropLibrary` messages in `AbstractDebuggerScopeObject`,
 like we first saw in
 [part 13 of the series](/graal-truffle-tutorial-part-13-classes-2-fields-this-constructors#writing-the-length-property-of-arrays),
 and cache the `RefObject` we find,
