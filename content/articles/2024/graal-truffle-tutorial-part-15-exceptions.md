@@ -525,7 +525,7 @@ public final class TryStmtNode extends EasyScriptStmtNode {
             try {
                 return this.tryStatements.executeStatement(frame);
             } finally {
-                // we now that the 'finally' block is not null if 'catch' block is null
+                // we know that the 'finally' block is not null if 'catch' block is null
                 this.finallyStatements.executeStatement(frame);
             }
         } else {
