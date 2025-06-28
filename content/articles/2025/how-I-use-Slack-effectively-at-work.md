@@ -92,7 +92,7 @@ For reference, here are the sections that I personally use:
 1. **Important**: these are channels that are essential to my work.
    I always read them fully.
    This includes things like my immediate team channels,
-   the channels my product's customers reach out for support,
+   the channels my product's customers reach out for support in,
    and any ad-hoc channels that were created for the purposes of collaborating on the projects I'm currently working on.
 2. **Interesting**. These are channels that I still want to read in full,
    but I know are not urgent. These are channels like announcements for my immediate org,
