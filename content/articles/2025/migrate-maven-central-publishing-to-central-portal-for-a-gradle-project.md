@@ -76,8 +76,8 @@ but then introduced the concept of API tokens that could be generated
 (and revoked) independently from your website credentials.
 
 Central Portal also uses tokens for authentication,
-but they are separate from the onesin OSSRH,
-you'll need to generate a new one by navigating to
+but they are separate from the ones in OSSRH,
+so you'll need to generate a new one by navigating to
 [central.sonatype.com/account](https://central.sonatype.com/account),
 and clicking on `Generate User Token`.
 This will result in a username-password pair that looks something like
