@@ -229,7 +229,6 @@ since the documentation only provides an example in Groovy:
 
 ```kotlin
 repositories {
-    // https://central.sonatype.org/publish/publish-portal-api/#gradle
     maven {
         name = "centralManualTesting"
         url = uri("https://central.sonatype.com/api/v1/publisher/deployments/download/")
