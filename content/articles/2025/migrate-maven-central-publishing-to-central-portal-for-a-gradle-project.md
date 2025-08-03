@@ -22,7 +22,7 @@ which required publishing to staging repositories at
 followed by a manual release confirmation.
 
 However, Sonatype has recently deprecated OSSRH,
-and turned it off completely on January 30, 2025,
+and turned it off completely on June 30, 2025,
 replacing it with a new service called the
 [Central Portal](https://central.sonatype.com),
 which aims to simplify and modernize the publishing experience.
