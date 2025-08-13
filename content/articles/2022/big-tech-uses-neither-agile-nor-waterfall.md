@@ -55,9 +55,9 @@ repetitive work that they could feel, touch and judge the effects of,
 and which struggled to manage something as abstract as software delivery.
 
 This strained relationship between the "old" and "new" employees
-is best epitomized by Scott Adam's comic strip ["Dilbert"](https://dilbert.com),
+is best epitomized by Scott Adam's comic strip ["Dilbert"](https://en.wikipedia.org/wiki/Dilbert),
 where we see the struggles of a typical engineer dealing with his non-technical,
-"pointy-haired" boss.
+["pointy-haired" boss](https://en.m.wikipedia.org/wiki/List_of_Dilbert_characters#Pointy-haired_Boss).
 The manager is predictably clueless about the intricacies of software development,
 but too stubborn to admit any shortcomings in his knowledge.
 As you can expect, many hilarious moments ensue.
