@@ -69,7 +69,8 @@ inside them.
 We will skip implementing this feature,
 as `` `${a}` `` can be transformed to `'' + a + ''` at parse time,
 so supporting string interpolation doesn't require any changes to the interpreter
-(it's just syntax sugar for concatenation) --
+(it's just [syntax sugar](https://en.wikipedia.org/wiki/Syntactic_sugar)
+for concatenation) --
 however, it does make parsing significantly more complicated.
 
 In our parser, we need to handle the escape sequences,
@@ -95,7 +96,7 @@ public final class EasyScriptTruffleParser {
 }
 ```
 
-We use the [`StringEscapeUtils.unescapeJson()` method](https://commons.apache.org/proper/commons-text/apidocs/org/apache/commons/text/StringEscapeUtils.html#unescapeJson-java.lang.String-)
+We use the [`StringEscapeUtils.unescapeJson()` method](https://commons.apache.org/proper/commons-text/apidocs/org/apache/commons/text/StringEscapeUtils.html#unescapeJson(java.lang.String%29)
 from the [Apache Commons Text library](https://commons.apache.org/proper/commons-text),
 which we add as a dependency:
 
