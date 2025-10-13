@@ -773,13 +773,14 @@ we can write a test using the simplest sorting algorithm,
 ```java
 import org.graalvm.polyglot.Value;
 
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class PropertiesTest {
+class PropertiesTest {
     // ...
-    
+
     @Test
-    public void bubble_sort_changes_array_to_sorted() {
+    void bubble_sort_changes_array_to_sorted() {
         Value result = this.context.eval("ezs", "" +
             "const array = [44, 33, 22, 11]; " +
             "function bubbleSort(array) { " +

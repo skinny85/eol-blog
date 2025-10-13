@@ -758,9 +758,9 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class UndefinedTest {
+class UndefinedTest {
     @Test
-    public void correctly_returns_undefined() {
+    void correctly_returns_undefined() {
         Context context = Context.create();
         Value result = context.eval("ezs",
                 "var a; " +
@@ -787,9 +787,9 @@ import org.graalvm.polyglot.Value;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class GlobalVariablesTest {
+class GlobalVariablesTest {
     @Test
-    public void evaluates_statements() {
+    void evaluates_statements() {
         Context context = Context.create();
         Value result = context.eval("ezs",
                 "var a = 0; " +
@@ -799,7 +799,7 @@ public class GlobalVariablesTest {
                 "a + b + c"
         );
 
-        assertEquals(3.0, result.asDouble(), 0.0);
+        assertEquals(3.0, result.asDouble());
     }
 
     // ...
@@ -978,14 +978,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class GlobalBindingsTest {
+class GlobalBindingsTest {
     @Test
-    public void surfaces_global_bindings() {
+    void surfaces_global_bindings() {
         Context context = Context.create();
         context.eval("ezs",
                 "var a = 1; " +
                 "let b = 2 + 3; " +
-                "const c = 4.0; "
+                "const c = 4.0;"
         );
 
         Value globalBindings = this.context.getBindings("ezs");

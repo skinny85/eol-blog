@@ -167,14 +167,14 @@ import com.oracle.truffle.api.CallTarget;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class ParsingTest {
+class ParsingTest {
     @Test
-    public void parses_and_executes_EasyScript_code_correctly() {
+    void parses_and_executes_EasyScript_code_correctly() {
         EasyScriptNode exprNode = EasyScriptTruffleParser.parse("1 + 2 + 3.0 + 4");
         var rootNode = new EasyScriptRootNode(exprNode);
         CallTarget callTarget = rootNode.getCallTarget();
 
-        var result = callTarget.call();
+        Object result = callTarget.call();
 
         assertEquals(10.0, result);
     }
@@ -204,9 +204,9 @@ import org.graalvm.polyglot.Value;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class PolyglotTest {
+class PolyglotTest {
     @Test
-    public void runs_JavaScript_code_correctly() {
+    void runs_JavaScript_code_correctly() {
         Context context = Context.create();
         Value result = context.eval("js",
                 "function sub13(x) { return x - 13; } sub13(25)");
@@ -285,13 +285,13 @@ import org.graalvm.polyglot.Value;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class PolyglotTest {
+class PolyglotTest {
     @Test
-    public void runs_EasyScript_code() {
+    void runs_EasyScript_code() {
         Context context = Context.create();
         Value result = context.eval("ezs",
                 "10 + 24 + 56.0");
-        assertEquals(90.0, result.asDouble(), 0.0);
+        assertEquals(90.0, result.asDouble());
     }
 }
 ```

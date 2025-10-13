@@ -640,9 +640,9 @@ import org.graalvm.polyglot.Value;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class FunctionsTest {
+class FunctionsTest {
     @Test
-    public void calling_Math_abs_works() {
+    void calling_Math_abs_works() {
         Value result = this.context.eval("ezs", "Math.abs(-2)");
 
         assertEquals(2, result.asInt());
@@ -791,9 +791,9 @@ import org.graalvm.polyglot.Value;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class FunctionsTest {
+class FunctionsTest {
     @Test
-    public void calling_Math_pow_works() {
+    void calling_Math_pow_works() {
         Value result = this.context.eval("ezs", "Math.pow(2, 3)");
 
         assertEquals(8, result.asInt());
@@ -889,9 +889,9 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class FunctionsTest {
+class FunctionsTest {
     @Test
-    public void an_EasyScript_function_can_be_called_from_Java() {
+    void an_EasyScript_function_can_be_called_from_Java() {
         Value mathAbs = this.context.eval("ezs", "Math.abs");
 
         assertTrue(mathAbs.canExecute());
