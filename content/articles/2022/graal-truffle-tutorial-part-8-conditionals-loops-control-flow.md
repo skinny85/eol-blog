@@ -221,8 +221,8 @@ public final class EasyScriptTruffleParser {
     // ...
 
     private FrameMember findFrameMember(String memberName) {
-        for (var scope : this.localScopes) {
-            FrameMember ret = scope.get(memberName);
+        for (var iter = this.localScopes.listIterator(this.localScopes.size()); iter.hasPrevious();) {
+            FrameMember ret = iter.previous().get(memberName);
             if (ret != null) {
                 return ret;
             }
@@ -231,6 +231,12 @@ public final class EasyScriptTruffleParser {
     }
 }
 ```
+
+We need to use the [`ListIterator` iterator](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/ListIterator.html),
+and its [`hasPrevious()` method](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/ListIterator.html#hasPrevious%28%29),
+since the default `Stack` iterator goes through the elements bottom to top,
+while we need top to bottom
+(because variables in nested scopes should shadow variables with the same name from outer scopes).
 
 Finally, we maintain an integer counter of the local variables,
 and we increment it for every variable we encounter.
