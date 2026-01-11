@@ -78,7 +78,7 @@ but then introduced the concept of API tokens that could be generated
 Central Portal also uses tokens for authentication,
 but they are separate from the ones in OSSRH,
 so you'll need to generate a new one by navigating to
-[central.sonatype.com/account](https://central.sonatype.com/account),
+[central.sonatype.com/usertoken](https://central.sonatype.com/usertoken),
 and clicking on `Generate User Token`.
 This will result in a username-password pair that looks something like
 `aBcDef1/` and `aBCdEFG1H2IjKlmnoPQ3R+STUVw4XYzAB5C6dEF7GH8I`.
@@ -223,7 +223,7 @@ With Central Portal, this is no longer necessary,
 and it's now possible to depend on the artifacts in a Gradle project before they are fully published.
 The [documentation](https://central.sonatype.org/publish/publish-portal-api/#gradle)
 does a great job explaining how to do this,
-I'll just show you the code if you're using Gradle with the
+I'll just show the code if you're using Gradle with the
 [Kotlin DSL](https://docs.gradle.org/current/userguide/kotlin_dsl.html),
 since the documentation only provides an example in Groovy:
 
