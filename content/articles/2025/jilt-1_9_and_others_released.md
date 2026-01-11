@@ -18,6 +18,7 @@ my Java library for generating Builder pattern classes,
 had not one, not two, but _four_ releases since
 [I last wrote about it](/jilt-1_8-and-1_8_1-released)
 in May of this year.
+
 The changes included in those four releases are:
 
 ## Copy JavaDocs to setter methods
@@ -27,8 +28,8 @@ Jilt never added [JavaDocs](https://en.wikipedia.org/wiki/Javadoc)
 to any of the classes
 (or interfaces) it generated.
 
-However, that's not ideal if the property in the class being built contained some JavaDocs,
-since the information contained in them will be missing from the generated Builder code.
+However, that's not ideal if the property in the class being built already had some JavaDocs,
+since the information contained in those JavaDocs will be missing from the generated Builder code.
 
 For that reason, version `1.9` changes that behavior,
 and copies any JavaDoc present on the property to the setter method of the generated Builder for that property.
@@ -101,7 +102,7 @@ Thanks to [Diego Pedregal](https://www.linkedin.com/in/diegopedregal) for
 When placing `@Builder` on constructors or static methods,
 it might happen that that constructor or method declares it throws some checked exception(s).
 In those cases, generating a `build()`
-method in the naive way would result in non-compiling code,
+method in the naïve way would result in non-compiling code,
 since the checked exceptions need either to be handled,
 or re-declared as being thrown.
 
