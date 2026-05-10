@@ -370,8 +370,7 @@ The simplest kind of statement is the expression statement:
 import com.oracle.truffle.api.frame.VirtualFrame;
 
 public final class ExprStmtNode extends EasyScriptStmtNode {
-    @SuppressWarnings("FieldMayBeFinal")
-    @Child
+    @Child @SuppressWarnings("FieldMayBeFinal")
     private EasyScriptExprNode expr;
 
     public ExprStmtNode(EasyScriptExprNode expr) {

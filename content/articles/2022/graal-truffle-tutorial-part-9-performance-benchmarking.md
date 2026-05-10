@@ -688,8 +688,7 @@ public final class FuncDeclStmtNode extends EasyScriptStmtNode {
     private final FrameDescriptor frameDescriptor;
     private final int argumentCount;
 
-    @SuppressWarnings("FieldMayBeFinal")
-    @Child
+    @Child @SuppressWarnings("FieldMayBeFinal")
     private UserFuncBodyStmtNode funcBody;
 
     @CompilationFinal

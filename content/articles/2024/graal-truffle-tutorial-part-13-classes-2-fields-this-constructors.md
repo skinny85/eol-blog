@@ -908,15 +908,13 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
 
 public final class FunctionCallExprNode extends EasyScriptExprNode {
-    @SuppressWarnings("FieldMayBeFinal")
-    @Child
+    @Child @SuppressWarnings("FieldMayBeFinal")
     private EasyScriptExprNode targetFunction;
 
     @Children
     private final EasyScriptExprNode[] callArguments;
 
-    @SuppressWarnings("FieldMayBeFinal")
-    @Child
+    @Child @SuppressWarnings("FieldMayBeFinal")
     private FunctionDispatchNode dispatchNode;
 
     public FunctionCallExprNode(EasyScriptExprNode targetFunction, List<EasyScriptExprNode> callArguments) {
@@ -977,8 +975,7 @@ public abstract class PropertyReadExprNode extends EasyScriptExprNode {
     protected abstract EasyScriptExprNode getTargetExpr();
     protected abstract String getPropertyName();
 
-    @SuppressWarnings("FieldMayBeFinal")
-    @Child
+    @Child @SuppressWarnings("FieldMayBeFinal")
     private CommonReadPropertyNode commonReadPropertyNode =
             CommonReadPropertyNodeGen.create();
 
@@ -1109,8 +1106,7 @@ public abstract class ArrayIndexReadExprNode extends EasyScriptExprNode {
     protected abstract EasyScriptExprNode getArrayExpr();
     protected abstract EasyScriptExprNode getIndexExpr();
 
-    @SuppressWarnings("FieldMayBeFinal")
-    @Child
+    @Child @SuppressWarnings("FieldMayBeFinal")
     private InnerNode innerNode =
             ArrayIndexReadExprNodeGen.InnerNodeGen.create();
 
@@ -1231,8 +1227,7 @@ public abstract class NewExprNode extends EasyScriptExprNode {
     @Children
     private final EasyScriptExprNode[] args;
 
-    @SuppressWarnings("FieldMayBeFinal")
-    @Child
+    @Child @SuppressWarnings("FieldMayBeFinal")
     private FunctionDispatchNode constructorDispatchNode;
 
     protected NewExprNode(EasyScriptExprNode constructorExpr, List<EasyScriptExprNode> args) {

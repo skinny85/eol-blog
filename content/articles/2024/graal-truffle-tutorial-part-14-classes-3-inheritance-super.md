@@ -741,8 +741,7 @@ which we add as a `@Child` Node:
 import com.oracle.truffle.api.frame.VirtualFrame;
 
 public final class SuperExprNode extends EasyScriptExprNode {
-    @SuppressWarnings("FieldMayBeFinal")
-    @Child
+    @Child @SuppressWarnings("FieldMayBeFinal")
     private ThisExprNode thisExprNode = new ThisExprNode();
 
     @Override
@@ -829,8 +828,7 @@ import com.oracle.truffle.api.interop.UnsupportedMessageException;
 public final class SuperExprNode extends EasyScriptExprNode {
     private final ClassPrototypeObject classPrototype;
 
-    @SuppressWarnings("FieldMayBeFinal")
-    @Child
+    @Child @SuppressWarnings("FieldMayBeFinal")
     private ThisExprNode thisExprNode;
 
     @Child
@@ -951,8 +949,7 @@ import com.oracle.truffle.api.interop.InteropLibrary;
 public final class SuperExprNode extends EasyScriptExprNode {
     private final ClassPrototypeObject classPrototype;
 
-    @SuppressWarnings("FieldMayBeFinal")
-    @Child
+    @Child @SuppressWarnings("FieldMayBeFinal")
     private ThisExprNode thisExprNode;
 
     @Child
@@ -986,8 +983,7 @@ public abstract class PropertyReadExprNode extends EasyScriptExprNode {
     protected abstract EasyScriptExprNode getTargetExpr();
     protected abstract String getPropertyName();
 
-    @SuppressWarnings("FieldMayBeFinal")
-    @Child
+    @Child @SuppressWarnings("FieldMayBeFinal")
     private CommonReadPropertyNode commonReadPropertyNode = CommonReadPropertyNodeGen.create();
 
     @Specialization
@@ -1048,8 +1044,7 @@ public abstract class ArrayIndexReadExprNode extends EasyScriptExprNode {
     protected abstract EasyScriptExprNode getArrayExpr();
     protected abstract EasyScriptExprNode getIndexExpr();
 
-    @SuppressWarnings("FieldMayBeFinal")
-    @Child
+    @Child @SuppressWarnings("FieldMayBeFinal")
     private InnerNode innerNode = ArrayIndexReadExprNodeGen.InnerNodeGen.create();
 
     @Specialization

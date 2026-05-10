@@ -325,8 +325,7 @@ We'll start with declaring an enum representing the state in our state machine:
 import com.oracle.truffle.api.CompilerDirectives;
 
 public final class AdditionNode extends EasyScriptNode {
-    @SuppressWarnings("FieldMayBeFinal")
-    @Child
+    @Child @SuppressWarnings("FieldMayBeFinal")
     private EasyScriptNode leftNode, rightNode;
 
     private enum SpecializationState { UNINITIALIZED, INT, DOUBLE }

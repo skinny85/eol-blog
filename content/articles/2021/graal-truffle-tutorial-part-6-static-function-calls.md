@@ -265,15 +265,13 @@ and we'll delegate the actual function call to that Node after evaluating the su
 import com.oracle.truffle.api.frame.VirtualFrame;
 
 public final class FunctionCallExprNode extends EasyScriptExprNode {
-    @SuppressWarnings("FieldMayBeFinal")
-    @Child
+    @Child @SuppressWarnings("FieldMayBeFinal")
     private EasyScriptExprNode targetFunction;
 
     @Children
     private final EasyScriptExprNode[] callArguments;
 
-    @SuppressWarnings("FieldMayBeFinal")
-    @Child
+    @Child @SuppressWarnings("FieldMayBeFinal")
     private FunctionDispatchNode dispatchNode;
 
     public FunctionCallExprNode(EasyScriptExprNode targetFunction, List<EasyScriptExprNode> callArguments) {
@@ -493,8 +491,7 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.RootNode;
 
 public final class FunctionRootNode extends RootNode {
-    @SuppressWarnings("FieldMayBeFinal")
-    @Child
+    @Child @SuppressWarnings("FieldMayBeFinal")
     private EasyScriptExprNode functionBodyExpr;
 
     public FunctionRootNode(EasyScriptTruffleLanguage truffleLanguage,

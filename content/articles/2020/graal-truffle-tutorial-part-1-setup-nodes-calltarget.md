@@ -221,8 +221,7 @@ And the second one is the addition node:
 import com.oracle.truffle.api.frame.VirtualFrame;
 
 public final class AdditionNode extends EasyScriptNode {
-    @SuppressWarnings("FieldMayBeFinal")
-    @Child
+    @Child @SuppressWarnings("FieldMayBeFinal")
     private EasyScriptNode leftNode, rightNode;
 
     public AdditionNode(EasyScriptNode leftNode, EasyScriptNode rightNode) {
@@ -279,8 +278,7 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.RootNode;
 
 public final class EasyScriptRootNode extends RootNode {
-    @SuppressWarnings("FieldMayBeFinal")
-    @Child
+    @Child @SuppressWarnings("FieldMayBeFinal")
     private EasyScriptNode exprNode;
 
     public EasyScriptRootNode(EasyScriptNode exprNode) {

@@ -307,8 +307,7 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.RootNode;
 
 public final class EasyScriptRootNode extends RootNode {
-    @SuppressWarnings("FieldMayBeFinal")
-    @Child
+    @Child @SuppressWarnings("FieldMayBeFinal")
     private EasyScriptNode exprNode;
 
     public EasyScriptRootNode(EasyScriptNode exprNode) {

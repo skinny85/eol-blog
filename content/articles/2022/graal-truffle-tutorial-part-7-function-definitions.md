@@ -286,9 +286,15 @@ which will be used to create slots in the function's frame for storing the local
 In JavaScript, like in many other languages,
 it's legal to call a function before it's defined.
 In order to support that in EasyScript,
-we need to do two loops through the list of statements on the top level.
-In the first loop, we only handle function declarations;
-in the second one, we handle the remaining statement types:
+we change the order of the statements once we are finished parsing them:
+we always put the function definitions at the beginning,
+so they are executed (and thus added to the global scope)
+before the other statements that can use them,
+like variable declarations
+(functions can still reference each other,
+including being mutually recursive,
+since executing a function's definition doesn't look at its body,
+only at its name):
 
 ```java
 import com.oracle.truffle.api.frame.FrameSlotKind;
@@ -298,49 +304,14 @@ public final class EasyScriptTruffleParser {
 
     private List<EasyScriptStmtNode> parseStmtsList(List<EasyScriptParser.StmtContext> stmts) {
         var funcDecls = new ArrayList<FuncDeclStmtNode>();
+        var nonFuncDeclStmts = new ArrayList<EasyScriptStmtNode>();
         for (EasyScriptParser.StmtContext stmt : stmts) {
             if (stmt instanceof EasyScriptParser.FuncDeclStmtContext) {
                 funcDecls.add(this.parseFuncDeclStmt((EasyScriptParser.FuncDeclStmtContext) stmt));
-            }
-        }
-
-        var nonFuncDeclStmts = new ArrayList<EasyScriptStmtNode>();
-        for (EasyScriptParser.StmtContext stmt : stmts) {
-            if (stmt instanceof EasyScriptParser.ExprStmtContext) {
+            } else if (stmt instanceof EasyScriptParser.ExprStmtContext) {
                 nonFuncDeclStmts.add(this.parseExprStmt((EasyScriptParser.ExprStmtContext) stmt));
             } else if (stmt instanceof EasyScriptParser.VarDeclStmtContext) {
-                EasyScriptParser.VarDeclStmtContext varDeclStmt = (EasyScriptParser.VarDeclStmtContext) stmt;
-                DeclarationKind declarationKind = DeclarationKind.fromToken(varDeclStmt.kind.getText());
-                List<EasyScriptParser.BindingContext> varDeclBindings = varDeclStmt.binding();
-                for (EasyScriptParser.BindingContext varBinding : varDeclBindings) {
-                    String variableId = varBinding.ID().getText();
-                    var bindingExpr = varBinding.expr1();
-                    EasyScriptExprNode initializerExpr;
-                    if (bindingExpr == null) {
-                        if (declarationKind == DeclarationKind.CONST) {
-                            throw new EasyScriptException("Missing initializer in const declaration '" + variableId + "'");
-                        }
-                        // if a 'let' or 'var' declaration is missing an initializer,
-                        // it means it will be initialized with 'undefined'
-                        initializerExpr = new UndefinedLiteralExprNode();
-                    } else {
-                        initializerExpr = this.parseExpr1(bindingExpr);
-                    }
-
-                    if (this.frameDescriptor == null) {
-                        // this is a global variable
-                        nonFuncDeclStmts.add(GlobalVarDeclStmtNodeGen.create(initializerExpr, variableId, declarationKind));
-                    } else {
-                        // this is a function-local variable,
-                        // which we turn into an assignment expression
-                        int frameSlot = this.frameDescriptor.addSlot(FrameSlotKind.Illegal, variableId, declarationKind);
-                        if (this.functionLocals.putIfAbsent(variableId, new LocalVariable(frameSlot, declarationKind)) != null) {
-                            throw new EasyScriptException("Identifier '" + variableId + "' has already been declared");
-                        }
-                        LocalVarAssignmentExprNode assignmentExpr = LocalVarAssignmentExprNodeGen.create(initializerExpr, frameSlot);
-                        nonFuncDeclStmts.add(new ExprStmtNode(assignmentExpr, /* discardExpressionValue */ true));
-                    }
-                }
+                nonFuncDeclStmts.addAll(this.parseVarDeclStmt((EasyScriptParser.VarDeclStmtContext) stmt));
             }
         }
 
@@ -353,11 +324,56 @@ public final class EasyScriptTruffleParser {
 }
 ```
 
-Here, we can see the frame slot being created from the `FrameDescriptor.Builder`
-when we encounter a variable declaration inside a function definition
-(we have to handle errors with duplicate variables too,
+To parse a variable declaration,
+we have to check whether we are inside a function definition
+(we do that by checking if the `FrameDescriptor.Builder` field is not `null`),
+and, if we are, we create the frame slot using the
+[`addSlot()` method of the `FrameDescriptor.Builder` class](https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/frame/FrameDescriptor.Builder.html#addSlot(com.oracle.truffle.api.frame.FrameSlotKind,java.lang.Object,java.lang.Object%29).
+We have to handle errors with duplicate variables,
 including a local variable having the same name as a function argument,
-which is not allowed in JavaScript).
+which is not allowed in JavaScript:
+
+```java
+public final class EasyScriptTruffleParser {
+    // ...
+
+    private List<EasyScriptStmtNode> parseVarDeclStmt(EasyScriptParser.VarDeclStmtContext varDeclStmt) {
+        DeclarationKind declarationKind = DeclarationKind.fromToken(varDeclStmt.kind.getText());
+        List<EasyScriptParser.BindingContext> varDeclBindings = varDeclStmt.binding();
+        List<EasyScriptStmtNode> ret = new ArrayList<>(varDeclBindings.size());
+        for (EasyScriptParser.BindingContext varBinding : varDeclBindings) {
+            String variableId = varBinding.ID().getText();
+            var bindingExpr = varBinding.expr1();
+            EasyScriptExprNode initializerExpr;
+            if (bindingExpr == null) {
+                if (declarationKind == DeclarationKind.CONST) {
+                    throw new EasyScriptException("Missing initializer in const declaration '" + variableId + "'");
+                }
+                // if a 'let' or 'var' declaration is missing an initializer,
+                // it means it will be initialized with 'undefined'
+                initializerExpr = new UndefinedLiteralExprNode();
+            } else {
+                initializerExpr = this.parseExpr1(bindingExpr);
+            }
+
+            if (this.frameDescriptor == null) {
+                // this is a global variable
+                ret.add(GlobalVarDeclStmtNodeGen.create(initializerExpr, variableId, declarationKind));
+            } else {
+                // this is a function-local variable,
+                // which we turn into an assignment expression
+                int frameSlot = this.frameDescriptor.addSlot(FrameSlotKind.Illegal, variableId, declarationKind);
+                if (this.functionLocals.putIfAbsent(variableId, new LocalVariable(frameSlot, declarationKind)) != null) {
+                    throw new EasyScriptException("Identifier '" + variableId + "' has already been declared");
+                }
+                LocalVarAssignmentExprNode assignmentExpr = LocalVarAssignmentExprNodeGen.create(initializerExpr, frameSlot);
+                ret.add(new ExprStmtNode(assignmentExpr, /* discardExpressionValue */ true));
+            }
+        }
+        return ret;
+    }
+}
+```
 
 We store the kind of the declaration (`var`, `const` or `let`)
 in the slot when creating it --
@@ -441,8 +457,7 @@ and returning `undefined` always:
 import com.oracle.truffle.api.frame.VirtualFrame;
 
 public final class ExprStmtNode extends EasyScriptStmtNode {
-    @SuppressWarnings("FieldMayBeFinal")
-    @Child
+    @Child @SuppressWarnings("FieldMayBeFinal")
     private EasyScriptExprNode expr;
     private final boolean discardExpressionValue;
 
@@ -558,8 +573,7 @@ public final class FuncDeclStmtNode extends EasyScriptStmtNode {
     private final FrameDescriptor frameDescriptor;
     private final int argumentCount;
 
-    @SuppressWarnings("FieldMayBeFinal")
-    @Child
+    @Child @SuppressWarnings("FieldMayBeFinal")
     private BlockStmtNode funcBody;
 
     public FuncDeclStmtNode(String funcName, FrameDescriptor frameDescriptor, BlockStmtNode funcBody, int argumentCount) {
@@ -592,8 +606,7 @@ we have to create a new `RootNode`.
 import com.oracle.truffle.api.frame.FrameDescriptor;
 
 public final class StmtBlockRootNode extends RootNode {
-    @SuppressWarnings("FieldMayBeFinal")
-    @Child
+    @Child @SuppressWarnings("FieldMayBeFinal")
     private BlockStmtNode blockStmt;
 
     public StmtBlockRootNode(EasyScriptTruffleLanguage truffleLanguage,
@@ -700,8 +713,7 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 public final class WriteFunctionArgExprNode extends EasyScriptExprNode {
     private final int index;
 
-    @SuppressWarnings("FieldMayBeFinal")
-    @Child
+    @Child @SuppressWarnings("FieldMayBeFinal")
     private EasyScriptExprNode initializerExpr;
 
     public WriteFunctionArgExprNode(EasyScriptExprNode initializerExpr, int index) {

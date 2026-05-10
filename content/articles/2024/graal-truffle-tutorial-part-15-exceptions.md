@@ -114,8 +114,7 @@ and then use Java's `throw` statement to raise an instance of `EasyScriptExcepti
 import com.oracle.truffle.api.frame.VirtualFrame;
 
 public final class ThrowStmtNode extends EasyScriptStmtNode {
-    @SuppressWarnings("FieldMayBeFinal")
-    @Child
+    @Child @SuppressWarnings("FieldMayBeFinal")
     private EasyScriptExprNode exceptionExpr;
 
     public ThrowStmtNode(EasyScriptExprNode exceptionExpr) {
@@ -197,8 +196,7 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.RootNode;
 
 public final class StmtBlockRootNode extends RootNode {
-    @SuppressWarnings("FieldMayBeFinal")
-    @Child
+    @Child @SuppressWarnings("FieldMayBeFinal")
     private EasyScriptStmtNode blockStmt;
 
     private final String name;
@@ -326,8 +324,7 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.source.SourceSection;
 
 public final class ThrowStmtNode extends EasyScriptStmtNode {
-    @SuppressWarnings("FieldMayBeFinal")
-    @Child
+    @Child @SuppressWarnings("FieldMayBeFinal")
     private EasyScriptExprNode exceptionExpr;
 
     private final SourceSection sourceSection;
@@ -372,8 +369,7 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.source.SourceSection;
 
 public final class ThrowStmtNode extends EasyScriptStmtNode {
-    @SuppressWarnings("FieldMayBeFinal")
-    @Child
+    @Child @SuppressWarnings("FieldMayBeFinal")
     private EasyScriptExprNode exceptionExpr;
 
     private final SourceSection sourceSection;
@@ -493,18 +489,15 @@ we just have to check whether we have the `try`-`catch` form
 import com.oracle.truffle.api.frame.VirtualFrame;
 
 public final class TryStmtNode extends EasyScriptStmtNode {
-    @SuppressWarnings("FieldMayBeFinal")
-    @Child
+    @Child @SuppressWarnings("FieldMayBeFinal")
     private BlockStmtNode tryStatements;
 
     private final Integer exceptionVarFrameSlot;
 
-    @SuppressWarnings("FieldMayBeFinal")
-    @Child
+    @Child @SuppressWarnings("FieldMayBeFinal")
     private BlockStmtNode catchStatements;
 
-    @SuppressWarnings("FieldMayBeFinal")
-    @Child
+    @Child @SuppressWarnings("FieldMayBeFinal")
     private BlockStmtNode finallyStatements;
 
     public TryStmtNode(BlockStmtNode tryStatements, BlockStmtNode finallyStatements) {
@@ -731,9 +724,7 @@ import com.oracle.truffle.api.object.DynamicObjectLibrary;
 import com.oracle.truffle.api.source.SourceSection;
 
 public abstract class ThrowStmtNode extends EasyScriptStmtNode {
-    @SuppressWarnings("FieldMayBeFinal")
-    @Child
-    @Executed
+    @Child @Executed @SuppressWarnings("FieldMayBeFinal")
     protected EasyScriptExprNode exceptionExpr;
 
     private final SourceSection sourceSection;

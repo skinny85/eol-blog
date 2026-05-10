@@ -6,7 +6,7 @@ var eolMetalsmith = require('./eol-metalsmith');
 
 eolMetalsmith()
     .use(express({
-        port: 8080,
+        port: 38080,
         middleware: [
             serveStatic(path.join(__dirname, 'build'), {
                 extensions: ['html'],
