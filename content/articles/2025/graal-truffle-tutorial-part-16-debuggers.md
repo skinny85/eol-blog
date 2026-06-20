@@ -1361,7 +1361,7 @@ So, this is how you can add debugger support to your language implemented with T
 As usual, all the code from the article is
 [available on GitHub](https://github.com/skinny85/graalvm-truffle-tutorial/tree/master/part-16).
 
-In the next part of the series,
+In the [next part of the series](/graal-truffle-tutorial-part-17-anonymous-functions-and-closures),
 we will learn how to implement anonymous functions,
 including [closures](https://en.wikipedia.org/wiki/Closure_(computer_programming%29),
 in your Truffle language.
