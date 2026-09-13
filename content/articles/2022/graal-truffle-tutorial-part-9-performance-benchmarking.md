@@ -813,9 +813,12 @@ If we re-run the benchmark, we get the following results:
 ```shell-session
 Benchmark                              Mode  Cnt    Score   Error  Units
 FibonacciBenchmark.recursive_eval_ezs  avgt    5  102.190 ± 1.099  us/op
+FibonacciBenchmark.recursive_eval_js   avgt    5   78.143 ± 3.453  us/op
+FibonacciBenchmark.recursive_eval_sl   avgt    5   55.662 ± 3.395  us/op
+FibonacciBenchmark.recursive_java      avgt    5   38.383 ± 1.046  us/op
 ```
 
-So, we went from 6 000 microseconds per invocation to 100,
+So, we went from 6,000 microseconds per invocation to 100,
 with just a few minor code changes!
 
 If we check the graph produced by the `recursive_eval_ezs`
