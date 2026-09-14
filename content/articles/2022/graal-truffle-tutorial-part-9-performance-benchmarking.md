@@ -137,7 +137,7 @@ import java.util.concurrent.TimeUnit;
 
 @Warmup(iterations = 5, time = 1)
 @Measurement(iterations = 5, time = 1)
-@Fork(value = 1, jvmArgsAppend = "-Dgraalvm.locatorDisabled=true")
+@Fork(value = 1, jvmArgsAppend = "-Dpolyglotimpl.DisableMultiReleaseCheck=true")
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
 @State(Scope.Benchmark)
@@ -158,9 +158,10 @@ public abstract class TruffleBenchmark {
 
 We set both the warmup and the actual measurement to 5 iterations, 1 second each.
 That should be more than enough to make sure the JIT compilation is triggered consistently.
-We make sure we pass the `-Dgraalvm.locatorDisabled=true`
-option to the forked JVM that the benchmark executes in,
-so that our custom Truffle language implementation is registered by the GraalVM runtime.
+We make sure we pass the `polyglotimpl.DisableMultiReleaseCheck=true`
+system property to the forked JVM that the benchmark executes in,
+since JMH packages the code being benchmarked into an uber-JAR,
+which the GraalVM polyglot runtime doesn't allow by default.
 
 I like to use average operation time as the measurement methodology,
 probably because I'm accustomed to tracking service invocation latency in that same way.

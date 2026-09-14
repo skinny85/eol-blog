@@ -361,7 +361,7 @@ public class Main {
 We add the `"inspect"` option when creating the `Context`,
 which is a way to start the debugger listening on the given port
 (note that you need the
-[`chromeinspector` dependency](https://search.maven.org/search?q=g:org.graalvm.tools%20AND%20a:chromeinspector)
+[`org.graalvm.polyglot:inspect` dependency](https://central.sonatype.com/artifact/org.graalvm.polyglot/inspect)
 added to your project in order for this to work).
 
 When you execute the above program,
@@ -1282,7 +1282,7 @@ you should see both function arguments and local variables in the debugger:
 
 A really nice feature of debugger support in Truffle is that you can write unit tests that verify it works correctly.
 You need to add a (test) dependency on the
-[`org.graalvm.truffle:truffle-tck` library](https://search.maven.org/search?q=g:org.graalvm.truffle%20AND%20a:truffle-tck)
+[`org.graalvm.truffle:truffle-tck` library](https://central.sonatype.com/artifact/org.graalvm.truffle/truffle-tck)
 to your project, and with that, you can programmatically control a debugger in your unit tests.
 
 Here's a simple example, illustrating some of the capabilities:
