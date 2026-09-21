@@ -47,9 +47,9 @@ command using `JAVA_HOME`:
 ```shell-session
 $ $JAVA_HOME/bin/java -version
 
-openjdk version "17.0.5" 2022-10-18
-OpenJDK Runtime Environment GraalVM CE 22.3.0 (build 17.0.5+8-jvmci-22.3-b08)
-OpenJDK 64-Bit Server VM GraalVM CE 22.3.0 (build 17.0.5+8-jvmci-22.3-b08, mixed mode, sharing)
+openjdk version "25.0.2" 2026-01-20
+OpenJDK Runtime Environment GraalVM CE 25.0.2+10.1 (build 25.0.2+10-jvmci-b01)
+OpenJDK 64-Bit Server VM GraalVM CE 25.0.2+10.1 (build 25.0.2+10-jvmci-b01, mixed mode, sharing)
 ```
 
 ## AST

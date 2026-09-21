@@ -464,7 +464,7 @@ public abstract class EasyScriptStmtNode extends EasyScriptNode
 
     @ExportMessage
     boolean hasScope(Frame frame,
-            @Cached(value = "this.findParentBlock()", adopt = false, allowUncached = true)
+            @Cached(value = "this.findParentBlock()", adopt = false, allowUncached = true, neverDefault = true)
             @Shared("thisParentBlock")
             Node thisParentBlock) {
         return !(thisParentBlock instanceof StmtBlockRootNode);
@@ -473,7 +473,7 @@ public abstract class EasyScriptStmtNode extends EasyScriptNode
     @ExportMessage
     Object getScope(Frame frame,
             boolean nodeEnter,
-            @Cached(value = "this.findParentBlock()", adopt = false, allowUncached = true)
+            @Cached(value = "this.findParentBlock()", adopt = false, allowUncached = true, neverDefault = true)
             @Shared("thisParentBlock")
             Node thisParentBlock) {
         return thisParentBlock instanceof BlockStmtNode
@@ -1002,7 +1002,7 @@ public final class BlockDebuggerScopeObject extends AbstractDebuggerScopeObject 
 
     @ExportMessage
     Object toDisplayString(boolean allowSideEffects,
-            @Cached(value = "this.blockStmtNode.findParentBlock()", adopt = false, allowUncached = true)
+            @Cached(value = "this.blockStmtNode.findParentBlock()", adopt = false, allowUncached = true, neverDefault = true)
             @Shared("nodeGrandParentBlock")
             Node nodeGrandParentBlock) {
        return nodeGrandParentBlock instanceof RootNode
@@ -1012,7 +1012,7 @@ public final class BlockDebuggerScopeObject extends AbstractDebuggerScopeObject 
 
     @ExportMessage
     boolean hasScopeParent(
-            @Cached(value = "this.blockStmtNode.findParentBlock()", adopt = false, allowUncached = true)
+            @Cached(value = "this.blockStmtNode.findParentBlock()", adopt = false, allowUncached = true, neverDefault = true)
             @Shared("nodeGrandParentBlock")
             Node nodeGrandParentBlock) {
         return !(nodeGrandParentBlock instanceof StmtBlockRootNode);
@@ -1020,7 +1020,7 @@ public final class BlockDebuggerScopeObject extends AbstractDebuggerScopeObject 
 
     @ExportMessage
     Object getScopeParent(
-            @Cached(value = "this.blockStmtNode.findParentBlock()", adopt = false, allowUncached = true)
+            @Cached(value = "this.blockStmtNode.findParentBlock()", adopt = false, allowUncached = true, neverDefault = true)
             @Shared("nodeGrandParentBlock")
             Node nodeGrandParentBlock)
             throws UnsupportedMessageException {

@@ -614,13 +614,15 @@ we need to pass the class of the object to the `Shape` builder with the
 import com.oracle.truffle.api.TruffleLanguage;
 import com.oracle.truffle.api.object.Shape;
 
+import java.lang.invoke.MethodHandles;
+
 @TruffleLanguage.Registration(id = "ezs", name = "EasyScript")
 public final class EasyScriptTruffleLanguage extends
         TruffleLanguage<EasyScriptLanguageContext> {
     // ...
 
     private final Shape arrayShape = Shape.newBuilder()
-        .layout(ArrayObject.class)
+        .layout(ArrayObject.class, MethodHandles.lookup())
         .build();
 }
 ```
@@ -931,9 +933,11 @@ We'll create a very simple expression Node that just returns the global scope ob
 using the `currentLanguageContext()` method:
 
 ```java
+import com.oracle.truffle.api.dsl.GenerateInline;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.object.DynamicObject;
 
+@GenerateInline(false)
 public abstract class GlobalScopeObjectExprNode extends EasyScriptExprNode {
     @Specialization
     protected DynamicObject returnGlobalScopeObject() {

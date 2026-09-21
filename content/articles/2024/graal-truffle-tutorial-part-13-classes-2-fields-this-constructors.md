@@ -66,8 +66,8 @@ public abstract class PropertyWriteExprNode extends EasyScriptExprNode {
     @Specialization
     protected Object writeProperty(
             Object target, Object rvalue,
-            @Cached CommonWritePropertyNode commonWritePropertyNode) {
-        return commonWritePropertyNode.executeWriteProperty(target, this.getPropertyName(), rvalue);
+            @Cached(inline = true) CommonWritePropertyNode commonWritePropertyNode) {
+        return commonWritePropertyNode.executeWriteProperty(this, target, this.getPropertyName(), rvalue);
     }
 }
 ```
@@ -81,6 +81,7 @@ where we cache the Java strings converted from `TruffleString`s for the first tw
 
 ```java
 import com.oracle.truffle.api.dsl.Cached;
+import com.oracle.truffle.api.dsl.Cached.Shared;
 import com.oracle.truffle.api.dsl.Fallback;
 import com.oracle.truffle.api.dsl.ImportStatic;
 import com.oracle.truffle.api.dsl.NodeChild;
@@ -114,27 +115,27 @@ public abstract class ArrayIndexWriteExprNode extends EasyScriptExprNode {
             Object target, TruffleString propertyName, Object rvalue,
             @Cached("propertyName") TruffleString cachedPropertyName,
             @Cached TruffleString.EqualNode equalNode,
-            @Cached TruffleString.ToJavaStringNode toJavaStringNode,
+            @Cached @Shared TruffleString.ToJavaStringNode toJavaStringNode,
             @Cached("toJavaStringNode.execute(propertyName)") String javaStringPropertyName,
-            @Cached CommonWritePropertyNode commonWritePropertyNode) {
-        return commonWritePropertyNode.executeWriteProperty(target,
+            @Cached(inline = true) @Shared CommonWritePropertyNode commonWritePropertyNode) {
+        return commonWritePropertyNode.executeWriteProperty(this, target,
                 javaStringPropertyName, rvalue);
     }
 
     @Specialization(replaces = "writeTruffleStringPropertyCached")
     protected Object writeTruffleStringPropertyUncached(
             Object target, TruffleString propertyName, Object rvalue,
-            @Cached TruffleString.ToJavaStringNode toJavaStringNode,
-            @Cached CommonWritePropertyNode commonWritePropertyNode) {
-        return commonWritePropertyNode.executeWriteProperty(target,
+            @Cached @Shared TruffleString.ToJavaStringNode toJavaStringNode,
+            @Cached(inline = true) @Shared CommonWritePropertyNode commonWritePropertyNode) {
+        return commonWritePropertyNode.executeWriteProperty(this, target,
                 toJavaStringNode.execute(propertyName), rvalue);
     }
 
     @Fallback
     protected Object writeNonStringProperty(
             Object target, Object property, Object rvalue,
-            @Cached CommonWritePropertyNode commonWritePropertyNode) {
-        return commonWritePropertyNode.executeWriteProperty(target,
+            @Cached(inline = true) @Shared CommonWritePropertyNode commonWritePropertyNode) {
+        return commonWritePropertyNode.executeWriteProperty(this, target,
                 EasyScriptTruffleStrings.toString(property), rvalue);
     }
 }
@@ -169,6 +170,7 @@ is really simple -- we just use the
 
 ```java
 import com.oracle.truffle.api.dsl.Fallback;
+import com.oracle.truffle.api.dsl.GenerateInline;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.interop.InteropLibrary;
 import com.oracle.truffle.api.interop.UnknownIdentifierException;
@@ -177,30 +179,31 @@ import com.oracle.truffle.api.interop.UnsupportedTypeException;
 import com.oracle.truffle.api.library.CachedLibrary;
 import com.oracle.truffle.api.nodes.Node;
 
+@GenerateInline(true)
 public abstract class CommonWritePropertyNode extends Node {
-    public abstract Object executeWriteProperty(Object target, Object property, Object rvalue);
+    public abstract Object executeWriteProperty(Node node, Object target, Object property, Object rvalue);
 
     @Specialization(guards = "interopLibrary.isMemberWritable(target, propertyName)", limit = "2")
-    protected Object writeProperty(
-            Object target, String propertyName, Object rvalue,
+    protected static Object writeProperty(
+            Node node, Object target, String propertyName, Object rvalue,
             @CachedLibrary("target") InteropLibrary interopLibrary) {
         try {
             interopLibrary.writeMember(target, propertyName, rvalue);
         } catch (UnsupportedMessageException | UnsupportedTypeException | UnknownIdentifierException e) {
-            throw new EasyScriptException(this, e.getMessage());
+            throw new EasyScriptException(node, e.getMessage());
         }
         return rvalue;
     }
 
     @Specialization(guards = "interopLibrary.isNull(target)", limit = "2")
-    protected Object writePropertyOfUndefined(
+    protected static Object writePropertyOfUndefined(
             Object target, Object property, Object rvalue,
             @CachedLibrary("target") InteropLibrary interopLibrary) {
         throw new EasyScriptException("Cannot set properties of undefined (setting '" + property + "')");
     }
 
     @Fallback
-    protected Object writePropertyOfNonUndefinedWithoutMembers(
+    protected static Object writePropertyOfNonUndefinedWithoutMembers(
             Object target, Object property, Object rvalue) {
         return rvalue;
     }
@@ -790,11 +793,13 @@ representing a given function or method:
 ```java
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Fallback;
+import com.oracle.truffle.api.dsl.GenerateInline;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.nodes.DirectCallNode;
 import com.oracle.truffle.api.nodes.IndirectCallNode;
 import com.oracle.truffle.api.nodes.Node;
 
+@GenerateInline(false)
 public abstract class FunctionDispatchNode extends Node {
     // receiver is the new parameter here
     public abstract Object executeDispatch(Object function, Object[] arguments, Object receiver);
@@ -1008,7 +1013,9 @@ We can move all existing specializations of `ArrayIndexReadExprNode` into a new 
 
 ```java
 import com.oracle.truffle.api.dsl.Cached;
+import com.oracle.truffle.api.dsl.Cached.Shared;
 import com.oracle.truffle.api.dsl.Fallback;
+import com.oracle.truffle.api.dsl.GenerateInline;
 import com.oracle.truffle.api.dsl.ImportStatic;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
@@ -1024,6 +1031,7 @@ import com.oracle.truffle.api.strings.TruffleString;
 @NodeChild("indexExpr")
 public abstract class ArrayIndexReadExprNode extends EasyScriptExprNode {
     @ImportStatic(EasyScriptTruffleStrings.class)
+    @GenerateInline(false)
     static abstract class InnerNode extends Node {
         abstract Object executeIndexRead(Object array, Object index);
 
@@ -1043,17 +1051,17 @@ public abstract class ArrayIndexReadExprNode extends EasyScriptExprNode {
                 Object target, TruffleString propertyName,
                 @Cached TruffleString.EqualNode equalNode,
                 @Cached("propertyName") TruffleString cachedPropertyName,
-                @Cached TruffleString.ToJavaStringNode toJavaStringNode,
+                @Cached @Shared TruffleString.ToJavaStringNode toJavaStringNode,
                 @Cached("toJavaStringNode.execute(cachedPropertyName)") String javaStringPropertyName,
-                @Cached CommonReadPropertyNode commonReadPropertyNode) {
+                @Cached(inline = true) @Shared CommonReadPropertyNode commonReadPropertyNode) {
             return commonReadPropertyNode.executeReadProperty(target, javaStringPropertyName);
         }
 
         @Specialization(replaces = "readTruffleStringPropertyCached")
         protected Object readTruffleStringPropertyUncached(
                 Object target, TruffleString propertyName,
-                @Cached TruffleString.ToJavaStringNode toJavaStringNode,
-                @Cached CommonReadPropertyNode commonReadPropertyNode) {
+                @Cached @Shared TruffleString.ToJavaStringNode toJavaStringNode,
+                @Cached(inline = true) @Shared CommonReadPropertyNode commonReadPropertyNode) {
             return commonReadPropertyNode.executeReadProperty(target,
                     toJavaStringNode.execute(propertyName));
         }
@@ -1062,7 +1070,7 @@ public abstract class ArrayIndexReadExprNode extends EasyScriptExprNode {
         protected Object readNonTruffleStringPropertyOfObject(
                 Object target, Object property,
                 @CachedLibrary("target") InteropLibrary interopLibrary,
-                @Cached CommonReadPropertyNode commonReadPropertyNode) {
+                @Cached(inline = true) @Shared CommonReadPropertyNode commonReadPropertyNode) {
             return commonReadPropertyNode.executeReadProperty(
                     target, EasyScriptTruffleStrings.toString(property));
         }
@@ -1070,7 +1078,7 @@ public abstract class ArrayIndexReadExprNode extends EasyScriptExprNode {
         @Fallback
         protected Object readNonTruffleStringPropertyOfNonObject(
                 Object target, Object index,
-                @Cached CommonReadPropertyNode commonReadPropertyNode) {
+                @Cached(inline = true) @Shared CommonReadPropertyNode commonReadPropertyNode) {
             return commonReadPropertyNode.executeReadProperty(target, index);
         }
     }
@@ -1140,22 +1148,27 @@ and we can just read the method to call directly from the String prototype:
 
 ```java
 import com.oracle.truffle.api.dsl.Cached;
+import com.oracle.truffle.api.dsl.Cached.Shared;
 import com.oracle.truffle.api.dsl.Fallback;
+import com.oracle.truffle.api.dsl.GenerateInline;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.library.CachedLibrary;
+import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.object.DynamicObjectLibrary;
 import com.oracle.truffle.api.strings.TruffleString;
 
+@GenerateInline(true)
 public abstract class ReadTruffleStringPropertyNode extends EasyScriptNode {
     protected static final String LENGTH_PROP = "length";
 
-    public abstract Object executeReadTruffleStringProperty(TruffleString truffleString, Object property);
+    public abstract Object executeReadTruffleStringProperty(
+            Node node, TruffleString truffleString, Object property);
 
     @Specialization
     protected Object readStringIndex(
             TruffleString truffleString, int index,
-            @Cached TruffleString.CodePointLengthNode lengthNode,
-            @Cached TruffleString.SubstringNode substringNode) {
+            @Cached(inline = false) @Shared TruffleString.CodePointLengthNode lengthNode,
+            @Cached(inline = false) TruffleString.SubstringNode substringNode) {
         return index < 0 || index >= EasyScriptTruffleStrings.length(truffleString, lengthNode)
                 ? Undefined.INSTANCE
                 : EasyScriptTruffleStrings.substring(truffleString, index, 1, substringNode);
@@ -1164,14 +1177,14 @@ public abstract class ReadTruffleStringPropertyNode extends EasyScriptNode {
     @Specialization(guards = "LENGTH_PROP.equals(propertyName)")
     protected int readLengthProperty(
             TruffleString truffleString, String propertyName,
-            @Cached TruffleString.CodePointLengthNode lengthNode) {
+            @Cached(inline = false) @Shared TruffleString.CodePointLengthNode lengthNode) {
         return EasyScriptTruffleStrings.length(truffleString, lengthNode);
     }
 
     @Fallback
     protected Object readNonLengthProperty(
             TruffleString truffleString, Object property,
-            @Cached("currentLanguageContext().shapesAndPrototypes.stringPrototype") ClassPrototypeObject stringPrototype,
+            @Cached(value = "currentLanguageContext().shapesAndPrototypes.stringPrototype", neverDefault = true) ClassPrototypeObject stringPrototype,
             @CachedLibrary(limit = "2") DynamicObjectLibrary stringPrototypeObjectLibrary) {
         return stringPrototypeObjectLibrary.getOrDefault(stringPrototype, property,
                 Undefined.INSTANCE);

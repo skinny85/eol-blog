@@ -749,6 +749,10 @@ To handle this case, we need to modify the `FunctionDispatchNode` from the
 to make sure we extend the array of arguments before performing the call:
 
 ```java
+import com.oracle.truffle.api.dsl.GenerateInline;
+import com.oracle.truffle.api.nodes.Node;
+
+@GenerateInline(false)
 public abstract class FunctionDispatchNode extends Node {
     // ...
 

@@ -552,18 +552,20 @@ and which is available through the Truffle language context:
 
 ```java
 import com.oracle.truffle.api.dsl.Cached;
+import com.oracle.truffle.api.dsl.GenerateInline;
 import com.oracle.truffle.api.dsl.Fallback;
 import com.oracle.truffle.api.library.CachedLibrary;
 import com.oracle.truffle.api.object.DynamicObjectLibrary;
 
+@GenerateInline(true)
 public abstract class CommonReadPropertyNode extends EasyScriptNode {
     // ...
 
     @Fallback
-    protected Object readPropertyOfNonUndefinedWithoutMembers(
+    protected static Object readPropertyOfNonUndefinedWithoutMembers(
             Object target, Object property,
-            @Cached("currentLanguageContext().shapesAndPrototypes.objectPrototype") ObjectPrototype objectPrototype,
-            @CachedLibrary(limit = "2") DynamicObjectLibrary dynamicObjectLibrary) {
+            @CachedLibrary(limit = "2") DynamicObjectLibrary dynamicObjectLibrary,
+            @Cached("currentLanguageContext().shapesAndPrototypes.objectPrototype") ObjectPrototype objectPrototype) {
         return dynamicObjectLibrary.getOrDefault(objectPrototype,
                 EasyScriptTruffleStrings.toString(property), Undefined.INSTANCE);
     }
@@ -622,12 +624,14 @@ type assertion present in `toStringOfMaybeString()` to the specialization that u
 ```java
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Fallback;
+import com.oracle.truffle.api.dsl.GenerateInline;
 import com.oracle.truffle.api.interop.InteropLibrary;
 import com.oracle.truffle.api.interop.UnknownIdentifierException;
 import com.oracle.truffle.api.interop.UnsupportedMessageException;
 import com.oracle.truffle.api.library.CachedLibrary;
 import com.oracle.truffle.api.strings.TruffleString;
 
+@GenerateInline(true)
 public abstract class ReadTruffleStringPropertyNode extends EasyScriptNode {
     public static final String LENGTH_PROP = "length";
 
@@ -636,7 +640,7 @@ public abstract class ReadTruffleStringPropertyNode extends EasyScriptNode {
     @Fallback
     protected Object readNonLengthProperty(
             TruffleString truffleString, Object property,
-            @Cached("currentLanguageContext().shapesAndPrototypes.stringPrototype") ClassPrototypeObject stringPrototype,
+            @Cached(value = "currentLanguageContext().shapesAndPrototypes.stringPrototype", neverDefault = true) ClassPrototypeObject stringPrototype,
             @CachedLibrary(limit = "2") InteropLibrary interopLibrary) {
         try {
             return interopLibrary.readMember(stringPrototype,
@@ -1025,6 +1029,7 @@ public final class SuperExprNode extends EasyScriptExprNode {
 And we also use it in `ArrayIndexReadExprNode`:
 
 ```java
+import com.oracle.truffle.api.dsl.GenerateInline;
 import com.oracle.truffle.api.dsl.ImportStatic;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
@@ -1035,6 +1040,7 @@ import com.oracle.truffle.api.nodes.Node;
 @NodeChild("indexExpr")
 public abstract class ArrayIndexReadExprNode extends EasyScriptExprNode {
     @ImportStatic(EasyScriptTruffleStrings.class)
+    @GenerateInline(false)
     static abstract class InnerNode extends Node {
         abstract Object executeIndexRead(Object array, Object index);
 

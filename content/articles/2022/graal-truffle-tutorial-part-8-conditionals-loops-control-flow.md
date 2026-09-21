@@ -570,7 +570,7 @@ Despite its huge significance, the implementation of the statement is really sim
 
 ```java
 import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.profiles.ConditionProfile;
+import com.oracle.truffle.api.profiles.CountingConditionProfile;
 
 public final class IfStmtNode extends EasyScriptStmtNode {
     @Child @SuppressWarnings("FieldMayBeFinal")
@@ -582,7 +582,7 @@ public final class IfStmtNode extends EasyScriptStmtNode {
     @Child @SuppressWarnings("FieldMayBeFinal")
     private EasyScriptStmtNode elseStmt;
 
-    private final ConditionProfile condition = ConditionProfile.createCountingProfile();
+    private final CountingConditionProfile condition = CountingConditionProfile.create();
 
     public IfStmtNode(EasyScriptExprNode conditionExpr, EasyScriptStmtNode thenStmt,
             EasyScriptStmtNode elseStmt) {
@@ -609,7 +609,7 @@ we execute the "then" part;
 if it's not, and an "else" part was provided,
 we execute that.
 
-The only new thing in the `if` implementation is the `ConditionProfile`.
+The only new thing in the `if` implementation is the `CountingConditionProfile`.
 It allows recording the behavior of conditions,
 and potentially using that decision during partial evaluation.
 For example, if Graal sees that a given condition was executed 100 times,

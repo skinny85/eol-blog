@@ -785,10 +785,12 @@ attribute that can be used for this purpose:
 ```java
 import com.oracle.truffle.api.Assumption;
 import com.oracle.truffle.api.dsl.Cached;
+import com.oracle.truffle.api.dsl.GenerateInline;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.nodes.DirectCallNode;
 import com.oracle.truffle.api.nodes.Node;
 
+@GenerateInline(false)
 public abstract class FunctionDispatchNode extends Node {
     @Specialization(
             guards = "function.getCallTarget() == directCallNode.getCallTarget()",

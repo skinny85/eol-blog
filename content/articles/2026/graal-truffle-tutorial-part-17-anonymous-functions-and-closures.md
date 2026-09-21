@@ -283,8 +283,10 @@ passing it as a second argument to the underlying closure if it's not `null`,
 and offsetting the remaining arguments by an extra index in that case:
 
 ```java
+import com.oracle.truffle.api.dsl.GenerateInline;
 import com.oracle.truffle.api.nodes.Node;
 
+@GenerateInline(false)
 public abstract class FunctionDispatchNode extends Node {
     // ...
 

@@ -348,11 +348,13 @@ So, our `FunctionDispatchNode` looks as follows:
 ```java
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Fallback;
+import com.oracle.truffle.api.dsl.GenerateInline;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.nodes.DirectCallNode;
 import com.oracle.truffle.api.nodes.IndirectCallNode;
 import com.oracle.truffle.api.nodes.Node;
 
+@GenerateInline(false)
 public abstract class FunctionDispatchNode extends Node {
     public abstract Object executeDispatch(Object function, Object[] arguments);
 
@@ -460,6 +462,13 @@ they are usually inlined anyway during partial evaluation,
 so there shouldn't really be any performance advantage in making them `static`.
 It's more of a convention used in Truffle for Nodes that have no children,
 like our `FunctionDispatchNode`.
+
+And finally, the `@GenerateInline(false)` annotation tells the Truffle DSL that this `Node`
+cannot be completely inlined, which is possible for Nodes that don't have any fields,
+and are only used with `@Cached` annotations.
+However, while `FunctionDispatchNode` doesn't have any fields itself,
+it's used as a field in `FunctionCallExprNode`,
+so it can't be completely inlined.
 
 ## Invoked Nodes
 
