@@ -28,10 +28,9 @@ Let's begin by setting up GraalVM.
 
 We need a GraalVM installation on our local machine.
 The free Community Edition works fine if you don't have the paid Enterprise Edition.
-You can download it from here: https://github.com/graalvm/graalvm-ce-builds/releases
-(we need one of the binaries whose name starts with `graalvm-ce`).
-The example code I'll be showing in these blog posts uses Java 11 features,
-so make sure to download a version for Java 11.
+You can download it from here: https://github.com/graalvm/graalvm-ce-builds/releases.
+The example code I'll be showing in these articles uses
+[version `25.0.2`](https://github.com/graalvm/graalvm-ce-builds/releases/tag/jdk-25.0.2).
 
 Once you've downloaded the correct archive for your operating system and extracted it somewhere on your machine,
 you need to set the `JAVA_HOME`
