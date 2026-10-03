@@ -117,7 +117,7 @@ that's not an issue.
 
 To represent strings at runtime in our interpreter,
 we will use the
-[`TruffleString` class](https://www.graalvm.org/latest/graalvm-as-a-platform/language-implementation-framework/TruffleStrings).
+[`TruffleString` class](https://www.graalvm.org/jdk25/graalvm-as-a-platform/language-implementation-framework/TruffleStrings).
 This is a dedicated type from the Truffle library that has special support in Graal,
 and makes sure strings, and operations on them, are as efficient as possible.
 

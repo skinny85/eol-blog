@@ -28,7 +28,7 @@ with a fraction of the effort it would take if you had to build it all from scra
 
 Debuggers are an example of a more general GraalVM concept called _tools_,
 sometimes also referred to as
-[_instruments_](https://www.graalvm.org/latest/graalvm-as-a-platform/implement-instrument).
+[_instruments_](https://www.graalvm.org/jdk25/graalvm-as-a-platform/implement-instrument).
 We will cover implementing your own tools in a future part of the series --
 for now, we will focus on adding support for instruments to your language.
 

@@ -691,7 +691,7 @@ public class JavaScriptObject extends DynamicObject {
 
 Notice that we use two separate instances of `DynamicObjectLibrary`
 to read from the two different objects -- this is the
-[recommended way](https://www.graalvm.org/latest/graalvm-as-a-platform/language-implementation-framework/DynamicObjectModel/#caching-considerations)
+[recommended way](https://www.graalvm.org/jdk21/graalvm-as-a-platform/language-implementation-framework/DynamicObjectModel/#caching-considerations)
 of using dynamic libraries in Truffle.
 
 Since we changed the built-in object classes, like functions and arrays,

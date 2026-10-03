@@ -226,12 +226,12 @@ so, for your benchmarks, you might consider splitting the definition from the in
 You can take out a function as a GraalVM polyglot `Value`
 from the language's global bindings,
 like we did in [part 5](/graal-truffle-tutorial-part-5-global-variables#surfacing-the-global-bindings),
-and use the [`Value.execute()` method](https://www.graalvm.org/sdk/javadoc/org/graalvm/polyglot/Value.html#execute(java.lang.Object...%29)
+and use the [`Value.execute()` method](https://www.graalvm.org/25.0/javadoc/sdk/org/graalvm/polyglot/Value.html#execute(java.lang.Object...%29)
 to invoke it,
 or pass just the invocation code
 (so, `fib(20)` in our case)
 to `Context.eval()`,
-perhaps using the [`Source` class](https://www.graalvm.org/sdk/javadoc/org/graalvm/polyglot/Source.html).
+perhaps using the [`Source` class](https://www.graalvm.org/25.0/javadoc/sdk/org/graalvm/polyglot/Source.html).
 
 So, that method covers our EasyScript interpreter measurements;
 however, when benchmarking, it's always important not to rely solely on absolute numbers,
@@ -465,7 +465,7 @@ While that was a great win,
 it's not always easy to formulate experiments that keep the semantics of the code the same --
 for example, how would you create an experiment that checks whether function calls are slow?
 In those more complicated cases, the
-[Ideal Graph Visualizer tool](https://www.graalvm.org/22.2/tools/igv)
+[Ideal Graph Visualizer tool](https://www.graalvm.org/jdk25/tools/igv)
 is helpful.
 
 It's a project maintained by the same team that maintains GraalVM and Truffle,

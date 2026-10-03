@@ -229,7 +229,7 @@ or [Groovy](https://groovy-lang.org)
 
 For more information,
 check out the
-[GraalVM polyglot documentation](https://www.graalvm.org/reference-manual/embed-languages).
+[GraalVM polyglot documentation](https://www.graalvm.org/jdk25/reference-manual/embed-languages).
 
 ### The `TruffleLanguage` class
 

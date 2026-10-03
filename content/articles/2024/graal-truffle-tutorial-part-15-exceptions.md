@@ -755,7 +755,7 @@ public abstract class ThrowStmtNode extends EasyScriptStmtNode {
 }
 ```
 
-In accordance with [Truffle recommendations](https://www.graalvm.org/latest/graalvm-as-a-platform/language-implementation-framework/DynamicObjectModel/#caching-considerations),
+In accordance with [Truffle recommendations](https://www.graalvm.org/jdk21/graalvm-as-a-platform/language-implementation-framework/DynamicObjectModel/#caching-considerations),
 we use two different cached `DynamicObjectLibrary` instances:
 one for the `name` property, and another for the `message` property.
 

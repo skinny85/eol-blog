@@ -129,7 +129,7 @@ we know that we'll need to allow writing arbitrary properties to arrays at some 
 in code like `arr.myProp = myValue;`,
 as JavaScript allows that;
 in addition, we're going to use the static equivalent of `DynamicObject`,
-[Truffle's `StaticObject`](https://www.graalvm.org/latest/graalvm-as-a-platform/language-implementation-framework/StaticObjectModel),
+[Truffle's `StaticObject`](https://www.graalvm.org/jdk25/graalvm-as-a-platform/language-implementation-framework/StaticObjectModel),
 for something different in this part of the series
 (the `Math` object -- see below),
 so `DynamicObject` for arrays makes sense.
@@ -148,7 +148,7 @@ does a great job explaining what shapes
 and why they are so crucial in making dynamically-typed languages like JavaScript fast.
 
 But where does the `Shape` instance come from?
-According to the [Truffle docs on the subject](https://www.graalvm.org/latest/graalvm-as-a-platform/language-implementation-framework/DynamicObjectModel#getting-started),
+According to the [Truffle docs on the subject](https://www.graalvm.org/jdk25/graalvm-as-a-platform/language-implementation-framework/DynamicObjectModel/#getting-started),
 an instance of `Shape` should be created by calling `build()`
 on the builder returned by the static `newBuilder()` method,
 and cached as a field in the instance of `TruffleLanguage`:
@@ -260,7 +260,7 @@ like inlining, constant folding, etc.,
 so this one spot can have huge negative implications on the performance of the interpreted code.
 
 The solution to this problem in Truffle are
-[libraries](https://www.graalvm.org/latest/graalvm-as-a-platform/language-implementation-framework/TruffleLibraries).
+[libraries](https://www.graalvm.org/jdk25/graalvm-as-a-platform/language-implementation-framework/TruffleLibraries).
 This is a special kind of classes that extend the abstract `Library` class,
 and is supported by the Truffle annotation processor
 (the same one that supports the
@@ -600,7 +600,7 @@ The `@DynamicField` annotation allows you to influence the Shape of a given dyna
 tell it that objects of this Shape always have a given property.
 Even though `length` is an `int`,
 Truffle only permits
-[`long` and `Object`](https://www.graalvm.org/latest/graalvm-as-a-platform/language-implementation-framework/DynamicObjectModel#extended-object-layout)
+[`long` and `Object`](https://www.graalvm.org/jdk25/graalvm-as-a-platform/language-implementation-framework/DynamicObjectModel/#extended-object-layout)
 for the type of the dynamic field.
 In addition, the field should never be accessed directly by your code,
 only through the `DynamicObjectLibrary`,
@@ -682,7 +682,7 @@ we need to turn it into an object.
 However, since we don't support assignment to properties yet,
 we can take advantage of the fact that we know the exact properties it contains,
 and use Truffle's mirror of `DynamicObject`,
-[the `StaticObject`](https://www.graalvm.org/latest/graalvm-as-a-platform/language-implementation-framework/StaticObjectModel).
+[the `StaticObject`](https://www.graalvm.org/jdk25/graalvm-as-a-platform/language-implementation-framework/StaticObjectModel).
 
 Using static objects looks very different from dynamic objects.
 You don't declare a class that extends a particular superclass;
