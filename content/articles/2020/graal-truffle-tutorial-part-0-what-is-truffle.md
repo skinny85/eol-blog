@@ -310,6 +310,8 @@ you can tell Graal that that is in fact the case by annotating your `executeInt`
 method with the `@ExplodeLoop` Truffle annotation:
 
 ```java
+import com.oracle.truffle.api.nodes.ExplodeLoop;
+
 public class IntAverageNode extends MyNode {
     // same as above...
 
@@ -347,3 +349,6 @@ So, these are the basics of Truffle (and Graal).
 In [later parts](/graal-truffle-tutorial-part-1-setup-nodes-calltarget) of the series,
 we'll dive deeper into the various elements of writing the interpreter,
 and exploring its performance.
+
+For more information on partial evaluation,
+check out the [Truffle documentation on the subject](https://github.com/oracle/graal/blob/0870cd4e893499c68171348ba0601cc44fc4abe9/truffle/docs/PartialEvaluation.md#partial-evaluation-in-truffle).
