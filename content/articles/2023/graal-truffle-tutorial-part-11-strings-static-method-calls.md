@@ -889,7 +889,7 @@ but, the Truffle DSL did, in the `ReadTruffleStringPropertyNodeGen` class it gen
 and `@Cached` is clever enough to find it).
 We just have to make sure to include a `Node` as the first parameter to this specialization,
 to pass it to `ReadTruffleStringPropertyNode`, since both it, and `CommonReadPropertyNode`, are
-[inlined Nodes](https://github.com/oracle/graal/blob/master/truffle/docs/DSLNodeObjectInlining.md):
+[inlined Nodes](https://www.graalvm.org/jdk25/graalvm-as-a-platform/language-implementation-framework/DSLNodeObjectInlining):
 
 ```java
 import com.oracle.truffle.api.dsl.Cached;

@@ -261,7 +261,7 @@ public class FibonacciBenchmark extends TruffleBenchmark {
 ```
 
 Another good candidate for a comparative benchmark is using the
-[GraalVM JavaScript implementation](https://github.com/oracle/graaljs).
+[GraalVM JavaScript implementation](https://www.graalvm.org/javascript/docs).
 This interpreter used to be bundled inside GraalVM,
 but starting with version `22`,
 it is now distributed separately,

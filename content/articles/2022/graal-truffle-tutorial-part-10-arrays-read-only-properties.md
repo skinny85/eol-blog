@@ -148,7 +148,7 @@ does a great job explaining what shapes
 and why they are so crucial in making dynamically-typed languages like JavaScript fast.
 
 But where does the `Shape` instance come from?
-According to the [Truffle docs on the subject](https://www.graalvm.org/jdk25/graalvm-as-a-platform/language-implementation-framework/DynamicObjectModel/#getting-started),
+According to the [Truffle docs on the subject](https://www.graalvm.org/jdk21/graalvm-as-a-platform/language-implementation-framework/DynamicObjectModel#getting-started),
 an instance of `Shape` should be created by calling `build()`
 on the builder returned by the static `newBuilder()` method,
 and cached as a field in the instance of `TruffleLanguage`:
@@ -600,7 +600,7 @@ The `@DynamicField` annotation allows you to influence the Shape of a given dyna
 tell it that objects of this Shape always have a given property.
 Even though `length` is an `int`,
 Truffle only permits
-[`long` and `Object`](https://www.graalvm.org/jdk25/graalvm-as-a-platform/language-implementation-framework/DynamicObjectModel/#extended-object-layout)
+[`long` and `Object`](https://www.graalvm.org/jdk21/graalvm-as-a-platform/language-implementation-framework/DynamicObjectModel#extended-object-layout)
 for the type of the dynamic field.
 In addition, the field should never be accessed directly by your code,
 only through the `DynamicObjectLibrary`,

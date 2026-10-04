@@ -190,7 +190,7 @@ The way all of these different languages can communicate with each other is Graa
 
 For example,
 the Graal team maintains a
-[JavaScript implementation](https://github.com/oracle/graaljs)
+[JavaScript implementation](https://www.graalvm.org/javascript/docs)
 (it used to ship bundled with GraalVM,
 but since version `22`, it's now a
 [separate library](https://mvnrepository.com/artifact/org.graalvm.js/js)
