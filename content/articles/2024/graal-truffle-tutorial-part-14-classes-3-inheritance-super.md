@@ -564,8 +564,8 @@ public abstract class CommonReadPropertyNode extends EasyScriptNode {
     @Fallback
     protected static Object readPropertyOfNonUndefinedWithoutMembers(
             Object target, Object property,
-            @CachedLibrary(limit = "2") DynamicObjectLibrary dynamicObjectLibrary,
-            @Cached("currentLanguageContext().shapesAndPrototypes.objectPrototype") ObjectPrototype objectPrototype) {
+            @Cached("currentLanguageContext().shapesAndPrototypes.objectPrototype") ObjectPrototype objectPrototype,
+            @CachedLibrary("objectPrototype") DynamicObjectLibrary dynamicObjectLibrary) {
         return dynamicObjectLibrary.getOrDefault(objectPrototype,
                 EasyScriptTruffleStrings.toString(property), Undefined.INSTANCE);
     }
@@ -641,7 +641,7 @@ public abstract class ReadTruffleStringPropertyNode extends EasyScriptNode {
     protected Object readNonLengthProperty(
             TruffleString truffleString, Object property,
             @Cached(value = "currentLanguageContext().shapesAndPrototypes.stringPrototype", neverDefault = true) ClassPrototypeObject stringPrototype,
-            @CachedLibrary(limit = "2") InteropLibrary interopLibrary) {
+            @CachedLibrary("stringPrototype") InteropLibrary interopLibrary) {
         try {
             return interopLibrary.readMember(stringPrototype,
                     EasyScriptTruffleStrings.toStringOfMaybeString(property));

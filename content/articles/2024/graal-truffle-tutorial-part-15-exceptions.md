@@ -819,7 +819,6 @@ in the specialization that handles attempting to read a property of `undefined`:
 
 ```java
 import com.oracle.truffle.api.dsl.Cached;
-import com.oracle.truffle.api.dsl.Cached.Shared;
 import com.oracle.truffle.api.dsl.GenerateInline;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.interop.InteropLibrary;
@@ -834,7 +833,7 @@ public abstract class CommonReadPropertyNode extends EasyScriptNode {
     protected Object readPropertyOfUndefined(
             Object target, Object property,
             @CachedLibrary("target") InteropLibrary interopLibrary,
-            @CachedLibrary(limit = "2") @Shared DynamicObjectLibrary dynamicObjectLibrary,
+            @CachedLibrary(limit = "2") DynamicObjectLibrary dynamicObjectLibrary,
             @Cached("currentLanguageContext().shapesAndPrototypes")
             @SuppressWarnings("truffle-neverdefault")
             ShapesAndPrototypes shapesAndPrototypes) {

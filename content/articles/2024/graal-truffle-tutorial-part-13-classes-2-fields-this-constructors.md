@@ -302,7 +302,7 @@ public final class ArrayObject extends JavaScriptObject {
         @Fallback
         static void writeNonLength(
                 ArrayObject arrayObject, String member, Object value,
-                @CachedLibrary(limit = "2") DynamicObjectLibrary dynamicObjectLibrary) {
+                @CachedLibrary("arrayObject") DynamicObjectLibrary dynamicObjectLibrary) {
             arrayObject.writeMember(member, value, dynamicObjectLibrary);
         }
     }
@@ -1185,7 +1185,7 @@ public abstract class ReadTruffleStringPropertyNode extends EasyScriptNode {
     protected Object readNonLengthProperty(
             TruffleString truffleString, Object property,
             @Cached(value = "currentLanguageContext().shapesAndPrototypes.stringPrototype", neverDefault = true) ClassPrototypeObject stringPrototype,
-            @CachedLibrary(limit = "2") DynamicObjectLibrary stringPrototypeObjectLibrary) {
+            @CachedLibrary("stringPrototype") DynamicObjectLibrary stringPrototypeObjectLibrary) {
         return stringPrototypeObjectLibrary.getOrDefault(stringPrototype, property,
                 Undefined.INSTANCE);
     }
