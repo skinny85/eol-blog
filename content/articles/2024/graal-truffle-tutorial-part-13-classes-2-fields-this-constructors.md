@@ -333,14 +333,6 @@ public final class ArrayObject extends JavaScriptObject {
         this.arrayElements = arrayElements;
         this.writeMember(LENGTH_PROP, arrayElements.length, objectLibrary);
     }
-
-    // annotation needed here, because the name of the method is the same as the name of the message
-    @ExportMessage.Ignore
-    private void writeMember(
-            String member, Object value,
-            @CachedLibrary("this") DynamicObjectLibrary dynamicObjectLibrary) {
-        dynamicObjectLibrary.put(this, member, value);
-    }
 }
 ```
 
