@@ -1140,7 +1140,7 @@ I assume this is a bug in the implementation.
 
 **Update**: I've [opened an issue](https://github.com/oracle/graaljs/issues/719)
 to the Graal JS project, and I was right --
-the bug has been fixed, and will be released in version `23.1.0`
+the bug has been resolved, and the fix for it was released in version `23.1.0`
 of the GraalVM JavaScript implementation.
 
 ### Caching in `ArrayIndexReadExprNode`

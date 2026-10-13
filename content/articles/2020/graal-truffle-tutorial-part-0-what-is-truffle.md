@@ -350,5 +350,5 @@ In [later parts](/graal-truffle-tutorial-part-1-setup-nodes-calltarget) of the s
 we'll dive deeper into the various elements of writing the interpreter,
 and exploring its performance.
 
-For more information on partial evaluation,
+For more information about partial evaluation,
 check out the [Truffle documentation on the subject](https://github.com/oracle/graal/blob/0870cd4e893499c68171348ba0601cc44fc4abe9/truffle/docs/PartialEvaluation.md#partial-evaluation-in-truffle).

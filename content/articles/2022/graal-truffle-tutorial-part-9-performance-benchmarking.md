@@ -296,7 +296,7 @@ public class FibonacciBenchmark extends TruffleBenchmark {
 ```
 
 And finally, we also introduce one more Truffle language for comparison:
-[SimpleLanguage](https://www.graalvm.org/latest/graalvm-as-a-platform/implement-language).
+[SimpleLanguage](https://www.graalvm.org/jdk25/graalvm-as-a-platform/implement-language).
 It's an educational language implementation that is maintained by the Truffle team,
 and its purpose is to be the entrypoint for developers to learn Truffle.
 In my opinion, it's quite difficult to read without knowing a lot about Truffle already
