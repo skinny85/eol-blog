@@ -271,7 +271,7 @@ so we need to add a dependency to our project on the
 ```groovy
 dependencies {
     // ...
-    implementation "org.graalvm.js:js:22.3.0"
+    implementation "org.graalvm.js:js:25.0.2"
 }
 
 // ...
@@ -312,7 +312,7 @@ we need to add a dependency to our project in the `build.gradle` file:
 ```groovy
 dependencies {
     // ...
-    implementation "org.graalvm.truffle:truffle-sl:22.3.0"
+    implementation "org.graalvm.truffle:truffle-sl:25.0.2"
 }
 
 // ...
