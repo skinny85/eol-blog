@@ -420,7 +420,7 @@ that would attract the attention of its operator.
 Most of them are obsolete today,
 however a few remain quite important:
 
-* Number `9` is the well-known Tab character (a source of [much controversy](https://www.youtube.com/watch?v=SsoOG6ZeyUI) in the programming community).
+* Number `9` is the well-known Tab character (a source of [much controversy](https://youtu.be/oRva7UxGQDw) in the programming community).
 * Number `10`, Line Feed, is used to indicate the end of the current line of text in a file.
   UNIX-like operating systems, such as Linux and MacOS, need just that one character,
   while on Windows, Line Feed needs to be preceded by a Carriage Return
